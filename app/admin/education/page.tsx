@@ -73,15 +73,10 @@ export default function AdminEducationPage() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const authToken = localStorage.getItem('authToken')
-      const headers = {
-        'Authorization': `Bearer ${authToken}`
-      }
-
       const [programsRes, applicationsRes, statsRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/education/programs`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/education/applications`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/education/stats`, { headers })
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/education/programs`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/education/applications`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/education/stats`)
       ])
 
       if (programsRes.ok) {
@@ -107,12 +102,8 @@ export default function AdminEducationPage() {
 
   const handleProgramAction = async (programId: string, action: 'feature' | 'unfeature' | 'activate' | 'deactivate' | 'delete') => {
     try {
-      const authToken = localStorage.getItem('authToken')
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/education/programs/${programId}/${action}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
+        method: 'PUT'
       })
 
       if (response.ok) {
@@ -125,13 +116,9 @@ export default function AdminEducationPage() {
 
   const handleApplicationAction = async (applicationId: string, status: 'approved' | 'rejected', notes?: string) => {
     try {
-      const authToken = localStorage.getItem('authToken')
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/education/applications/${applicationId}/status`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status, notes })
       })
 
