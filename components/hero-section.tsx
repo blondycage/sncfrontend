@@ -1,10 +1,39 @@
 "use client"
 
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function HeroSection() {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const [currentSlide, setCurrentSlide] = useState(0)
+
+  // Slideshow images data
+  const slideImages = [
+    {
+      src: "/images/kyrenia-thumbnail.jpg",
+      alt: "Kyrenia",
+      title: "Beautiful Kyrenia",
+      description: "Historic harbor city"
+    },
+    {
+      src: "/images/famagusta-thumbnail.jpg", 
+      alt: "Famagusta",
+      title: "Ancient Famagusta",
+      description: "Rich cultural heritage"
+    },
+    {
+      src: "/images/nicosia-location.jpg",
+      alt: "Nicosia", 
+      title: "Capital Nicosia",
+      description: "Modern city center"
+    },
+    {
+      src: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=300&auto=format&fit=crop",
+      alt: "Karpaz",
+      title: "Pristine Karpaz",
+      description: "Untouched nature"
+    }
+  ]
 
   useEffect(() => {
     // Attempt to play the video when component mounts
@@ -14,6 +43,15 @@ export default function HeroSection() {
       })
     }
   }, [])
+
+  useEffect(() => {
+    // Auto-advance slideshow every 4 seconds
+    const slideInterval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slideImages.length)
+    }, 4000)
+
+    return () => clearInterval(slideInterval)
+  }, [slideImages.length])
 
   return (
     <div className="relative overflow-hidden">
@@ -115,24 +153,66 @@ export default function HeroSection() {
           </div>
           <div className="relative hidden overflow-hidden rounded-lg md:flex md:items-center md:justify-center">
             <div className="relative rounded-lg bg-white/10 p-6 backdrop-blur-sm">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="h-24 w-24 overflow-hidden rounded-md">
-                  <img src="/images/kyrenia-thumbnail.jpg" alt="Kyrenia" className="h-full w-full object-cover" />
+              {/* Slideshow Container */}
+              <div className="group relative h-64 w-80 overflow-hidden rounded-lg">
+                {slideImages.map((image, index) => (
+                  <div
+                    key={index}
+                    className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+                      index === currentSlide 
+                        ? 'opacity-100 transform translate-x-0' 
+                        : index < currentSlide 
+                        ? 'opacity-0 transform -translate-x-full' 
+                        : 'opacity-0 transform translate-x-full'
+                    }`}
+                  >
+                    <img 
+                      src={image.src} 
+                      alt={image.alt} 
+                      className="h-full w-full object-cover rounded-lg"
+                    />
+                    {/* Image overlay with title */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-5 rounded-b-lg">
+                      <h4 className="text-white font-medium text-base">{image.title}</h4>
+                      <p className="text-white/80 text-sm">{image.description}</p>
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Navigation dots */}
+                <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                  {slideImages.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentSlide(index)}
+                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                        index === currentSlide 
+                          ? 'bg-white scale-110' 
+                          : 'bg-white/50 hover:bg-white/70'
+                      }`}
+                    />
+                  ))}
                 </div>
-                <div className="h-24 w-24 overflow-hidden rounded-md">
-                  <img src="/images/famagusta-thumbnail.jpg" alt="Famagusta" className="h-full w-full object-cover" />
-                </div>
-                <div className="h-24 w-24 overflow-hidden rounded-md">
-                  <img src="/images/nicosia-location.jpg" alt="Nicosia" className="h-full w-full object-cover" />
-                </div>
-                <div className="h-24 w-24 overflow-hidden rounded-md">
-                  <img
-                    src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=300&auto=format&fit=crop"
-                    alt="Karpaz"
-                    className="h-full w-full object-cover"
-                  />
-                </div>
+
+                {/* Navigation arrows */}
+                <button
+                  onClick={() => setCurrentSlide((prev) => (prev - 1 + slideImages.length) % slideImages.length)}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full p-2 transition-all duration-200 opacity-70 group-hover:opacity-100"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="15,18 9,12 15,6"></polyline>
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setCurrentSlide((prev) => (prev + 1) % slideImages.length)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full p-2 transition-all duration-200 opacity-70 group-hover:opacity-100"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9,18 15,12 9,6"></polyline>
+                  </svg>
+                </button>
               </div>
+              
               <div className="mt-4 text-center text-white">
                 <p className="font-medium">Explore Beautiful Locations</p>
                 <p className="text-sm text-white/80">Find your perfect spot in North Cyprus</p>
