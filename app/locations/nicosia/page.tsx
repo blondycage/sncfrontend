@@ -134,7 +134,7 @@ export default function NicosiaPage() {
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               <Card className="overflow-hidden">
                 <div className="relative">
-                  <img src="/images/education.jpg" alt="MBA Program" className="aspect-video w-full object-cover" />
+                  <img src="/images/education-1.jpg" alt="MBA Program" className="aspect-video w-full object-cover" />
                   <div className="absolute right-2 top-2">
                     <Badge className="bg-primary">Master's Degree</Badge>
                   </div>
@@ -165,7 +165,7 @@ export default function NicosiaPage() {
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               <Card className="overflow-hidden">
                 <div className="relative">
-                  <img src="/images/services.jpg" alt="Home Cleaning" className="aspect-video w-full object-cover" />
+                  <img src="/images/service-2.jpg" alt="Home Cleaning" className="aspect-video w-full object-cover" />
                   <div className="absolute right-2 top-2">
                     <Badge className="bg-primary">Cleaning</Badge>
                   </div>

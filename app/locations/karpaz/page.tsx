@@ -123,7 +123,7 @@ export default function KarpazPage() {
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               <Card className="overflow-hidden">
                 <div className="relative">
-                  <img src="/images/services.jpg" alt="Eco Tours" className="aspect-video w-full object-cover" />
+                  <img src="/images/service-1.jpg" alt="Eco Tours" className="aspect-video w-full object-cover" />
                   <div className="absolute right-2 top-2">
                     <Badge className="bg-primary">Tourism</Badge>
                   </div>

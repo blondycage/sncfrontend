@@ -66,7 +66,7 @@ const heroSlides = [
     title: "Study in Northern Cyprus",
     subtitle: "World-class education in the heart of the Mediterranean",
     description: "Discover quality education with affordable tuition fees in beautiful Northern Cyprus",
-    image: "/images/hero/northern-cyprus-university.jpg",
+    image: "/images/education-1.jpg",
     cta: "Explore Programs"
   },
   {
@@ -74,7 +74,7 @@ const heroSlides = [
     title: "Cyprus International University",
     subtitle: "Leading institution in Nicosia",
     description: "Modern facilities and international programs await you",
-    image: "/images/hero/ciu-campus.jpg",
+    image: "/images/education-2.jpg",
     cta: "View Programs"
   },
   {
@@ -82,7 +82,7 @@ const heroSlides = [
     title: "Eastern Mediterranean University",
     subtitle: "Excellence in Famagusta",
     description: "Join thousands of international students in a diverse academic environment",
-    image: "/images/hero/emu-campus.jpg",
+    image: "/images/education-3.jpg",
     cta: "Apply Now"
   }
 ]

@@ -20,7 +20,7 @@ export default function LocationsSection() {
     },
     {
       name: "Karpaz Peninsula",
-      image: "/images/karpaz-location.jpg",
+      image: "/images/karpaz.png",
       href: "/locations/karpaz",
     },
   ]

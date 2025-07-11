@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sidebar } from '@/components/admin/Sidebar';
-import { AdminHeader } from '@/components/admin/AdminHeader';
+import { Sidebar } from '@/admin/Sidebar';
+import { AdminHeader } from '@/admin/AdminHeader';
 
 interface UserData {
   id: string;
