@@ -21,9 +21,9 @@ export default function NotificationSection() {
     <div className="bg-gray-50 py-12">
       <div className="container px-4">
         <div className="mx-auto max-w-3xl rounded-lg bg-white p-8 shadow-sm">
-          <h2 className="text-2xl font-bold">Be the First to Know</h2>
+          <h2 className="text-2xl font-bold">Sign up for our news Letter</h2>
           <p className="mt-2 text-muted-foreground">
-            Get notified when our platform launches and gain early access to all features.
+            Get notified on new updates and gain early access to all features.
           </p>
           <form onSubmit={handleSubmit} className="mt-6 flex gap-4">
             <Input

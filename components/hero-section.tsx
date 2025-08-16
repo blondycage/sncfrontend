@@ -106,9 +106,7 @@ export default function HeroSection() {
               <h1 className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">Search North Cyprus</h1>
               <p className="mt-2 text-lg text-white/80">Your ultimate search platform for everything in North Cyprus</p>
             </div>
-            <div className="inline-block w-fit rounded-md bg-amber-500 px-3 py-1 text-sm font-medium text-white">
-              Coming Soon
-            </div>
+          
             <p className="text-white/80">
               Search for services, schools, rentals, apartments, scholarships, job opportunities, and much more - all in
               one place.

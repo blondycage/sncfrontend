@@ -80,8 +80,32 @@ async function apiRequest<T = any>(
     const data = await response.json()
 
     if (!response.ok) {
+      // Show error toast on client with server message
+      try {
+        if (typeof window !== 'undefined') {
+          const { toast } = await import('@/components/ui/use-toast')
+          toast({
+            title: 'Request failed',
+            description: data.message || data.error || `HTTP ${response.status}`,
+            variant: 'error',
+          })
+        }
+      } catch {}
       throw new ApiError(response.status, data.message || data.error || 'Request failed', data)
     }
+
+    // Success toast for write operations if server returned a message
+    try {
+      const method = (defaultOptions.method || 'GET').toString().toUpperCase()
+      if (typeof window !== 'undefined' && method !== 'GET' && (data?.message || data?.success)) {
+        const { toast } = await import('@/components/ui/use-toast')
+        toast({
+          title: 'Success',
+          description: data.message || 'Operation completed successfully',
+          variant: 'success',
+        })
+      }
+    } catch {}
 
     return data
   } catch (error) {
@@ -90,6 +114,12 @@ async function apiRequest<T = any>(
     }
     
     // Handle network errors
+    try {
+      if (typeof window !== 'undefined') {
+        const { toast } = await import('@/components/ui/use-toast')
+        toast({ title: 'Network error', description: 'Network error or server unavailable', variant: 'error' })
+      }
+    } catch {}
     throw new ApiError(0, 'Network error or server unavailable')
   }
 }

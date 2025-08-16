@@ -1,15 +1,101 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { MapPin, BedDouble, Briefcase, GraduationCap, ShoppingBag } from "lucide-react"
+import { MapPin, BedDouble, Briefcase, GraduationCap, ShoppingBag, DollarSign } from "lucide-react"
 import Link from "next/link"
 
+type Listing = {
+  id: string
+  title: string
+  price: number
+  pricing_frequency: string
+  image_urls?: string[]
+  primaryImage?: string | null
+  location?: { city?: string; region?: string }
+  category: string
+}
+
+type Job = {
+  id: string
+  title: string
+  role: string
+  salary: { min: number; max: number; currency: string; frequency: string }
+  jobType: string
+  workLocation: string
+  location: { city: string; region: string }
+  company: { name: string; logo?: string }
+  applicationDeadline: string
+  createdAt: string
+  views: number
+  applicationCount: number
+}
+
+type Program = {
+  _id: string
+  title: string
+  institution: { name: string }
+  location: { city?: string }
+  tuition?: { amount?: number; currency?: string; period?: string }
+}
+
 export default function KarpazPage() {
+  const [properties, setProperties] = useState<Listing[]>([])
+  const [services, setServices] = useState<Listing[]>([])
+  const [jobs, setJobs] = useState<Job[]>([])
+  const [programs, setPrograms] = useState<Program[]>([])
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+        // Note: listings 'city' accepts 'dipkarpaz' or 'karpas'. Using 'dipkarpaz' here.
+        const [propsRes, servicesRes, jobsRes, eduRes] = await Promise.all([
+          fetch(`${api}/listings?listingType=real_estate&city=dipkarpaz&limit=6`, { cache: 'no-store' }),
+          fetch(`${api}/listings?category=service&city=dipkarpaz&limit=6`, { cache: 'no-store' }),
+          fetch(`${api}/jobs?city=Karpaz&limit=6`, { cache: 'no-store' }),
+          // Education city validation uses specific set; use İskele district for Karpaz region
+          fetch(`${api}/education/programs?city=${encodeURIComponent('İskele')}&limit=6`, { cache: 'no-store' }),
+        ])
+
+        const propsJson = propsRes.ok ? await propsRes.json() : { data: [] }
+        const servicesJson = servicesRes.ok ? await servicesRes.json() : { data: [] }
+        const jobsJson = jobsRes.ok ? await jobsRes.json() : { data: [] }
+        const eduJson = eduRes.ok ? await eduRes.json() : { data: [] }
+
+        setProperties(propsJson.data || [])
+        setServices(servicesJson.data || [])
+        setJobs(jobsJson.data || [])
+        setPrograms(eduJson.data || [])
+      } catch (e) {}
+    }
+    load()
+  }, [])
+
+  const formatPrice = (listing: Listing) => {
+    if (listing.pricing_frequency && listing.pricing_frequency !== 'fixed') {
+      return `$${Number(listing.price || 0).toLocaleString()}/${listing.pricing_frequency}`
+    }
+    return `$${Number(listing.price || 0).toLocaleString()}`
+  }
+
+  const formatJobSalary = (job: Job) => {
+    const { min, max, currency, frequency } = job.salary || ({} as any)
+    if (min == null && max == null) return ''
+    if (min != null && max != null) {
+      return `${currency} ${min.toLocaleString()} - ${max.toLocaleString()}/${frequency}`
+    }
+    const value = (min != null ? min : max) as number
+    return `${currency} ${value.toLocaleString()}/${frequency}`
+  }
+
   return (
     <div>
       <div className="relative h-[300px] w-full overflow-hidden">
-        <img src="/images/karpaz.png" alt="Karpaz Peninsula" className="h-full w-full object-cover" />
+        <img src="/karpaz.jpeg" alt="Karpaz Peninsula" className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-0 left-0 p-8">
           <h1 className="text-4xl font-bold text-white">Karpaz Peninsula</h1>
@@ -47,31 +133,34 @@ export default function KarpazPage() {
 
           <TabsContent value="properties" className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="overflow-hidden">
-                <div className="relative">
-                  <img
-                    src="/images/property3.png"
-                    alt="Seaside Bungalow"
-                    className="aspect-video w-full object-cover"
-                  />
-                  <div className="absolute right-2 top-2">
-                    <Badge className="bg-primary">$220,000</Badge>
-                  </div>
-                </div>
-                <CardHeader>
-                  <CardTitle>Seaside Bungalow</CardTitle>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="mr-1 h-4 w-4" />
-                    Karpaz
-                  </div>
-                  <CardDescription>Charming 2-bedroom bungalow just steps from the beach</CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <Button className="w-full">View Details</Button>
-                </CardFooter>
-              </Card>
+              {properties.map((listing) => {
+                const img = listing.primaryImage || listing.image_urls?.[0] || "/placeholder.svg"
+                return (
+                  <Card key={listing.id} className="overflow-hidden">
+                    <div className="relative">
+                      <img src={img} alt={listing.title} className="aspect-video w-full object-cover" />
+                      <div className="absolute right-2 top-2">
+                        <Badge className="bg-primary">{formatPrice(listing)}</Badge>
+                      </div>
+                    </div>
+                    <CardHeader>
+                      <CardTitle>{listing.title}</CardTitle>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <MapPin className="mr-1 h-4 w-4" />
+                        {listing.location?.city || 'Karpaz'}
+                      </div>
+                      <CardDescription className="line-clamp-2">{listing.category}</CardDescription>
+                    </CardHeader>
+                    <CardFooter>
+                      <Link href={`/listings/${listing.id}`} className="w-full">
+                        <Button className="w-full">View Details</Button>
+                      </Link>
+                    </CardFooter>
+                  </Card>
+                )
+              })}
 
-              <Link href="/categories/properties" className="flex items-center justify-center">
+              <Link href="/listings?listingType=real_estate&city=dipkarpaz" className="flex items-center justify-center">
                 <Button variant="outline">View All Properties in Karpaz</Button>
               </Link>
             </div>
@@ -79,70 +168,96 @@ export default function KarpazPage() {
 
           <TabsContent value="jobs" className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="overflow-hidden">
-                <div className="relative">
-                  <img src="/images/job3.png" alt="Tour Guide" className="aspect-video w-full object-cover" />
-                  <div className="absolute right-2 top-2">
-                    <Badge className="bg-primary">Seasonal</Badge>
-                  </div>
-                </div>
-                <CardHeader>
-                  <CardTitle>Tour Guide</CardTitle>
-                  <div className="text-sm font-medium">Cyprus Adventures</div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="mr-1 h-4 w-4" />
-                    Karpaz
-                  </div>
-                  <CardDescription>
-                    Knowledgeable tour guide with language skills needed for tourist groups
-                  </CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <Button className="w-full">Apply Now</Button>
-                </CardFooter>
-              </Card>
+              {jobs.map((job) => (
+                <Card key={job.id} className="overflow-hidden">
+                  <CardHeader>
+                    <CardTitle>{job.title}</CardTitle>
+                    <div className="text-sm font-medium">{job.company?.name}</div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <MapPin className="mr-1 h-4 w-4" />
+                      {job.location?.city || 'Karpaz'}
+                    </div>
+                  </CardHeader>
+                  <CardFooter className="flex items-center justify-between">
+                    <Badge variant="secondary">{job.jobType?.replace('-', ' ')}</Badge>
+                    <div className="flex items-center text-sm font-medium text-green-600">
+                      <DollarSign className="h-4 w-4 mr-1" />
+                      {formatJobSalary(job)}
+                    </div>
+                    <Link href={`/jobs/${job.id}`}>
+                      <Button size="sm">Apply Now</Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              ))}
 
-              <Link href="/categories/jobs" className="flex items-center justify-center">
+              <Link href="/jobs?city=Karpaz" className="flex items-center justify-center">
                 <Button variant="outline">View All Jobs in Karpaz</Button>
               </Link>
             </div>
           </TabsContent>
 
           <TabsContent value="education" className="space-y-6">
-            <div className="flex flex-col items-center justify-center p-8 text-center">
-              <p className="mb-4 text-muted-foreground">
-                No educational institutions currently listed in Karpaz Peninsula.
-              </p>
-              <Link href="/categories/education">
-                <Button variant="outline">View All Education Options</Button>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {programs.map((p) => (
+                <Card key={p._id} className="overflow-hidden">
+                  <CardHeader>
+                    <CardTitle>{p.title}</CardTitle>
+                    <div className="text-sm font-medium">{p.institution?.name}</div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <MapPin className="mr-1 h-4 w-4" />
+                      {p.location?.city || 'İskele'}
+                    </div>
+                    {p.tuition?.amount && (
+                      <CardDescription>
+                        Tuition: {p.tuition.currency || 'USD'} {Number(p.tuition.amount).toLocaleString()} {p.tuition.period ? `(${p.tuition.period.replace('_',' ')})` : ''}
+                      </CardDescription>
+                    )}
+                  </CardHeader>
+                  <CardFooter>
+                    <Link href={`/categories/education`} className="w-full">
+                      <Button className="w-full">Learn More</Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              ))}
+
+              <Link href={`/education?city=${encodeURIComponent('İskele')}`} className="flex items-center justify-center">
+                <Button variant="outline">View All Education in İskele</Button>
               </Link>
             </div>
           </TabsContent>
 
           <TabsContent value="services" className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="overflow-hidden">
-                <div className="relative">
-                  <img src="/images/service-1.jpg" alt="Eco Tours" className="aspect-video w-full object-cover" />
-                  <div className="absolute right-2 top-2">
-                    <Badge className="bg-primary">Tourism</Badge>
-                  </div>
-                </div>
-                <CardHeader>
-                  <CardTitle>Eco Tours & Safaris</CardTitle>
-                  <div className="text-sm font-medium">Karpaz Explorers</div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="mr-1 h-4 w-4" />
-                    Karpaz
-                  </div>
-                  <CardDescription>Guided tours of the Karpaz Peninsula's natural wonders and wildlife</CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <Button className="w-full">Book Now</Button>
-                </CardFooter>
-              </Card>
+              {services.map((listing) => {
+                const img = listing.primaryImage || listing.image_urls?.[0] || "/placeholder.svg"
+                return (
+                  <Card key={listing.id} className="overflow-hidden">
+                    <div className="relative">
+                      <img src={img} alt={listing.title} className="aspect-video w-full object-cover" />
+                      <div className="absolute right-2 top-2">
+                        <Badge className="bg-primary">{formatPrice(listing)}</Badge>
+                      </div>
+                    </div>
+                    <CardHeader>
+                      <CardTitle>{listing.title}</CardTitle>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <MapPin className="mr-1 h-4 w-4" />
+                        {listing.location?.city || 'Karpaz'}
+                      </div>
+                      <CardDescription className="line-clamp-2">{listing.category}</CardDescription>
+                    </CardHeader>
+                    <CardFooter>
+                      <Link href={`/listings/${listing.id}`} className="w-full">
+                        <Button className="w-full">View Details</Button>
+                      </Link>
+                    </CardFooter>
+                  </Card>
+                )
+              })}
 
-              <Link href="/categories/services" className="flex items-center justify-center">
+              <Link href="/listings?category=service&city=dipkarpaz" className="flex items-center justify-center">
                 <Button variant="outline">View All Services in Karpaz</Button>
               </Link>
             </div>

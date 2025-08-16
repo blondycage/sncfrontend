@@ -38,6 +38,7 @@ interface ListingFormData {
   price: string;
   pricing_frequency: string;
   image_urls: string[];
+  video_url?: string;
   contact: {
     phone: string;
     email: string;
@@ -118,6 +119,7 @@ export default function CreateListingPage() {
     price: '',
     pricing_frequency: '',
     image_urls: [],
+    video_url: '',
     contact: {
       phone: '',
       email: '',
@@ -213,10 +215,11 @@ export default function CreateListingPage() {
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
-    if (files.length + selectedFiles.length > 5) {
+    const total = selectedFiles.length + formData.image_urls.length + files.length;
+    if (total > 10) {
       toast({
         title: "Too many files",
-        description: "You can upload a maximum of 5 images",
+        description: "You can upload a maximum of 10 images",
         variant: "error"
       });
       return;
@@ -234,10 +237,11 @@ export default function CreateListingPage() {
     
     try {
       new URL(imageUrlInput);
-      if (formData.image_urls.length >= 5) {
+      const total = selectedFiles.length + formData.image_urls.length + 1;
+      if (total > 10) {
         toast({
           title: "Too many images",
-          description: "You can add a maximum of 5 images",
+          description: "You can add a maximum of 10 images",
           variant: "error"
         });
         return;
@@ -307,7 +311,7 @@ export default function CreateListingPage() {
       }
 
       // Now create the listing with all image URLs
-      const listingData = {
+      const listingData: any = {
         title: formData.title,
         description: formData.description,
         listingType: formData.listingType,
@@ -319,6 +323,10 @@ export default function CreateListingPage() {
         contact: formData.contact,
         location: formData.location
       };
+
+      if (formData.video_url && formData.video_url.trim()) {
+        listingData.video_url = formData.video_url.trim();
+      }
 
       const token = localStorage.getItem('authToken');
       if (!token) {
@@ -779,6 +787,19 @@ export default function CreateListingPage() {
                   </div>
                 </div>
 
+                {/* Video URL (Optional) */}
+                <div className="space-y-2">
+                  <Label htmlFor="video_url">YouTube Video URL (Optional)</Label>
+                  <Input
+                    id="video_url"
+                    type="url"
+                    value={formData.video_url || ''}
+                    onChange={(e) => handleInputChange('video_url', e.target.value)}
+                    placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                  />
+                  <p className="text-xs text-gray-500">Add a YouTube link to showcase a video tour of your listing.</p>
+                </div>
+
                 <div className="flex justify-between">
                   <Button type="button" variant="outline" onClick={prevStep}>
                     Previous
@@ -817,7 +838,7 @@ export default function CreateListingPage() {
                         <span className="text-blue-600 hover:text-blue-500">Upload images</span>
                         <span className="text-gray-500"> or drag and drop</span>
                       </Label>
-                      <p className="text-sm text-gray-500">PNG, JPG, WebP up to 10MB each (max 5 files)</p>
+                      <p className="text-sm text-gray-500">PNG, JPG, WebP up to 10MB each (max 10 images total)</p>
                     </div>
                     <Input
                       id="images"

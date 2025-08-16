@@ -22,14 +22,10 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      router.push('/dashboard');
+      // success toast is handled inside AuthContext; redirect is done there as well
     } catch (error) {
       console.error('Login error:', error);
-      toast({
-        title: "Login Failed",
-        description: error instanceof Error ? error.message : "Invalid credentials",
-        variant: "error",
-      });
+      // error toast handled in AuthContext
     } finally {
       setIsLoading(false);
     }

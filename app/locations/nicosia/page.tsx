@@ -1,15 +1,99 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { MapPin, BedDouble, Briefcase, GraduationCap, ShoppingBag } from "lucide-react"
+import { MapPin, BedDouble, Briefcase, GraduationCap, ShoppingBag, DollarSign } from "lucide-react"
 import Link from "next/link"
 
+type Listing = {
+  id: string
+  title: string
+  price: number
+  pricing_frequency: string
+  image_urls?: string[]
+  primaryImage?: string | null
+  location?: { city?: string; region?: string }
+  category: string
+}
+
+type Job = {
+  id: string
+  title: string
+  role: string
+  salary: { min: number; max: number; currency: string; frequency: string }
+  jobType: string
+  workLocation: string
+  location: { city: string; region: string }
+  company: { name: string; logo?: string }
+  applicationDeadline: string
+  createdAt: string
+  views: number
+  applicationCount: number
+}
+
+type Program = {
+  _id: string
+  title: string
+  institution: { name: string }
+  location: { city?: string }
+  tuition?: { amount?: number; currency?: string; period?: string }
+}
+
 export default function NicosiaPage() {
+  const [properties, setProperties] = useState<Listing[]>([])
+  const [services, setServices] = useState<Listing[]>([])
+  const [jobs, setJobs] = useState<Job[]>([])
+  const [programs, setPrograms] = useState<Program[]>([])
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+        const [propsRes, servicesRes, jobsRes, eduRes] = await Promise.all([
+          fetch(`${api}/listings?listingType=real_estate&city=nicosia&limit=6`, { cache: 'no-store' }),
+          fetch(`${api}/listings?category=service&city=nicosia&limit=6`, { cache: 'no-store' }),
+          fetch(`${api}/jobs?city=Nicosia&limit=6`, { cache: 'no-store' }),
+          fetch(`${api}/education/programs?city=Nicosia&limit=6`, { cache: 'no-store' }),
+        ])
+
+        const propsJson = propsRes.ok ? await propsRes.json() : { data: [] }
+        const servicesJson = servicesRes.ok ? await servicesRes.json() : { data: [] }
+        const jobsJson = jobsRes.ok ? await jobsRes.json() : { data: [] }
+        const eduJson = eduRes.ok ? await eduRes.json() : { data: [] }
+
+        setProperties(propsJson.data || [])
+        setServices(servicesJson.data || [])
+        setJobs(jobsJson.data || [])
+        setPrograms(eduJson.data || [])
+      } catch (e) {}
+    }
+    load()
+  }, [])
+
+  const formatPrice = (listing: Listing) => {
+    if (listing.pricing_frequency && listing.pricing_frequency !== 'fixed') {
+      return `$${Number(listing.price || 0).toLocaleString()}/${listing.pricing_frequency}`
+    }
+    return `$${Number(listing.price || 0).toLocaleString()}`
+  }
+
+  const formatJobSalary = (job: Job) => {
+    const { min, max, currency, frequency } = job.salary || ({} as any)
+    if (min == null && max == null) return ''
+    if (min != null && max != null) {
+      return `${currency} ${min.toLocaleString()} - ${max.toLocaleString()}/${frequency}`
+    }
+    const value = (min != null ? min : max) as number
+    return `${currency} ${value.toLocaleString()}/${frequency}`
+  }
+
   return (
     <div>
       <div className="relative h-[300px] w-full overflow-hidden">
-        <img src="/images/nicosia.png" alt="Nicosia" className="h-full w-full object-cover" />
+        <img src="/nicosia.jpg" alt="Nicosia" className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-0 left-0 p-8">
           <h1 className="text-4xl font-bold text-white">Nicosia</h1>
@@ -47,53 +131,34 @@ export default function NicosiaPage() {
 
           <TabsContent value="properties" className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="overflow-hidden">
-                <div className="relative">
-                  <img
-                    src="/images/property2.png"
-                    alt="Modern Apartment"
-                    className="aspect-video w-full object-cover"
-                  />
-                  <div className="absolute right-2 top-2">
-                    <Badge className="bg-primary">$180,000</Badge>
-                  </div>
-                </div>
-                <CardHeader>
-                  <CardTitle>Modern Apartment in City Center</CardTitle>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="mr-1 h-4 w-4" />
-                    Nicosia
-                  </div>
-                  <CardDescription>Newly renovated 2-bedroom apartment in the heart of the city</CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <Button className="w-full">View Details</Button>
-                </CardFooter>
-              </Card>
+              {properties.map((listing) => {
+                const img = listing.primaryImage || listing.image_urls?.[0] || "/placeholder.svg"
+                return (
+                  <Card key={listing.id} className="overflow-hidden">
+                    <div className="relative">
+                      <img src={img} alt={listing.title} className="aspect-video w-full object-cover" />
+                      <div className="absolute right-2 top-2">
+                        <Badge className="bg-primary">{formatPrice(listing)}</Badge>
+                      </div>
+                    </div>
+                    <CardHeader>
+                      <CardTitle>{listing.title}</CardTitle>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <MapPin className="mr-1 h-4 w-4" />
+                        {listing.location?.city || 'Nicosia'}
+                      </div>
+                      <CardDescription className="line-clamp-2">{listing.category}</CardDescription>
+                    </CardHeader>
+                    <CardFooter>
+                      <Link href={`/listings/${listing.id}`} className="w-full">
+                        <Button className="w-full">View Details</Button>
+                      </Link>
+                    </CardFooter>
+                  </Card>
+                )
+              })}
 
-              <Card className="overflow-hidden">
-                <div className="relative">
-                  <img src="/images/property1.png" alt="Penthouse" className="aspect-video w-full object-cover" />
-                  <div className="absolute right-2 top-2">
-                    <Badge className="bg-primary">$380,000</Badge>
-                  </div>
-                </div>
-                <CardHeader>
-                  <CardTitle>Penthouse with Roof Terrace</CardTitle>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="mr-1 h-4 w-4" />
-                    Nicosia
-                  </div>
-                  <CardDescription>
-                    Luxurious 3-bedroom penthouse with private roof terrace and city views
-                  </CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <Button className="w-full">View Details</Button>
-                </CardFooter>
-              </Card>
-
-              <Link href="/categories/properties" className="flex items-center justify-center">
+              <Link href="/listings?listingType=real_estate&city=nicosia" className="flex items-center justify-center">
                 <Button variant="outline">View All Properties in Nicosia</Button>
               </Link>
             </div>
@@ -101,30 +166,30 @@ export default function NicosiaPage() {
 
           <TabsContent value="jobs" className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="overflow-hidden">
-                <div className="relative">
-                  <img src="/images/job2.png" alt="Software Developer" className="aspect-video w-full object-cover" />
-                  <div className="absolute right-2 top-2">
-                    <Badge className="bg-primary">Full-time</Badge>
-                  </div>
-                </div>
-                <CardHeader>
-                  <CardTitle>Software Developer</CardTitle>
-                  <div className="text-sm font-medium">Tech Solutions Ltd</div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="mr-1 h-4 w-4" />
-                    Nicosia
-                  </div>
-                  <CardDescription>
-                    Looking for a skilled software developer with React and Node.js experience
-                  </CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <Button className="w-full">Apply Now</Button>
-                </CardFooter>
-              </Card>
+              {jobs.map((job) => (
+                <Card key={job.id} className="overflow-hidden">
+                  <CardHeader>
+                    <CardTitle>{job.title}</CardTitle>
+                    <div className="text-sm font-medium">{job.company?.name}</div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <MapPin className="mr-1 h-4 w-4" />
+                      {job.location?.city || 'Nicosia'}
+                    </div>
+                  </CardHeader>
+                  <CardFooter className="flex items-center justify-between">
+                    <Badge variant="secondary">{job.jobType?.replace('-', ' ')}</Badge>
+                    <div className="flex items-center text-sm font-medium text-green-600">
+                      <DollarSign className="h-4 w-4 mr-1" />
+                      {formatJobSalary(job)}
+                    </div>
+                    <Link href={`/jobs/${job.id}`}>
+                      <Button size="sm">Apply Now</Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              ))}
 
-              <Link href="/categories/jobs" className="flex items-center justify-center">
+              <Link href="/jobs?city=Nicosia" className="flex items-center justify-center">
                 <Button variant="outline">View All Jobs in Nicosia</Button>
               </Link>
             </div>
@@ -132,30 +197,30 @@ export default function NicosiaPage() {
 
           <TabsContent value="education" className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="overflow-hidden">
-                <div className="relative">
-                  <img src="/images/education-1.jpg" alt="MBA Program" className="aspect-video w-full object-cover" />
-                  <div className="absolute right-2 top-2">
-                    <Badge className="bg-primary">Master's Degree</Badge>
-                  </div>
-                </div>
-                <CardHeader>
-                  <CardTitle>MBA Program</CardTitle>
-                  <div className="text-sm font-medium">Near East University</div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="mr-1 h-4 w-4" />
-                    Nicosia
-                  </div>
-                  <CardDescription>
-                    Master of Business Administration with specializations in various fields
-                  </CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <Button className="w-full">Learn More</Button>
-                </CardFooter>
-              </Card>
+              {programs.map((p) => (
+                <Card key={p._id} className="overflow-hidden">
+                  <CardHeader>
+                    <CardTitle>{p.title}</CardTitle>
+                    <div className="text-sm font-medium">{p.institution?.name}</div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <MapPin className="mr-1 h-4 w-4" />
+                      {p.location?.city || 'Nicosia'}
+                    </div>
+                    {p.tuition?.amount && (
+                      <CardDescription>
+                        Tuition: {p.tuition.currency || 'USD'} {Number(p.tuition.amount).toLocaleString()} {p.tuition.period ? `(${p.tuition.period.replace('_',' ')})` : ''}
+                      </CardDescription>
+                    )}
+                  </CardHeader>
+                  <CardFooter>
+                    <Link href={`/categories/education`} className="w-full">
+                      <Button className="w-full">Learn More</Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              ))}
 
-              <Link href="/categories/education" className="flex items-center justify-center">
+              <Link href="/education?city=Nicosia" className="flex items-center justify-center">
                 <Button variant="outline">View All Education in Nicosia</Button>
               </Link>
             </div>
@@ -163,28 +228,34 @@ export default function NicosiaPage() {
 
           <TabsContent value="services" className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="overflow-hidden">
-                <div className="relative">
-                  <img src="/images/service-2.jpg" alt="Home Cleaning" className="aspect-video w-full object-cover" />
-                  <div className="absolute right-2 top-2">
-                    <Badge className="bg-primary">Cleaning</Badge>
-                  </div>
-                </div>
-                <CardHeader>
-                  <CardTitle>Home Cleaning Services</CardTitle>
-                  <div className="text-sm font-medium">CleanHome Cyprus</div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="mr-1 h-4 w-4" />
-                    Nicosia
-                  </div>
-                  <CardDescription>Professional home and office cleaning services with trained staff</CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <Button className="w-full">Contact</Button>
-                </CardFooter>
-              </Card>
+              {services.map((listing) => {
+                const img = listing.primaryImage || listing.image_urls?.[0] || "/placeholder.svg"
+                return (
+                  <Card key={listing.id} className="overflow-hidden">
+                    <div className="relative">
+                      <img src={img} alt={listing.title} className="aspect-video w-full object-cover" />
+                      <div className="absolute right-2 top-2">
+                        <Badge className="bg-primary">{formatPrice(listing)}</Badge>
+                      </div>
+                    </div>
+                    <CardHeader>
+                      <CardTitle>{listing.title}</CardTitle>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <MapPin className="mr-1 h-4 w-4" />
+                        {listing.location?.city || 'Nicosia'}
+                      </div>
+                      <CardDescription className="line-clamp-2">{listing.category}</CardDescription>
+                    </CardHeader>
+                    <CardFooter>
+                      <Link href={`/listings/${listing.id}`} className="w-full">
+                        <Button className="w-full">View Details</Button>
+                      </Link>
+                    </CardFooter>
+                  </Card>
+                )
+              })}
 
-              <Link href="/categories/services" className="flex items-center justify-center">
+              <Link href="/listings?category=service&city=nicosia" className="flex items-center justify-center">
                 <Button variant="outline">View All Services in Nicosia</Button>
               </Link>
             </div>

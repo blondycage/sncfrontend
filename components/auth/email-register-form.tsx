@@ -127,22 +127,17 @@ export default function EmailRegisterForm({ onSuccess, className }: EmailRegiste
     setIsLoading(true)
 
     try {
-      await register({
+      const payload = {
         username: formData.username.trim(),
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         email: formData.email.toLowerCase(),
         password: formData.password,
         role: formData.role,
-      })
+      }
+      await register(payload as any)
 
-      // Show success toast
-      toast({
-        title: "Registration Successful! 🎉",
-        description: "Welcome to SNC! Redirecting to your dashboard...",
-        variant: "success",
-        duration: 3000,
-      })
+      // Success toast handled in AuthContext
 
       // Call success callback if provided
       if (onSuccess) {

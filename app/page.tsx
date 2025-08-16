@@ -3,6 +3,7 @@ import SearchSection from "@/components/search-section"
 import CategoriesSection from "@/components/categories-section"
 import LocationsSection from "@/components/locations-section"
 import NotificationSection from "@/components/notification-section"
+import HomeSponsoredSection from "@/components/home-sponsored-section"
 
 export default function Home() {
   return (
@@ -11,6 +12,7 @@ export default function Home() {
       <SearchSection />
       <CategoriesSection />
       <LocationsSection />
+      <HomeSponsoredSection />
       <NotificationSection />
     </div>
   )

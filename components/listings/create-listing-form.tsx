@@ -21,6 +21,7 @@ interface ListingFormData {
   price: number;
   pricing_frequency: string;
   image_urls: string[];
+  video_url?: string;
   contact: {
     phone?: string;
     email?: string;
@@ -105,6 +106,7 @@ export function CreateListingForm() {
     price: 0,
     pricing_frequency: '',
     image_urls: [],
+    video_url: '',
     contact: {},
     location: {}
   });
@@ -212,6 +214,9 @@ export function CreateListingForm() {
     if (formData.image_urls.length === 0) {
       newErrors.images = 'At least one image is required';
     }
+    if (formData.image_urls.length > 10) {
+      newErrors.images = 'Maximum 10 images allowed';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -242,7 +247,7 @@ export function CreateListingForm() {
       console.log('🔑 Auth token found:', token ? 'Yes' : 'No');
 
       // Create the listing with the correct structure for backend validation
-      const listingData = {
+      const listingData: any = {
         title: formData.title.trim(),
         description: formData.description.trim(),
         listingType: formData.listingType,
@@ -255,6 +260,10 @@ export function CreateListingForm() {
         ...(Object.keys(formData.contact).length > 0 && { contact: formData.contact }),
         ...(Object.keys(formData.location).length > 0 && { location: formData.location })
       };
+
+      if (formData.video_url && formData.video_url.trim()) {
+        listingData.video_url = formData.video_url.trim();
+      }
 
       // Debug validation
       console.log('=== FORM SUBMISSION DEBUG ===');
@@ -486,12 +495,25 @@ export function CreateListingForm() {
             <Label>Images *</Label>
             <ImageUpload
               onImagesChange={handleImagesChange}
-              maxImages={5}
+              maxImages={10}
               maxSize={10}
               className="mt-2"
               useUploadApi={true}
             />
             {errors.images && <p className="text-red-500 text-sm mt-1">{errors.images}</p>}
+          </div>
+
+          {/* Video URL */}
+          <div>
+            <Label htmlFor="video_url">YouTube Video URL (Optional)</Label>
+            <Input
+              id="video_url"
+              type="url"
+              placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+              value={formData.video_url || ''}
+              onChange={(e) => handleChange('video_url', e.target.value)}
+            />
+            <p className="text-xs text-gray-500 mt-1">Add a YouTube link to showcase a video tour of your listing.</p>
           </div>
 
           {/* Contact Information */}

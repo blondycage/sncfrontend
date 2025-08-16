@@ -5,22 +5,22 @@ export default function LocationsSection() {
   const locations = [
     {
       name: "Kyrenia",
-      image: "/images/kyrenia-location.jpg",
+      image: "/girne.jpeg",
       href: "/locations/kyrenia",
     },
     {
       name: "Famagusta",
-      image: "/images/famagusta-location.jpg",
+      image: "/magusa.jpeg",
       href: "/locations/famagusta",
     },
     {
       name: "Nicosia",
-      image: "/images/nicosia-location.jpg",
+      image: "/nicosia.jpg",
       href: "/locations/nicosia",
     },
     {
       name: "Karpaz Peninsula",
-      image: "/images/karpaz.png",
+      image: "/karpaz.jpeg",
       href: "/locations/karpaz",
     },
   ]

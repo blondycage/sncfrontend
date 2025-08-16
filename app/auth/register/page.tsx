@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 
 export default function RegisterPage() {
   return (
-    <div className="container flex h-screen items-center justify-center">
-      <Card className="mx-auto w-full max-w-md">
+    <div className="container flex min-h-screen items-center justify-center py-8">
+      <Card className="mx-auto w-full max-w-md max-h-[90vh] overflow-y-auto">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl">Create an Account</CardTitle>
           <CardDescription>Join SNC to start listing and discovering amazing opportunities</CardDescription>

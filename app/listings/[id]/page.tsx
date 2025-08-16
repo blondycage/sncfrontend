@@ -42,6 +42,7 @@ interface Listing {
   price: number;
   pricing_frequency: string;
   image_urls: string[];
+  video_url?: string;
   views: number;
   createdAt: string;
   updatedAt: string;
@@ -599,6 +600,44 @@ export default function ListingDetailPage() {
                 <p className="text-gray-700 whitespace-pre-line">{listing.description}</p>
               </CardContent>
             </Card>
+
+          {/* Video (YouTube) */}
+          {listing.video_url && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Video Tour</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
+                  <iframe
+                    className="h-full w-full"
+                    src={(function(url:string){
+                      try {
+                        const u=new URL(url);
+                        // YouTube watch or share links -> embed
+                        if (u.hostname.includes('youtube.com')) {
+                          const v=u.searchParams.get('v');
+                          if (v) return `https://www.youtube.com/embed/${v}`;
+                          // youtu.be with /embed or other paths
+                          if (u.pathname.startsWith('/embed/')) return url;
+                        }
+                        if (u.hostname.includes('youtu.be')) {
+                          const id=u.pathname.replace('/','');
+                          if (id) return `https://www.youtube.com/embed/${id}`;
+                        }
+                        return url;
+                      } catch { return url; }
+                    })(listing.video_url)}
+                    title="YouTube video player"
+                    frameBorder={0}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
             {/* Location */}
             {(listing.location.address || listing.location.city) && (

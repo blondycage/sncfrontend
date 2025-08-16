@@ -1,15 +1,102 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { MapPin, BedDouble, Briefcase, GraduationCap, ShoppingBag } from "lucide-react"
+import { MapPin, BedDouble, Briefcase, GraduationCap, ShoppingBag, DollarSign } from "lucide-react"
 import Link from "next/link"
 
+type Listing = {
+  id: string
+  title: string
+  price: number
+  pricing_frequency: string
+  image_urls?: string[]
+  primaryImage?: string | null
+  location?: { city?: string; region?: string }
+  category: string
+}
+
+type Job = {
+  id: string
+  title: string
+  role: string
+  salary: { min: number; max: number; currency: string; frequency: string }
+  jobType: string
+  workLocation: string
+  location: { city: string; region: string }
+  company: { name: string; logo?: string }
+  applicationDeadline: string
+  createdAt: string
+  views: number
+  applicationCount: number
+}
+
+type Program = {
+  _id: string
+  title: string
+  institution: { name: string }
+  location: { city?: string }
+  tuition?: { amount?: number; currency?: string; period?: string }
+}
+
 export default function KyreniaPage() {
+  const [properties, setProperties] = useState<Listing[]>([])
+  const [services, setServices] = useState<Listing[]>([])
+  const [jobs, setJobs] = useState<Job[]>([])
+  const [programs, setPrograms] = useState<Program[]>([])
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+        // Properties (real estate)
+        const [propsRes, servicesRes, jobsRes, eduRes] = await Promise.all([
+          fetch(`${api}/listings?listingType=real_estate&city=kyrenia&limit=6`, { cache: 'no-store' }),
+          fetch(`${api}/listings?category=service&city=kyrenia&limit=6`, { cache: 'no-store' }),
+          fetch(`${api}/jobs?city=Kyrenia&limit=6`, { cache: 'no-store' }),
+          fetch(`${api}/education/programs?city=Kyrenia&limit=6`, { cache: 'no-store' }),
+        ])
+
+        const propsJson = propsRes.ok ? await propsRes.json() : { data: [] }
+        const servicesJson = servicesRes.ok ? await servicesRes.json() : { data: [] }
+        const jobsJson = jobsRes.ok ? await jobsRes.json() : { data: [] }
+        const eduJson = eduRes.ok ? await eduRes.json() : { data: [] }
+
+        setProperties(propsJson.data || [])
+        setServices(servicesJson.data || [])
+        setJobs(jobsJson.data || [])
+        setPrograms(eduJson.data || [])
+      } catch (e) {
+        // fail silently for now
+      }
+    }
+    load()
+  }, [])
+
+  const formatPrice = (listing: Listing) => {
+    if (listing.pricing_frequency && listing.pricing_frequency !== 'fixed') {
+      return `$${Number(listing.price || 0).toLocaleString()}/${listing.pricing_frequency}`
+    }
+    return `$${Number(listing.price || 0).toLocaleString()}`
+  }
+
+  const formatJobSalary = (job: Job) => {
+    const { min, max, currency, frequency } = job.salary || ({} as any)
+    if (min == null && max == null) return ''
+    if (min != null && max != null) {
+      return `${currency} ${min.toLocaleString()} - ${max.toLocaleString()}/${frequency}`
+    }
+    const value = (min != null ? min : max) as number
+    return `${currency} ${value.toLocaleString()}/${frequency}`
+  }
+
   return (
     <div>
       <div className="relative h-[300px] w-full overflow-hidden">
-        <img src="/images/kyrenia-header.jpg" alt="Kyrenia" className="h-full w-full object-cover" />
+        <img src="/girne.jpeg" alt="Kyrenia" className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-0 left-0 p-8">
           <h1 className="text-4xl font-bold text-white">Kyrenia</h1>
@@ -47,49 +134,34 @@ export default function KyreniaPage() {
 
           <TabsContent value="properties" className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="overflow-hidden">
-                <div className="relative">
-                  <img src="/images/property-1.jpg" alt="Luxury Villa" className="aspect-video w-full object-cover" />
-                  <div className="absolute right-2 top-2">
-                    <Badge className="bg-primary">$450,000</Badge>
-                  </div>
-                </div>
-                <CardHeader>
-                  <CardTitle>Luxury Villa with Sea View</CardTitle>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="mr-1 h-4 w-4" />
-                    Kyrenia
-                  </div>
-                  <CardDescription>
-                    Beautiful 4-bedroom villa with panoramic sea views, private pool, and garden
-                  </CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <Button className="w-full">View Details</Button>
-                </CardFooter>
-              </Card>
+              {properties.map((listing) => {
+                const img = listing.primaryImage || listing.image_urls?.[0] || "/placeholder.svg"
+                return (
+                  <Card key={listing.id} className="overflow-hidden">
+                    <div className="relative">
+                      <img src={img} alt={listing.title} className="aspect-video w-full object-cover" />
+                      <div className="absolute right-2 top-2">
+                        <Badge className="bg-primary">{formatPrice(listing)}</Badge>
+                      </div>
+                    </div>
+                    <CardHeader>
+                      <CardTitle>{listing.title}</CardTitle>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <MapPin className="mr-1 h-4 w-4" />
+                        {listing.location?.city || 'Kyrenia'}
+                      </div>
+                      <CardDescription className="line-clamp-2">{listing.category}</CardDescription>
+                    </CardHeader>
+                    <CardFooter>
+                      <Link href={`/listings/${listing.id}`} className="w-full">
+                        <Button className="w-full">View Details</Button>
+                      </Link>
+                    </CardFooter>
+                  </Card>
+                )
+              })}
 
-              <Card className="overflow-hidden">
-                <div className="relative">
-                  <img src="/images/property-4.jpg" alt="Apartment" className="aspect-video w-full object-cover" />
-                  <div className="absolute right-2 top-2">
-                    <Badge className="bg-primary">$1,200/month</Badge>
-                  </div>
-                </div>
-                <CardHeader>
-                  <CardTitle>Modern Apartment for Rent</CardTitle>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="mr-1 h-4 w-4" />
-                    Kyrenia
-                  </div>
-                  <CardDescription>Fully furnished 2-bedroom apartment near the harbor</CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <Button className="w-full">View Details</Button>
-                </CardFooter>
-              </Card>
-
-              <Link href="/categories/properties" className="flex items-center justify-center">
+              <Link href="/listings?listingType=real_estate&city=kyrenia" className="flex items-center justify-center">
                 <Button variant="outline">View All Properties in Kyrenia</Button>
               </Link>
             </div>
@@ -97,49 +169,30 @@ export default function KyreniaPage() {
 
           <TabsContent value="jobs" className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="overflow-hidden">
-                <div className="relative">
-                  <img src="/images/job-1.jpg" alt="Hotel Manager" className="aspect-video w-full object-cover" />
-                  <div className="absolute right-2 top-2">
-                    <Badge className="bg-primary">Full-time</Badge>
-                  </div>
-                </div>
-                <CardHeader>
-                  <CardTitle>Hotel Manager</CardTitle>
-                  <div className="text-sm font-medium">Luxury Resort & Spa</div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="mr-1 h-4 w-4" />
-                    Kyrenia
-                  </div>
-                  <CardDescription>Experienced hotel manager needed for a 5-star resort in Kyrenia</CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <Button className="w-full">Apply Now</Button>
-                </CardFooter>
-              </Card>
+              {jobs.map((job) => (
+                <Card key={job.id} className="overflow-hidden">
+                  <CardHeader>
+                    <CardTitle>{job.title}</CardTitle>
+                    <div className="text-sm font-medium">{job.company?.name}</div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <MapPin className="mr-1 h-4 w-4" />
+                      {job.location?.city || 'Kyrenia'}
+                    </div>
+                  </CardHeader>
+                  <CardFooter className="flex items-center justify-between">
+                    <Badge variant="secondary">{job.jobType?.replace('-', ' ')}</Badge>
+                    <div className="flex items-center text-sm font-medium text-green-600">
+                      <DollarSign className="h-4 w-4 mr-1" />
+                      {formatJobSalary(job)}
+                    </div>
+                    <Link href={`/jobs/${job.id}`}>
+                      <Button size="sm">Apply Now</Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              ))}
 
-              <Card className="overflow-hidden">
-                <div className="relative">
-                  <img src="/images/job-4.jpg" alt="Chef" className="aspect-video w-full object-cover" />
-                  <div className="absolute right-2 top-2">
-                    <Badge className="bg-primary">Full-time</Badge>
-                  </div>
-                </div>
-                <CardHeader>
-                  <CardTitle>Head Chef</CardTitle>
-                  <div className="text-sm font-medium">Harbor Restaurant</div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="mr-1 h-4 w-4" />
-                    Kyrenia
-                  </div>
-                  <CardDescription>Experienced chef needed for a popular restaurant in Kyrenia harbor</CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <Button className="w-full">Apply Now</Button>
-                </CardFooter>
-              </Card>
-
-              <Link href="/categories/jobs" className="flex items-center justify-center">
+              <Link href="/jobs?city=Kyrenia" className="flex items-center justify-center">
                 <Button variant="outline">View All Jobs in Kyrenia</Button>
               </Link>
             </div>
@@ -147,34 +200,30 @@ export default function KyreniaPage() {
 
           <TabsContent value="education" className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="overflow-hidden">
-                <div className="relative">
-                  <img
-                    src="/images/education-3.jpg"
-                    alt="Language Course"
-                    className="aspect-video w-full object-cover"
-                  />
-                  <div className="absolute right-2 top-2">
-                    <Badge className="bg-primary">Language Course</Badge>
-                  </div>
-                </div>
-                <CardHeader>
-                  <CardTitle>English Language Course</CardTitle>
-                  <div className="text-sm font-medium">Cyprus Language Academy</div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="mr-1 h-4 w-4" />
-                    Kyrenia
-                  </div>
-                  <CardDescription>
-                    Intensive English language course for all levels with native speakers
-                  </CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <Button className="w-full">Learn More</Button>
-                </CardFooter>
-              </Card>
+              {programs.map((p) => (
+                <Card key={p._id} className="overflow-hidden">
+                  <CardHeader>
+                    <CardTitle>{p.title}</CardTitle>
+                    <div className="text-sm font-medium">{p.institution?.name}</div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <MapPin className="mr-1 h-4 w-4" />
+                      {p.location?.city || 'Kyrenia'}
+                    </div>
+                    {p.tuition?.amount && (
+                      <CardDescription>
+                        Tuition: {p.tuition.currency || 'USD'} {Number(p.tuition.amount).toLocaleString()} {p.tuition.period ? `(${p.tuition.period.replace('_',' ')})` : ''}
+                      </CardDescription>
+                    )}
+                  </CardHeader>
+                  <CardFooter>
+                    <Link href={`/categories/education`} className="w-full">
+                      <Button className="w-full">Learn More</Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              ))}
 
-              <Link href="/categories/education" className="flex items-center justify-center">
+              <Link href="/education?city=Kyrenia" className="flex items-center justify-center">
                 <Button variant="outline">View All Education in Kyrenia</Button>
               </Link>
             </div>
@@ -182,28 +231,34 @@ export default function KyreniaPage() {
 
           <TabsContent value="services" className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card className="overflow-hidden">
-                <div className="relative">
-                  <img src="/images/service-1.jpg" alt="Car Rental" className="aspect-video w-full object-cover" />
-                  <div className="absolute right-2 top-2">
-                    <Badge className="bg-primary">Transportation</Badge>
-                  </div>
-                </div>
-                <CardHeader>
-                  <CardTitle>Premium Car Rental</CardTitle>
-                  <div className="text-sm font-medium">Cyprus Luxury Cars</div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="mr-1 h-4 w-4" />
-                    Kyrenia
-                  </div>
-                  <CardDescription>Luxury and economy car rental services for tourists and locals</CardDescription>
-                </CardHeader>
-                <CardFooter>
-                  <Button className="w-full">Contact</Button>
-                </CardFooter>
-              </Card>
+              {services.map((listing) => {
+                const img = listing.primaryImage || listing.image_urls?.[0] || "/placeholder.svg"
+                return (
+                  <Card key={listing.id} className="overflow-hidden">
+                    <div className="relative">
+                      <img src={img} alt={listing.title} className="aspect-video w-full object-cover" />
+                      <div className="absolute right-2 top-2">
+                        <Badge className="bg-primary">{formatPrice(listing)}</Badge>
+                      </div>
+                    </div>
+                    <CardHeader>
+                      <CardTitle>{listing.title}</CardTitle>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <MapPin className="mr-1 h-4 w-4" />
+                        {listing.location?.city || 'Kyrenia'}
+                      </div>
+                      <CardDescription className="line-clamp-2">{listing.category}</CardDescription>
+                    </CardHeader>
+                    <CardFooter>
+                      <Link href={`/listings/${listing.id}`} className="w-full">
+                        <Button className="w-full">View Details</Button>
+                      </Link>
+                    </CardFooter>
+                  </Card>
+                )
+              })}
 
-              <Link href="/categories/services" className="flex items-center justify-center">
+              <Link href="/listings?category=service&city=kyrenia" className="flex items-center justify-center">
                 <Button variant="outline">View All Services in Kyrenia</Button>
               </Link>
             </div>

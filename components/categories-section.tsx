@@ -29,8 +29,8 @@ export default function CategoriesSection() {
     <div className="bg-gray-50 py-12">
       <div className="container px-4">
         <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-2xl font-bold">What You'll Be Able to Search</h2>
-          <span className="rounded-md bg-gray-200 px-3 py-1 text-sm">Coming Soon</span>
+          <h2 className="text-2xl font-bold">Search Categories</h2>
+         
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {categories.map((category, index) => (
