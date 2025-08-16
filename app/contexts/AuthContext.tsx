@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/toast'
+import { authApi } from '@/lib/api'
 
 interface User {
   id: string;
@@ -30,81 +31,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const { toast } = useToast();
+
+  // Helper: set/delete auth cookies used by middleware
+  const setCookie = (name: string, value: string, maxAgeDays = 7) => {
+    try {
+      const maxAge = maxAgeDays * 24 * 60 * 60; // seconds
+      document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAge}; samesite=lax`;
+    } catch {}
+  };
+
+  const deleteCookie = (name: string) => {
+    try {
+      document.cookie = `${name}=; path=/; max-age=0; samesite=lax`;
+    } catch {}
+  };
   
-  // Register via email/password
+  // Register via email/password with toasts and redirect
   const register = async (payload: { username: string; email: string; password: string; firstName?: string; lastName?: string; role?: string; }): Promise<void> => {
     try {
       toast({ title: 'Creating your account...', description: 'Please wait', variant: 'info', duration: 1500 })
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      const data = await response.json()
-      if (!response.ok) {
-        toast({ title: 'Registration failed', description: data.message || data.error || 'Please try again', variant: 'error' })
-        throw new Error(data.message || data.error || 'Registration failed')
+      const res = await authApi.register(payload as any)
+      if (!res.success || !res.token || !res.user) {
+        throw new Error(res.message || 'Registration failed')
       }
-      // Store token if returned and set user
-      if (data.token) localStorage.setItem('authToken', data.token)
-      if (data.user) {
-        setUser(data.user)
-      }
-      toast({ title: 'Welcome!', description: data.message || 'Account created successfully', variant: 'success', duration: 3000 })
-    } catch (err) {
-      if (err instanceof Error) {
-        throw err
-      }
-      throw new Error('Registration failed')
+      localStorage.setItem('authToken', res.token)
+      setCookie('token', res.token)
+      setUser(res.user as any)
+      setCookie('user', JSON.stringify({ id: (res.user as any).id, role: (res.user as any).role, email: (res.user as any).email || '' }))
+      toast({ title: 'Welcome!', description: res.message || 'Account created successfully', variant: 'success', duration: 3000 })
+      router.push('/dashboard')
+    } catch (err: any) {
+      const msg = err?.message || 'Registration failed. Please try again.'
+      toast({ title: 'Registration failed', description: msg, variant: 'error', duration: 4000 })
+      throw err
     }
   }
 
   const login = async (email: string, password: string) => {
     try {
       toast({ title: 'Signing in...', description: 'Please wait while we authenticate you', variant: 'info', duration: 1500 })
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        toast({ title: 'Login failed', description: error.message || 'Invalid credentials', variant: 'error' })
-        throw new Error(error.message || 'Login failed');
+      const res = await authApi.login({ email, password })
+      if (!res.success || !res.token || !res.user) {
+        throw new Error(res.message || 'Login failed')
       }
-
-      const data = await response.json();
-      
-      // Store token
-      localStorage.setItem('authToken', data.token);
-      
-      // Set user data
-      setUser(data.user);
-
-      // Redirect based on role
-      if (data.user.role === 'admin') {
-        toast({ title: 'Welcome back', description: data.message || 'Logged in as admin', variant: 'success', duration: 3000 });
-        router.push('/admin');
-      } else {
-        toast({ title: 'Welcome back', description: data.message || 'Login successful', variant: 'success', duration: 3000 });
-        router.push('/dashboard');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      if (error instanceof Error) {
-        toast({ title: 'Login failed', description: error.message, variant: 'error', duration: 4000 });
-      }
-      throw error;
+      localStorage.setItem('authToken', res.token)
+      setCookie('token', res.token)
+      setUser(res.user as any)
+      setCookie('user', JSON.stringify({ id: (res.user as any).id, role: (res.user as any).role, email: (res.user as any).email || '' }))
+      const role = (res.user as any).role
+      toast({ title: 'Welcome back', description: res.message || (role === 'admin' ? 'Logged in as admin' : 'Login successful'), variant: 'success', duration: 3000 })
+      router.push(role === 'admin' ? '/admin' : '/dashboard')
+    } catch (err: any) {
+      const msg = err?.message || 'Login failed. Please try again.'
+      toast({ title: 'Login failed', description: msg, variant: 'error', duration: 4000 })
+      throw err
     }
   };
 
   const logout = () => {
     localStorage.removeItem('authToken');
     setUser(null);
-    toast({ ...toast.info('Logged out'), duration: 2500 });
+    deleteCookie('token');
+    deleteCookie('user');
+    toast({ title: 'Logged out', description: 'You have been logged out', variant: 'info', duration: 2500 });
     router.push('/auth/login');
   };
 

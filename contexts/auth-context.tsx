@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
 import { authApi, ApiError } from "@/lib/api"
-
+import { useRouter } from "next/navigation"
 // Helper function to set cookies
 const setCookie = (name: string, value: string, days: number = 7) => {
   const expires = new Date()
@@ -70,7 +70,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-
+  const router = useRouter()
   const isAuthenticated = !!user && !!token
 
   // Load user from localStorage on mount
@@ -126,7 +126,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (response.success && response.token && response.user) {
         setToken(response.token)
         setUser(response.user)
-
+      
         // Store in localStorage
         localStorage.setItem("authToken", response.token)
         localStorage.setItem("user", JSON.stringify(response.user))
@@ -134,7 +134,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Set cookies for middleware
         setCookie("token", response.token)
         setCookie("user", JSON.stringify(response.user))
+        if (response.user.role === "admin") {
+          router.push("/admin")
+        } else {
+          router.push("/dashboard")
+        }
       } else {
+       // console.log("Login failed", response)
         throw new Error(response.message || response.error || "Login failed")
       }
     } catch (error) {
