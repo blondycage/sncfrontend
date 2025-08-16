@@ -14,7 +14,9 @@ import {
   Flag,
   Settings,
   UserCog,
-  Shield
+  Shield,
+  Megaphone,
+  Wallet
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/components/ui/use-toast';
@@ -154,6 +156,18 @@ export default function AdminDashboard() {
       description: 'Handle reported listings and user complaints',
       icon: Flag,
       action: () => router.push('/admin/listings/reported')
+    },
+    {
+      title: 'Promotions Review',
+      description: 'Verify payments and activate ads',
+      icon: Megaphone,
+      action: () => router.push('/admin/promotions')
+    },
+    {
+      title: 'Promotion Settings',
+      description: 'Configure wallets, prices, and limits',
+      icon: Wallet,
+      action: () => router.push('/admin/settings/promotions')
     }
   ];
 

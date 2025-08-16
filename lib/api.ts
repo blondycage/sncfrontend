@@ -56,8 +56,24 @@ async function apiRequest<T = any>(
       'Content-Type': 'application/json',
       ...options.headers,
     },
+    // Include cookies by default (for middleware/session cases)
+    credentials: options.credentials || 'include',
     ...options,
   }
+
+  // Auto-attach Authorization from localStorage if running in browser and not already provided
+  try {
+    if (typeof window !== 'undefined') {
+      const hasAuthHeader = (defaultOptions.headers as any)?.Authorization || (defaultOptions.headers as any)?.authorization
+      const token = localStorage.getItem('authToken')
+      if (!hasAuthHeader && token) {
+        (defaultOptions.headers as any) = {
+          ...(defaultOptions.headers as any),
+          Authorization: `Bearer ${token}`,
+        }
+      }
+    }
+  } catch {}
 
   try {
     const response = await fetch(url, defaultOptions)
@@ -404,3 +420,62 @@ export const uploadApi = {
 };
 
 export default apiRequest 
+
+// Promotions API functions
+export const promotionsApi = {
+  // Get active promotions for homepage hero
+  getActiveForHomepage: async () => {
+    return apiRequest('/promotions/active?placement=homepage');
+  },
+
+  // Get active top promotions for a category (rental|sale|service)
+  getActiveTopForCategory: async (category: string) => {
+    return apiRequest(`/promotions/active-top?category=${encodeURIComponent(category)}`);
+  },
+
+  // Track click for a promotion
+  trackClick: async (promotionId: string) => {
+    return apiRequest(`/promotions/${promotionId}/click`, { method: 'POST' });
+  },
+
+  // Get public config (prices, available chains)
+  getPublicConfig: async () => {
+    return apiRequest('/promotions/config-public');
+  },
+
+  // Create a promotion draft
+  createPromotion: async (payload: { listingId: string; placement: 'homepage' | 'category_top'; durationDays: number; chain: string }) => {
+    return apiRequest('/promotions', { method: 'POST', body: JSON.stringify(payload) });
+  },
+
+  // Submit payment proof
+  submitPaymentProof: async (promotionId: string, txHash: string, screenshotUrl: string) => {
+    return apiRequest(`/promotions/${promotionId}/payment-proof`, { method: 'PUT', body: JSON.stringify({ txHash, screenshotUrl }) });
+  },
+};
+
+// Admin Promotions API
+export const adminPromotionsApi = {
+  list: async (params: { status?: string; placement?: string } = {}) => {
+    const query = new URLSearchParams();
+    if (params.status) query.append('status', params.status);
+    if (params.placement) query.append('placement', params.placement);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return apiRequest(`/promotions/admin/promotions${qs}`);
+  },
+  updateStatus: async (id: string, action: 'approve'|'reject'|'expire', durationDays?: number) => {
+    return apiRequest(`/promotions/admin/promotions/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ action, durationDays })
+    });
+  },
+  getConfig: async () => {
+    return apiRequest('/promotions/admin/promotion-config');
+  },
+  updateConfig: async (config: any) => {
+    return apiRequest('/promotions/admin/promotion-config', {
+      method: 'PUT',
+      body: JSON.stringify(config)
+    });
+  }
+};

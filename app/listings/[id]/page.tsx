@@ -32,6 +32,7 @@ import {
   X
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import PromoteModal from "@/components/promotions/PromoteModal";
 
 interface Listing {
   _id: string;
@@ -86,6 +87,7 @@ export default function ListingDetailPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showImageModal, setShowImageModal] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [promoteOpen, setPromoteOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -444,6 +446,14 @@ export default function ListingDetailPage() {
               {listing.isOwner && (
                 <div className="flex gap-1">
                   <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => setPromoteOpen(true)}
+                    className="bg-amber-500 hover:bg-amber-600"
+                  >
+                    Promote
+                  </Button>
+                  <Button
                     variant="outline"
                     size="sm"
                     onClick={() => router.push(`/listings/${id}/edit`)}
@@ -482,6 +492,7 @@ export default function ListingDetailPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <PromoteModal open={promoteOpen} onOpenChange={setPromoteOpen} listingId={String(id)} listingCategory={listing.category} />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">

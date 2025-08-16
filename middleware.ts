@@ -13,10 +13,8 @@ export function middleware(request: NextRequest) {
   const isProtectedRoute = protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
 
   // For protected routes, check if user is authenticated
-  // We consider user authenticated if they have either:
-  // 1. Both user and token cookies, OR
-  // 2. Just a token cookie (for cases where only token is set)
-  const isAuthenticated = (userCookie && tokenCookie) || tokenCookie
+  // Require BOTH user and token cookies to avoid false positives with stale tokens
+  const isAuthenticated = Boolean(userCookie && tokenCookie)
 
   // If it's a protected route and user is not authenticated, redirect to login
   if (isProtectedRoute && !isAuthenticated) {

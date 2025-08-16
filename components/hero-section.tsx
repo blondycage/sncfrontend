@@ -2,38 +2,51 @@
 
 import { useRef, useEffect, useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { promotionsApi } from "@/lib/api"
+import { useRouter } from "next/navigation"
 
 export default function HeroSection() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [slides, setSlides] = useState<Array<{ promotionId: string; src: string; alt: string; title: string; description?: string; listingId: string; price?: number; pricing_frequency?: string; category?: string }>>([])
+  const router = useRouter()
 
-  // Slideshow images data
-  const slideImages = [
-    {
-      src: "/images/kyrenia-thumbnail.jpg",
-      alt: "Kyrenia",
-      title: "Beautiful Kyrenia",
-      description: "Historic harbor city"
-    },
-    {
-      src: "/images/famagusta-thumbnail.jpg", 
-      alt: "Famagusta",
-      title: "Ancient Famagusta",
-      description: "Rich cultural heritage"
-    },
-    {
-      src: "/images/nicosia-location.jpg",
-      alt: "Nicosia", 
-      title: "Capital Nicosia",
-      description: "Modern city center"
-    },
-    {
-      src: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=300&auto=format&fit=crop",
-      alt: "Karpaz",
-      title: "Pristine Karpaz",
-      description: "Untouched nature"
-    }
+  // Fallback slideshow images when no promotions are active
+  const fallbackSlides = [
+    { src: "/images/kyrenia-thumbnail.jpg", alt: "Kyrenia", title: "Beautiful Kyrenia", description: "Historic harbor city" },
+    { src: "/images/famagusta-thumbnail.jpg", alt: "Famagusta", title: "Ancient Famagusta", description: "Rich cultural heritage" },
+    { src: "/images/nicosia-location.jpg", alt: "Nicosia", title: "Capital Nicosia", description: "Modern city center" },
+    { src: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=300&auto=format&fit=crop", alt: "Karpaz", title: "Pristine Karpaz", description: "Untouched nature" },
   ]
+
+  // Load active homepage promotions
+  useEffect(() => {
+    let isMounted = true
+    ;(async () => {
+      try {
+        const res = await promotionsApi.getActiveForHomepage()
+        if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+          const mapped = res.data
+            .filter((p: any) => p.listing && p.listing.image_urls && p.listing.image_urls.length > 0)
+            .map((p: any) => ({
+              promotionId: p._id,
+              src: p.listing.image_urls[0],
+              alt: p.listing.title,
+              title: p.listing.title,
+              description: p.listing.category,
+              listingId: p.listing._id,
+              price: p.listing.price,
+              pricing_frequency: p.listing.pricing_frequency,
+              category: p.listing.category,
+            }))
+          if (isMounted) setSlides(mapped)
+        }
+      } catch (e) {
+        // ignore and use fallback
+      }
+    })()
+    return () => { isMounted = false }
+  }, [])
 
   useEffect(() => {
     // Attempt to play the video when component mounts
@@ -46,12 +59,20 @@ export default function HeroSection() {
 
   useEffect(() => {
     // Auto-advance slideshow every 4 seconds
+    const total = (slides.length || fallbackSlides.length)
     const slideInterval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slideImages.length)
+      setCurrentSlide((prev) => (prev + 1) % total)
     }, 4000)
 
     return () => clearInterval(slideInterval)
-  }, [slideImages.length])
+  }, [slides.length])
+
+  const formatPrice = (price?: number, frequency?: string) => {
+    if (typeof price !== 'number') return ''
+    const formatted = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(price)
+    if (!frequency || frequency === 'fixed') return formatted
+    return `${formatted}/${frequency}`
+  }
 
   return (
     <div className="relative overflow-hidden">
@@ -82,7 +103,7 @@ export default function HeroSection() {
         <div className="container grid grid-cols-1 gap-8 px-4 py-16 md:grid-cols-2 md:py-24">
           <div className="flex flex-col justify-center space-y-6 text-white">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">Discover North Cyprus</h1>
+              <h1 className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">Search North Cyprus</h1>
               <p className="mt-2 text-lg text-white/80">Your ultimate search platform for everything in North Cyprus</p>
             </div>
             <div className="inline-block w-fit rounded-md bg-amber-500 px-3 py-1 text-sm font-medium text-white">
@@ -151,11 +172,11 @@ export default function HeroSection() {
               </TabsContent>
             </Tabs>
           </div>
-          <div className="relative hidden overflow-hidden rounded-lg md:flex md:items-center md:justify-center">
-            <div className="relative rounded-lg bg-white/10 p-6 backdrop-blur-sm">
-              {/* Slideshow Container */}
-              <div className="group relative h-64 w-80 overflow-hidden rounded-lg">
-                {slideImages.map((image, index) => (
+          <div className="relative overflow-hidden rounded-lg flex items-center justify-center">
+            <div className="relative rounded-lg bg-white/10 p-3 md:p-4 backdrop-blur-sm w-full">
+              {/* Slideshow Container (Promoted if available, else fallback) */}
+              <div className="group relative h-72 w-full md:h-96 md:w-[36rem] lg:h-[30rem] overflow-hidden rounded-xl shadow-2xl">
+                {(slides.length > 0 ? slides : fallbackSlides).map((image, index) => (
                   <div
                     key={index}
                     className={`absolute inset-0 transition-all duration-700 ease-in-out ${
@@ -166,22 +187,60 @@ export default function HeroSection() {
                         : 'opacity-0 transform translate-x-full'
                     }`}
                   >
-                    <img 
-                      src={image.src} 
-                      alt={image.alt} 
-                      className="h-full w-full object-cover rounded-lg"
-                    />
+                    <button
+                      onClick={async () => {
+                        // Track click if promotion
+                        const isPromo = (slides.length > 0)
+                        if (isPromo) {
+                          const promo = slides[index]
+                          try { await promotionsApi.trackClick(promo.promotionId) } catch {}
+                          router.push(`/listings/${promo.listingId}`)
+                        }
+                      }}
+                      className="block text-left w-full h-full"
+                    >
+                      <img 
+                        src={(image as any).src} 
+                        alt={(image as any).alt} 
+                        className="h-full w-full object-cover rounded-xl"
+                      />
+                    </button>
                     {/* Image overlay with title */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-5 rounded-b-lg">
-                      <h4 className="text-white font-medium text-base">{image.title}</h4>
-                      <p className="text-white/80 text-sm">{image.description}</p>
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-4 md:p-6 rounded-b-xl">
+                      <div className="flex items-center gap-2 mb-2">
+                        {slides.length > 0 && (
+                          <span className="inline-flex items-center rounded bg-amber-500 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">Sponsored</span>
+                        )}
+                        {(image as any).category && (
+                          <span className="inline-flex items-center rounded bg-white/20 px-2 py-0.5 text-[10px] font-medium text-white">{(image as any).category}</span>
+                        )}
+                      </div>
+                      <h4 className="text-white font-semibold text-lg md:text-xl line-clamp-2">{(image as any).title}</h4>
+                      <div className="mt-1 flex items-center justify-between">
+                        <p className="text-white/90 text-sm md:text-base font-medium">
+                          {formatPrice((image as any).price, (image as any).pricing_frequency) || (image as any).description}
+                        </p>
+                        {slides.length > 0 && (
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation()
+                              const promo = slides[index]
+                              try { await promotionsApi.trackClick(promo.promotionId) } catch {}
+                              router.push(`/listings/${promo.listingId}`)
+                            }}
+                            className="rounded-md bg-white/90 px-3 py-1 text-xs font-medium text-black hover:bg-white"
+                          >
+                            View Listing
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
                 
                 {/* Navigation dots */}
                 <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                  {slideImages.map((_, index) => (
+                  {(slides.length > 0 ? slides : fallbackSlides).map((_, index) => (
                     <button
                       key={index}
                       onClick={() => setCurrentSlide(index)}
@@ -196,16 +255,16 @@ export default function HeroSection() {
 
                 {/* Navigation arrows */}
                 <button
-                  onClick={() => setCurrentSlide((prev) => (prev - 1 + slideImages.length) % slideImages.length)}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full p-2 transition-all duration-200 opacity-70 group-hover:opacity-100"
+                  onClick={() => setCurrentSlide((prev) => (prev - 1 + (slides.length || fallbackSlides.length)) % (slides.length || fallbackSlides.length))}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 transition-all duration-200 opacity-80"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="15,18 9,12 15,6"></polyline>
                   </svg>
                 </button>
                 <button
-                  onClick={() => setCurrentSlide((prev) => (prev + 1) % slideImages.length)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full p-2 transition-all duration-200 opacity-70 group-hover:opacity-100"
+                  onClick={() => setCurrentSlide((prev) => (prev + 1) % (slides.length || fallbackSlides.length))}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 transition-all duration-200 opacity-80"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="9,18 15,12 9,6"></polyline>
@@ -213,9 +272,9 @@ export default function HeroSection() {
                 </button>
               </div>
               
-              <div className="mt-4 text-center text-white">
-                <p className="font-medium">Explore Beautiful Locations</p>
-                <p className="text-sm text-white/80">Find your perfect spot in North Cyprus</p>
+              <div className="mt-3 text-center text-white">
+                <p className="font-medium">Explore featured listings</p>
+                <p className="text-sm text-white/80">Discover great deals across categories</p>
               </div>
             </div>
           </div>

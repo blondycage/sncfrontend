@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Search, Filter, MapPin, Calendar, Eye, DollarSign } from 'lucide-react';
-import { listingsApi } from '@/lib/api';
+import { listingsApi, promotionsApi } from '@/lib/api';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'sonner';
@@ -107,6 +107,7 @@ const NORTHERN_CYPRUS_CITIES = [
 export default function ListingsPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sponsored, setSponsored] = useState<any[]>([]);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -151,11 +152,50 @@ export default function ListingsPage() {
 
       console.log('📡 API Request params:', params);
 
+      let currentSponsored: any[] = [];
+      // Fetch sponsored (featured) for category if selected (or 'all' -> skip)
+      try {
+        const categoryForPromo = (filters.category && filters.category !== 'all') ? filters.category : '';
+        if (categoryForPromo) {
+          const promoRes = await promotionsApi.getActiveTopForCategory(categoryForPromo);
+          if (promoRes.success) {
+            const promos = (promoRes.data || []).map((p: any) => ({
+              id: p.listing?._id,
+              title: p.listing?.title,
+              description: p.listing?.description,
+              listingType: p.listing?.listingType,
+              category: p.listing?.category,
+              tags: p.listing?.tags || [],
+              price: p.listing?.price,
+              pricing_frequency: p.listing?.pricing_frequency,
+              image_urls: p.listing?.image_urls || [],
+              created_at: p.listing?.createdAt,
+              owner: p.listing?.owner,
+              location: p.listing?.location,
+              views: p.listing?.views || 0,
+              is_paid: true,
+              promotionId: p._id,
+              primaryImage: (p.listing?.image_urls && p.listing.image_urls[0]) || null,
+            }));
+            currentSponsored = promos;
+            setSponsored(promos);
+          } else {
+            setSponsored([]);
+          }
+        } else {
+          setSponsored([]);
+        }
+      } catch {
+        setSponsored([]);
+      }
       const response = await listingsApi.getListings(params);
       console.log('📥 API Response:', response);
 
       if (response.success) {
-        setListings(response.data || []);
+        const baseListings: Listing[] = response.data || [];
+        const sponsoredIds = new Set(currentSponsored.map((p) => p.id));
+        const filtered = baseListings.filter((l) => !sponsoredIds.has(l.id));
+        setListings(filtered);
         setPagination(response.pagination || {
           currentPage: 1,
           totalPages: 1,
@@ -229,6 +269,49 @@ export default function ListingsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Sponsored listings */}
+      {sponsored.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-xl font-semibold">Sponsored listings</h2>
+            <span className="text-xs text-gray-500">Promoted</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sponsored.map((listing) => (
+              <Link key={`sponsored-${listing.id}`} href={`/listings/${listing.id}`}>
+                <Card className="border-amber-300 hover:shadow-lg transition-shadow cursor-pointer h-full">
+                  <div className="relative h-48 overflow-hidden rounded-t-lg">
+                    {listing.primaryImage ? (
+                      <Image
+                        src={listing.primaryImage}
+                        alt={listing.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                        <span className="text-gray-400">No Image</span>
+                      </div>
+                    )}
+                    <div className="absolute top-2 left-2">
+                      <Badge className="bg-amber-500">Sponsored</Badge>
+                    </div>
+                  </div>
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-lg mb-1 line-clamp-2">{listing.title}</h3>
+                    <p className="text-gray-600 text-sm mb-3 line-clamp-2">{listing.description}</p>
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-green-600" />
+                      <span className="font-bold text-green-600">{formatPrice(listing.price, listing.pricing_frequency)}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Browse All Listings</h1>
