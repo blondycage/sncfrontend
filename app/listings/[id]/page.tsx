@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,8 @@ import {
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import PromoteModal from "@/components/promotions/PromoteModal";
+import { FavoriteButton } from "@/components/ui/favorite-button";
+import { ReportButton } from "@/components/ui/report-button";
 
 interface Listing {
   _id: string;
@@ -89,17 +91,44 @@ export default function ListingDetailPage() {
   const [showImageModal, setShowImageModal] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [promoteOpen, setPromoteOpen] = useState(false);
+  const fetchingRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (id) {
       fetchListing();
     }
-  }, [id]);
+    
+    // Cleanup function to abort ongoing requests and reset state
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      fetchingRef.current = false;
+    };
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchListing = async () => {
+    // Prevent multiple simultaneous requests
+    if (fetchingRef.current) {
+      console.log('🚫 Request already in progress, skipping...');
+      return;
+    }
+    
+    // Abort any existing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create new abort controller
+    abortControllerRef.current = new AbortController();
+    fetchingRef.current = true;
+    
     try {
       setLoading(true);
       setError('');
+      
+      console.log('🔍 Fetching listing:', id);
       
       const token = localStorage.getItem('authToken');
       const headers: HeadersInit = {
@@ -111,7 +140,8 @@ export default function ListingDetailPage() {
       }
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/listings/${id}`, {
-        headers
+        headers,
+        signal: abortControllerRef.current.signal
       });
 
       if (!response.ok) {
@@ -122,13 +152,21 @@ export default function ListingDetailPage() {
       }
 
       const data = await response.json();
+      console.log('✅ Listing fetched successfully');
       setListing(data.data);
       setIsFavorited(data.data.isFavorited || false);
     } catch (error) {
-      console.error('Error fetching listing:', error);
+      // Don't show error if request was aborted
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('🔄 Request aborted');
+        return;
+      }
+      console.error('❌ Error fetching listing:', error);
       setError(error instanceof Error ? error.message : 'Failed to load listing');
     } finally {
       setLoading(false);
+      fetchingRef.current = false;
+      abortControllerRef.current = null;
     }
   };
 
@@ -428,21 +466,24 @@ export default function ListingDetailPage() {
             </Button>
             
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
+              <FavoriteButton
+                listingId={listing._id}
+                isFavorited={listing.isFavorited || false}
                 size="sm"
-                onClick={handleFavorite}
-                disabled={actionLoading === 'favorite'}
-                className={isFavorited ? 'text-red-500 border-red-200' : ''}
-              >
-                <Heart className={`h-4 w-4 mr-1 ${isFavorited ? 'fill-current' : ''}`} />
-                {isFavorited ? 'Favorited' : 'Favorite'}
-              </Button>
+              />
               
               <Button variant="outline" size="sm" onClick={handleShare}>
                 <Share2 className="h-4 w-4 mr-1" />
                 Share
               </Button>
+
+              {!listing.isOwner && (
+                <ReportButton
+                  listingId={listing._id}
+                  listingTitle={listing.title}
+                  size="sm"
+                />
+              )}
               
               {listing.isOwner && (
                 <div className="flex gap-1">

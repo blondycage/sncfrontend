@@ -20,11 +20,21 @@ import {
   LogOut, 
   Building,
   Menu,
-  X
+  X,
+  MapPin,
+  ChevronDown
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { useState } from "react"
 import Image from "next/image"
+
+// Major cities in Northern Cyprus
+const MAJOR_CITIES = [
+  { value: 'famagusta', label: 'Famagusta', slug: 'famagusta', description: 'Historic port city' },
+  { value: 'nicosia', label: 'Nicosia', slug: 'nicosia', description: 'Capital city' },
+  { value: 'kyrenia', label: 'Girne', slug: 'kyrenia', description: 'Coastal resort town' },
+  { value: 'karpaz', label: 'Karpaz', slug: 'karpaz', description: 'Peninsula region' },
+];
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -86,6 +96,38 @@ export default function Header() {
             <Search className="h-4 w-4" />
             <span>Browse Listings</span>
           </Link>
+
+          {/* Cities Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors h-auto p-0"
+              >
+                <MapPin className="h-4 w-4" />
+                <span>Cities</span>
+                <ChevronDown className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuLabel>Major Cities</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {MAJOR_CITIES.map((city) => (
+                <DropdownMenuItem key={city.value} asChild>
+                  <Link 
+                    href={`/locations/${city.slug}`}
+                    className="flex items-center justify-between cursor-pointer w-full"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <MapPin className="h-4 w-4" />
+                      <span>{city.label}</span>
+                    </div>
+                    <span className="text-xs text-gray-500">{city.description}</span>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           
           <Link 
             href="/jobs" 
@@ -207,6 +249,29 @@ export default function Header() {
               <Search className="h-4 w-4" />
               <span>Browse Listings</span>
             </Link>
+
+            {/* Cities Section in Mobile */}
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2 text-sm font-medium text-gray-500">
+                <MapPin className="h-4 w-4" />
+                <span>Cities</span>
+              </div>
+              <div className="pl-6 space-y-2">
+                {MAJOR_CITIES.map((city) => (
+                  <Link 
+                    key={city.value}
+                    href={`/locations/${city.slug}`}
+                    className="block text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span>{city.label}</span>
+                      <span className="text-xs text-gray-400">{city.description}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
             
             <Link 
               href="/jobs" 

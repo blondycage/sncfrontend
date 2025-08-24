@@ -32,21 +32,21 @@ interface Job {
   title: string
   role: string
   description: string
-  company: {
-    name: string
+  company?: {
+    name?: string
   }
-  location: {
-    city: string
-    country: string
-    remote: boolean
-    hybrid: boolean
+  location?: {
+    city?: string
+    country?: string
+    remote?: boolean
+    hybrid?: boolean
   }
-  salary: {
+  salary?: {
     min?: number
     max?: number
-    currency: string
-    frequency: string
-    negotiable: boolean
+    currency?: string
+    frequency?: string
+    negotiable?: boolean
   }
   jobType: string
   workLocation: string
@@ -58,18 +58,18 @@ interface Job {
   views: number
   moderatedBy?: {
     _id: string
-    username: string
-    firstName: string
-    lastName: string
-  }
+    username?: string
+    firstName?: string
+    lastName?: string
+  } | null
   moderationNotes?: string
-  postedBy: {
+  postedBy?: {
     _id: string
-    username: string
-    firstName: string
-    lastName: string
-    email: string
-  }
+    username?: string
+    firstName?: string
+    lastName?: string
+    email?: string
+  } | null
 }
 
 interface JobStats {
@@ -112,11 +112,21 @@ export default function AdminJobsPage() {
       })
       if (response.ok) {
         const result = await response.json()
-        setJobs(result.success ? result.data : [])
+        console.log('Jobs API response:', result) // Debug log
+        
+        // Ensure we have valid job data
+        const jobsData = result.success ? (result.data || []) : []
+        
+        // Validate and clean job data
+        const validJobs = jobsData.filter((job: any) => job && job.id && job.title)
+        
+        setJobs(validJobs)
       } else {
-        toast.error('Failed to fetch jobs')
+        console.error('Failed to fetch jobs, status:', response.status)
+        toast.error(`Failed to fetch jobs (${response.status})`)
       }
     } catch (error) {
+      console.error('Error fetching jobs:', error)
       toast.error('Failed to fetch jobs')
     } finally {
       setLoading(false)
@@ -208,10 +218,12 @@ export default function AdminJobsPage() {
   }
 
   const filteredJobs = jobs.filter(job => {
+    if (!job) return false
+    
     const matchesSearch = 
-      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.role.toLowerCase().includes(searchTerm.toLowerCase())
+      (job.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (job.company?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (job.role || '').toLowerCase().includes(searchTerm.toLowerCase())
     
     const matchesStatus = statusFilter === 'all' || job.moderationStatus === statusFilter
     
@@ -234,18 +246,24 @@ export default function AdminJobsPage() {
   }
 
   const formatSalary = (job: Job) => {
+    if (!job.salary) {
+      return 'Not disclosed'
+    }
+    
     const { min, max, currency, frequency, negotiable } = job.salary
     
     if (negotiable && !min && !max) {
       return 'Negotiable'
     }
     
+    const currencySymbol = currency || '$'
+    
     if (min && max) {
-      return `${currency}${min?.toLocaleString()} - ${currency}${max?.toLocaleString()}`
+      return `${currencySymbol}${min?.toLocaleString()} - ${currencySymbol}${max?.toLocaleString()}`
     } else if (min) {
-      return `From ${currency}${min?.toLocaleString()}`
+      return `From ${currencySymbol}${min?.toLocaleString()}`
     } else if (max) {
-      return `Up to ${currency}${max?.toLocaleString()}`
+      return `Up to ${currencySymbol}${max?.toLocaleString()}`
     }
     
     return 'Not disclosed'
@@ -394,25 +412,30 @@ export default function AdminJobsPage() {
                       <div className="font-medium">{job.title}</div>
                       <div className="text-sm text-muted-foreground">{job.role}</div>
                       <div className="text-xs text-muted-foreground">
-                        Posted by: {job.postedBy.firstName} {job.postedBy.lastName}
+                        Posted by: {job.postedBy ? 
+                          `${job.postedBy.firstName || ''} ${job.postedBy.lastName || ''}`.trim() || 
+                          job.postedBy.username || 
+                          job.postedBy.email || 
+                          'Unknown User'
+                          : 'Unknown User'}
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Building className="h-4 w-4 text-muted-foreground" />
-                      {job.company.name}
+                      {job.company?.name || 'Unknown Company'}
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <div>{job.location.city}, {job.location.country}</div>
+                        <div>{job.location?.city || 'Unknown'}, {job.location?.country || 'Unknown'}</div>
                         <div className="text-xs text-muted-foreground">
-                          {job.workLocation}
-                          {job.location.remote && ' • Remote'}
-                          {job.location.hybrid && ' • Hybrid'}
+                          {job.workLocation || 'Not specified'}
+                          {job.location?.remote && ' • Remote'}
+                          {job.location?.hybrid && ' • Hybrid'}
                         </div>
                       </div>
                     </div>
@@ -464,21 +487,23 @@ export default function AdminJobsPage() {
                             <div className="space-y-4">
                               <div>
                                 <h3 className="font-semibold">{selectedJob.title}</h3>
-                                <p className="text-sm text-muted-foreground">{selectedJob.role} at {selectedJob.company.name}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {selectedJob.role} at {selectedJob.company?.name || 'Unknown Company'}
+                                </p>
                               </div>
                               
                               <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
-                                  <strong>Location:</strong> {selectedJob.location.city}, {selectedJob.location.country}
+                                  <strong>Location:</strong> {selectedJob.location?.city || 'Unknown'}, {selectedJob.location?.country || 'Unknown'}
                                 </div>
                                 <div>
-                                  <strong>Job Type:</strong> {selectedJob.jobType}
+                                  <strong>Job Type:</strong> {selectedJob.jobType || 'Not specified'}
                                 </div>
                                 <div>
-                                  <strong>Work Location:</strong> {selectedJob.workLocation}
+                                  <strong>Work Location:</strong> {selectedJob.workLocation || 'Not specified'}
                                 </div>
                                 <div>
-                                  <strong>Status:</strong> {selectedJob.moderationStatus}
+                                  <strong>Status:</strong> {selectedJob.moderationStatus || 'Unknown'}
                                 </div>
                               </div>
 

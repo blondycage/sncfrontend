@@ -46,6 +46,7 @@ import {
   Briefcase
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { FavoriteButton } from "@/components/ui/favorite-button";
 
 interface UserData {
   id: string;
@@ -126,6 +127,19 @@ export default function DashboardPage() {
     limit: 10,
     hasNext: false,
     hasPrev: false
+  });
+  
+  // Add new state for favorites
+  const [favorites, setFavorites] = useState<Listing[]>([]);
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
+  const [showFavorites, setShowFavorites] = useState(false);
+  const [favoritesPagination, setFavoritesPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
+    limit: 10
   });
   
   const router = useRouter();
@@ -504,6 +518,107 @@ export default function DashboardPage() {
       });
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  // Fetch user's favorites
+  const fetchFavorites = async (page = 1) => {
+    setLoadingFavorites(true);
+    try {
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      console.log('📡 Dashboard: Fetching favorites...');
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/listings/favorites?page=${page}&limit=10`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('📥 Dashboard: Favorites response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Dashboard: Favorites fetch error:', errorText);
+        throw new Error(`Failed to fetch favorites: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Dashboard: Favorites data received:', { 
+        success: data.success, 
+        favoritesCount: data.data?.length || 0 
+      });
+
+      setFavorites(data.data || []);
+      setFavoritesPagination(data.pagination || {
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+        limit: 10
+      });
+
+    } catch (error) {
+      console.error('❌ Dashboard: Error fetching favorites:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to fetch favorites",
+        variant: "destructive"
+      });
+      setFavorites([]);
+    } finally {
+      setLoadingFavorites(false);
+    }
+  };
+
+  // Add/remove favorite function
+  const toggleFavorite = async (listingId: string, isFavorited: boolean) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const method = isFavorited ? 'DELETE' : 'POST';
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/listings/${listingId}/favorite`, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || `Failed to ${isFavorited ? 'remove' : 'add'} favorite`);
+      }
+
+      const data = await response.json();
+      toast({
+        title: "Success",
+        description: data.message,
+      });
+
+      // Refresh favorites if they're currently shown
+      if (showFavorites) {
+        fetchFavorites(favoritesPagination.currentPage);
+      }
+
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : 'Failed to update favorite',
+        variant: "destructive"
+      });
     }
   };
 
@@ -1319,11 +1434,17 @@ export default function DashboardPage() {
                       <span>Post Job</span>
                     </Button>
                   )}
-                  <Button className="h-20 flex-col space-y-2" variant="outline">
-                    <MessageSquare className="h-6 w-6" />
-                    <span>Messages</span>
-                  </Button>
-                  <Button className="h-20 flex-col space-y-2" variant="outline">
+                 
+                  <Button 
+                    className="h-20 flex-col space-y-2" 
+                    variant="outline"
+                    onClick={() => {
+                      setShowFavorites(!showFavorites);
+                      if (!showFavorites) {
+                        fetchFavorites();
+                      }
+                    }}
+                  >
                     <Star className="h-6 w-6" />
                     <span>Favorites</span>
                   </Button>
@@ -1412,6 +1533,160 @@ export default function DashboardPage() {
 
             {/* Admin Section */}
             {renderAdminSection()}
+
+            {/* Favorites Section */}
+            {showFavorites && (
+              <Card className="mt-6">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Star className="h-5 w-5" />
+                        My Favorites
+                      </CardTitle>
+                      <CardDescription>
+                        Your favorite listings - easily access properties you're interested in
+                      </CardDescription>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowFavorites(false)}
+                    >
+                      Hide Favorites
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {loadingFavorites ? (
+                    <div className="space-y-4">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="animate-pulse">
+                          <div className="h-24 bg-gray-200 rounded-lg"></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : favorites.length > 0 ? (
+                    <div className="space-y-4">
+                      {favorites.map((listing) => {
+                        const CategoryIcon = getCategoryIcon(listing.category);
+                        return (
+                          <div key={listing._id} className="border rounded-lg p-4 hover:bg-gray-50">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start space-x-3">
+                                <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+                                  {listing.image_urls.length > 0 ? (
+                                    <img
+                                      src={listing.image_urls[0]}
+                                      alt={listing.title}
+                                      className="w-full h-full object-cover rounded-lg"
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                      }}
+                                    />
+                                  ) : (
+                                    <CategoryIcon className="h-8 w-8 text-gray-400" />
+                                  )}
+                                </div>
+                                
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-lg">{listing.title}</h3>
+                                  <p className="text-gray-600 text-sm line-clamp-2">{listing.description}</p>
+                                  <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                                    <span className="flex items-center">
+                                      <DollarSign className="h-3 w-3 mr-1" />
+                                      {formatPrice(listing.price, listing.pricing_frequency)}
+                                    </span>
+                                    <span className="flex items-center">
+                                      <Eye className="h-3 w-3 mr-1" />
+                                      {listing.views} views
+                                    </span>
+                                    <span className="flex items-center">
+                                      <Calendar className="h-3 w-3 mr-1" />
+                                      Added {new Date(listing.favorited_at || listing.createdAt).toLocaleDateString()}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center space-x-2">
+                                <Badge className={getStatusColor(listing.status, listing.moderationStatus)}>
+                                  {getStatusText(listing.status, listing.moderationStatus)}
+                                </Badge>
+                                
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => router.push(`/listings/${listing._id}`)}
+                                  title="View Details"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                
+                                <FavoriteButton
+                                  listingId={listing._id}
+                                  isFavorited={true}
+                                  variant="icon"
+                                  size="sm"
+                                  onToggle={() => {
+                                    // Refresh favorites when removed
+                                    fetchFavorites(favoritesPagination.currentPage);
+                                  }}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      
+                      {/* Pagination for favorites */}
+                      {favoritesPagination.totalPages > 1 && (
+                        <div className="flex items-center justify-between mt-4 px-2">
+                          <div className="text-sm text-gray-500">
+                            Showing {((favoritesPagination.currentPage - 1) * favoritesPagination.limit) + 1} to{' '}
+                            {Math.min(favoritesPagination.currentPage * favoritesPagination.limit, favoritesPagination.totalItems)} of{' '}
+                            {favoritesPagination.totalItems} favorites
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => fetchFavorites(favoritesPagination.currentPage - 1)}
+                              disabled={!favoritesPagination.hasPrevPage}
+                            >
+                              Previous
+                            </Button>
+                            <span className="flex items-center px-3 text-sm">
+                              Page {favoritesPagination.currentPage} of {favoritesPagination.totalPages}
+                            </span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => fetchFavorites(favoritesPagination.currentPage + 1)}
+                              disabled={!favoritesPagination.hasNextPage}
+                            >
+                              Next
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Star className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No favorites yet</h3>
+                      <p className="text-gray-600 mb-4">
+                        Start browsing listings and add your favorites to see them here
+                      </p>
+                      <Button onClick={() => router.push('/listings')}>
+                        <Search className="h-4 w-4 mr-2" />
+                        Browse Listings
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* My Listings */}
           <Card className="mt-6">

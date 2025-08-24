@@ -159,7 +159,9 @@ export default function JobsPage() {
   };
 
   const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...filters, [key]: value };
+    // Convert "all" values to empty strings for filtering
+    const filterValue = value === 'all' ? '' : value;
+    const newFilters = { ...filters, [key]: filterValue };
     setFilters(newFilters);
     
     // Update URL parameters
@@ -275,14 +277,14 @@ export default function JobsPage() {
                 <div>
                   <label className="block text-sm font-medium mb-2">Job Type</label>
                   <Select
-                    value={filters.jobType}
+                    value={filters.jobType || 'all'}
                     onValueChange={(value) => handleFilterChange('jobType', value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="All Types" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Types</SelectItem>
+                      <SelectItem value="all">All Types</SelectItem>
                       {jobTypes.map(type => (
                         <SelectItem key={type.value} value={type.value}>
                           {type.label}
@@ -295,14 +297,14 @@ export default function JobsPage() {
                 <div>
                   <label className="block text-sm font-medium mb-2">Work Location</label>
                   <Select
-                    value={filters.workLocation}
+                    value={filters.workLocation || 'all'}
                     onValueChange={(value) => handleFilterChange('workLocation', value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="All Locations" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Locations</SelectItem>
+                      <SelectItem value="all">All Locations</SelectItem>
                       {workLocations.map(location => (
                         <SelectItem key={location.value} value={location.value}>
                           {location.label}

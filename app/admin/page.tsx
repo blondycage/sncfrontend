@@ -4,28 +4,40 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { 
   Users, 
-  ListFilter, 
-  CheckSquare, 
-  AlertTriangle,
-  ArrowLeft,
   Building,
   Flag,
-  Settings,
-  UserCog,
-  Shield,
-  Megaphone,
-  Wallet
+  CheckSquare,
+  TrendingUp,
+  AlertTriangle,
+  Activity,
+  Calendar,
+  Eye,
+  MessageSquare,
+  Briefcase,
+  GraduationCap,
+  BarChart3
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/components/ui/use-toast';
+
 
 interface DashboardStats {
   totalUsers: number;
   totalListings: number;
   pendingApprovals: number;
   reportedListings: number;
+  totalJobs: number;
+  totalEducation: number;
+  activePromotions: number;
+  totalViews: number;
+  recentActivity: {
+    newUsers: number;
+    newListings: number;
+    newReports: number;
+  };
 }
 
 export default function AdminDashboard() {
@@ -36,7 +48,16 @@ export default function AdminDashboard() {
     totalUsers: 0,
     totalListings: 0,
     pendingApprovals: 0,
-    reportedListings: 0
+    reportedListings: 0,
+    totalJobs: 0,
+    totalEducation: 0,
+    activePromotions: 0,
+    totalViews: 0,
+    recentActivity: {
+      newUsers: 0,
+      newListings: 0,
+      newReports: 0
+    }
   });
 
   const isAdmin = user?.role === 'admin';
@@ -67,11 +88,20 @@ export default function AdminDashboard() {
         }
 
         const data = await response.json();
-    setStats({
-          totalUsers: data.data.users.total || 0,
-          totalListings: data.data.listings.total || 0,
-          pendingApprovals: data.data.listings.pending || 0,
-          reportedListings: data.data.listings.flagged || 0
+        setStats({
+          totalUsers: data.data.users?.total || 0,
+          totalListings: data.data.listings?.total || 0,
+          pendingApprovals: data.data.listings?.pending || 0,
+          reportedListings: data.data.listings?.reported || 0,
+          totalJobs: data.data.jobs?.total || 0,
+          totalEducation: data.data.education?.total || 0,
+          activePromotions: data.data.promotions?.active || 0,
+          totalViews: data.data.analytics?.totalViews || 0,
+          recentActivity: {
+            newUsers: data.data.recent?.newUsers || 0,
+            newListings: data.data.recent?.newListings || 0,
+            newReports: data.data.recent?.newReports || 0
+          }
         });
       } catch (error) {
         console.error('Error fetching admin stats:', error);
@@ -105,187 +135,255 @@ export default function AdminDashboard() {
     return null; // Router will redirect
   }
 
-  const statCards = [
-    {
-      title: 'Total Users',
-      value: stats.totalUsers,
-      icon: Users,
-      color: 'text-blue-600'
-    },
-    {
-      title: 'Total Listings',
-      value: stats.totalListings,
-      icon: Building,
-      color: 'text-green-600'
-    },
-    {
-      title: 'Pending Approvals',
-      value: stats.pendingApprovals,
-      icon: CheckSquare,
-      color: 'text-orange-600'
-    },
-    {
-      title: 'Reported Listings',
-      value: stats.reportedListings,
-      icon: Flag,
-      color: 'text-red-600'
-    }
-  ];
-
-  const adminActions = [
-    {
-      title: 'User Management',
-      description: 'Manage users, roles, and permissions',
-      icon: UserCog,
-      action: () => router.push('/admin/users')
-    },
-    {
-      title: 'Listing Management',
-      description: 'View, edit, and moderate all listings',
-      icon: Building,
-      action: () => router.push('/admin/listings')
-    },
-    {
-      title: 'Pending Approvals',
-      description: 'Review and moderate pending listings',
-      icon: CheckSquare,
-      action: () => router.push('/admin/listings?moderationStatus=pending')
-    },
-    {
-      title: 'Reported Content',
-      description: 'Handle reported listings and user complaints',
-      icon: Flag,
-      action: () => router.push('/admin/listings/reported')
-    },
-    {
-      title: 'Promotions Review',
-      description: 'Verify payments and activate ads',
-      icon: Megaphone,
-      action: () => router.push('/admin/promotions')
-    },
-    {
-      title: 'Promotion Settings',
-      description: 'Configure wallets, prices, and limits',
-      icon: Wallet,
-      action: () => router.push('/admin/settings/promotions')
-    }
-  ];
+  // Calculate some derived metrics
+  const totalContent = stats.totalListings + stats.totalJobs + stats.totalEducation;
+  const tasksProgress = stats.pendingApprovals + stats.reportedListings;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
-      <div>
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              onClick={() => router.push('/dashboard')}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
-            </Button>
-            <div className="flex items-center gap-2">
-              <Shield className="h-6 w-6 text-red-600" />
-              <h1 className="text-2xl font-bold">Admin Control Panel</h1>
-            </div>
-          </div>
-          <p className="mt-2 text-gray-600">
-            Welcome back, {user?.firstName || user?.username || 'Admin'}
-          </p>
-        </div>
+    <div>
+      {/* Welcome Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">
+          Welcome back, {user?.firstName || user?.username || 'Admin'}! 👋
+        </h1>
+        <p className="text-gray-600 mt-2">
+          Here's what's happening with your platform today.
+        </p>
       </div>
 
-      {/* Stats Grid */}
+      {/* Primary Stats Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        {statCards.map((stat, index) => (
-          <Card key={index} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className={`h-4 w-4 ${stat.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Admin Actions */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {adminActions.map((action, index) => (
-          <Card 
-            key={index} 
-            className="hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={action.action}
-          >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {action.title}
-              </CardTitle>
-              <action.icon className="h-4 w-4 text-gray-600" />
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">{action.description}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Recent Activity */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+        <Card className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-blue-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Total Users</CardTitle>
+            <Users className="h-5 w-5 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {/* Add your activity feed items here */}
-              <p className="text-sm text-gray-600">Loading recent activities...</p>
+            <div className="text-3xl font-bold text-gray-900">{stats.totalUsers}</div>
+            <p className="text-sm text-green-600 mt-1">
+              +{stats.recentActivity.newUsers} this week
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-green-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Total Content</CardTitle>
+            <Building className="h-5 w-5 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-gray-900">{totalContent}</div>
+            <p className="text-sm text-green-600 mt-1">
+              +{stats.recentActivity.newListings} new items
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-orange-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Pending Tasks</CardTitle>
+            <AlertTriangle className="h-5 w-5 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-gray-900">{tasksProgress}</div>
+            <div className="mt-2">
+              <div className="flex justify-between text-xs text-gray-500 mb-1">
+                <span>Approvals: {stats.pendingApprovals}</span>
+                <span>Reports: {stats.reportedListings}</span>
+              </div>
+              <Progress value={(tasksProgress / Math.max(totalContent, 1)) * 100} className="h-2" />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Pending Tasks</CardTitle>
+        <Card className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-purple-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Total Views</CardTitle>
+            <Eye className="h-5 w-5 text-purple-500" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {stats.pendingApprovals > 0 && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-orange-600">
-                    {stats.pendingApprovals} listings pending approval
-                  </span>
-                  <Button 
-                    size="sm" 
-                    onClick={() => router.push('/admin/listings/pending')}
-                  >
-                    Review
-                  </Button>
-                </div>
-              )}
-              {stats.reportedListings > 0 && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-red-600">
-                    {stats.reportedListings} reported listings
-                  </span>
-                  <Button 
-                    size="sm" 
-                    onClick={() => router.push('/admin/listings/reported')}
-                  >
-                    Review
-                  </Button>
-                </div>
-              )}
-              {stats.pendingApprovals === 0 && stats.reportedListings === 0 && (
-                <p className="text-sm text-gray-600">No pending tasks</p>
-              )}
+            <div className="text-3xl font-bold text-gray-900">
+              {stats.totalViews.toLocaleString()}
             </div>
+            <p className="text-sm text-gray-500 mt-1">Platform engagement</p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Secondary Stats */}
+      <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-5 mb-8">
+        <Card className="text-center">
+          <CardContent className="pt-6">
+            <Building className="h-8 w-8 text-blue-500 mx-auto mb-2" />
+            <div className="text-2xl font-bold">{stats.totalListings}</div>
+            <p className="text-sm text-gray-600">Listings</p>
+          </CardContent>
+        </Card>
+
+        <Card className="text-center">
+          <CardContent className="pt-6">
+            <Briefcase className="h-8 w-8 text-green-500 mx-auto mb-2" />
+            <div className="text-2xl font-bold">{stats.totalJobs}</div>
+            <p className="text-sm text-gray-600">Jobs</p>
+          </CardContent>
+        </Card>
+
+        <Card className="text-center">
+          <CardContent className="pt-6">
+            <GraduationCap className="h-8 w-8 text-purple-500 mx-auto mb-2" />
+            <div className="text-2xl font-bold">{stats.totalEducation}</div>
+            <p className="text-sm text-gray-600">Education</p>
+          </CardContent>
+        </Card>
+
+        <Card className="text-center">
+          <CardContent className="pt-6">
+            <TrendingUp className="h-8 w-8 text-orange-500 mx-auto mb-2" />
+            <div className="text-2xl font-bold">{stats.activePromotions}</div>
+            <p className="text-sm text-gray-600">Active Promos</p>
+          </CardContent>
+        </Card>
+
+        <Card className="text-center">
+          <CardContent className="pt-6">
+            <Flag className="h-8 w-8 text-red-500 mx-auto mb-2" />
+            <div className="text-2xl font-bold">{stats.reportedListings}</div>
+            <p className="text-sm text-gray-600">Reports</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Action Cards and Activity */}
+      <div className="grid gap-8 lg:grid-cols-3">
+        {/* Priority Actions */}
+        <div className="lg:col-span-2">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Priority Actions</h3>
+          <div className="grid gap-4 md:grid-cols-2">
+            {stats.pendingApprovals > 0 && (
+              <Card 
+                className="hover:shadow-lg transition-all duration-200 cursor-pointer border-l-4 border-l-orange-500"
+                onClick={() => router.push('/admin/listings/pending')}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <CheckSquare className="h-8 w-8 text-orange-500" />
+                      <div>
+                        <h4 className="font-semibold">Pending Approvals</h4>
+                        <p className="text-sm text-gray-600">{stats.pendingApprovals} items waiting</p>
+                      </div>
+                    </div>
+                    <Button size="sm">Review</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {stats.reportedListings > 0 && (
+              <Card 
+                className="hover:shadow-lg transition-all duration-200 cursor-pointer border-l-4 border-l-red-500"
+                onClick={() => router.push('/admin/listings/reported')}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Flag className="h-8 w-8 text-red-500" />
+                      <div>
+                        <h4 className="font-semibold">Reported Content</h4>
+                        <p className="text-sm text-gray-600">{stats.reportedListings} reports pending</p>
+                      </div>
+                    </div>
+                    <Button size="sm" variant="destructive">Handle</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <Card 
+              className="hover:shadow-lg transition-all duration-200 cursor-pointer"
+              onClick={() => router.push('/admin/users')}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Users className="h-8 w-8 text-blue-500" />
+                    <div>
+                      <h4 className="font-semibold">User Management</h4>
+                      <p className="text-sm text-gray-600">Manage user accounts</p>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline">Manage</Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="hover:shadow-lg transition-all duration-200 cursor-pointer"
+              onClick={() => router.push('/admin/analytics')}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <BarChart3 className="h-8 w-8 text-green-500" />
+                    <div>
+                      <h4 className="font-semibold">Analytics</h4>
+                      <p className="text-sm text-gray-600">View detailed reports</p>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline">View</Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+          <Card>
+            <CardContent className="p-4">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{stats.recentActivity.newUsers} new users this week</p>
+                    <p className="text-xs text-gray-500">User registrations</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{stats.recentActivity.newListings} new listings</p>
+                    <p className="text-xs text-gray-500">Content submissions</p>
+                  </div>
+                </div>
+                
+                {stats.recentActivity.newReports > 0 && (
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{stats.recentActivity.newReports} new reports</p>
+                      <p className="text-xs text-gray-500">Requires attention</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-4 border-t">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => router.push('/admin/activity')}
+                  >
+                    <Activity className="h-4 w-4 mr-2" />
+                    View All Activity
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

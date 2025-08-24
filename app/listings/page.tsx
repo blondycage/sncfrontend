@@ -6,11 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter, MapPin, Calendar, Eye, DollarSign } from 'lucide-react';
+import { Search, Filter, MapPin, Calendar, Eye, DollarSign, Star } from 'lucide-react';
 import { listingsApi } from '@/lib/api';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'sonner';
+import { FavoriteButton } from '@/components/ui/favorite-button';
+import { ReportButton } from '@/components/ui/report-button';
 
 interface Listing {
   id: string;
@@ -36,6 +38,7 @@ interface Listing {
   views: number;
   is_paid: boolean;
   primaryImage?: string;
+  isFavorited?: boolean;
 }
 
 interface Filters {
@@ -452,10 +455,10 @@ export default function ListingsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {listings.map((listing) => (
-            <Link key={listing.id} href={`/listings/${listing.id}`}>
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                {/* Image */}
-                <div className="relative h-48 overflow-hidden rounded-t-lg">
+            <Card key={listing.id} className="hover:shadow-lg transition-shadow h-full">
+              {/* Image */}
+              <Link href={`/listings/${listing.id}`}>
+                <div className="relative h-48 overflow-hidden rounded-t-lg cursor-pointer">
                   {listing.primaryImage ? (
                     <Image
                       src={listing.primaryImage}
@@ -486,80 +489,105 @@ export default function ListingsPage() {
                       </Badge>
                     )}
                   </div>
-                </div>
 
-                <CardContent className="p-4 flex-1 flex flex-col">
-                  {/* Title */}
-                  <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+                  {/* Action Buttons */}
+                  <div className="absolute top-2 right-2 flex gap-1">
+                    <FavoriteButton
+                      listingId={listing.id}
+                      isFavorited={listing.isFavorited || false}
+                      variant="icon"
+                      size="sm"
+                      className="bg-white/90 hover:bg-white shadow-sm"
+                    />
+                    <ReportButton
+                      listingId={listing.id}
+                      listingTitle={listing.title}
+                      variant="icon"
+                      size="sm"
+                      className="bg-white/90 hover:bg-white shadow-sm text-red-600 hover:text-red-700"
+                    />
+                  </div>
+                </div>
+              </Link>
+
+              <CardContent className="p-4 flex-1 flex flex-col">
+                {/* Title */}
+                <Link href={`/listings/${listing.id}`}>
+                  <h3 className="font-semibold text-lg mb-2 line-clamp-2 cursor-pointer hover:text-blue-600">
                     {listing.title}
                   </h3>
+                </Link>
 
-                  {/* Description */}
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2 flex-1">
-                    {listing.description}
-                  </p>
+                {/* Description */}
+                <p className="text-gray-600 text-sm mb-3 line-clamp-2 flex-1">
+                  {listing.description}
+                </p>
 
-                  {/* Tags */}
-                  {listing.tags && listing.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {listing.tags.slice(0, 4).map((tag, index) => (
-                        <Badge 
-                          key={index} 
-                          variant="outline" 
-                          className="text-xs bg-gray-50 text-gray-600 border-gray-200"
-                        >
-                          #{tag}
-                        </Badge>
-                      ))}
-                      {listing.tags.length > 4 && (
-                        <Badge variant="outline" className="text-xs bg-gray-50 text-gray-500 border-gray-200">
-                          +{listing.tags.length - 4} more
-                        </Badge>
-                      )}
-                    </div>
-                  )}
+                {/* Tags */}
+                {listing.tags && listing.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {listing.tags.slice(0, 4).map((tag, index) => (
+                      <Badge 
+                        key={index} 
+                        variant="outline" 
+                        className="text-xs bg-gray-50 text-gray-600 border-gray-200"
+                      >
+                        #{tag}
+                      </Badge>
+                    ))}
+                    {listing.tags.length > 4 && (
+                      <Badge variant="outline" className="text-xs bg-gray-50 text-gray-500 border-gray-200">
+                        +{listing.tags.length - 4} more
+                      </Badge>
+                    )}
+                  </div>
+                )}
 
-                  {/* Price */}
-                  <div className="flex items-center gap-2 mb-3">
-                    <DollarSign className="w-4 h-4 text-green-600" />
-                    <span className="font-bold text-green-600">
-                      {formatPrice(listing.price, listing.pricing_frequency)}
+                {/* Price */}
+                <div className="flex items-center gap-2 mb-3">
+                  <DollarSign className="w-4 h-4 text-green-600" />
+                  <span className="font-bold text-green-600">
+                    {formatPrice(listing.price, listing.pricing_frequency)}
+                  </span>
+                </div>
+
+                {/* Meta Info */}
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    {formatDate(listing.created_at)}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Eye className="w-3 h-3" />
+                    {listing.views}
+                  </div>
+                </div>
+
+                {/* Location */}
+                {listing.location?.city && (
+                  <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
+                    <MapPin className="w-3 h-3" />
+                    <span>
+                      {NORTHERN_CYPRUS_CITIES.find(city => city.value === listing.location?.city)?.label || listing.location.city}
                     </span>
                   </div>
+                )}
 
-                  {/* Meta Info */}
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      {formatDate(listing.created_at)}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Eye className="w-3 h-3" />
-                      {listing.views}
-                    </div>
-                  </div>
-
-                  {/* Location */}
-                  {listing.location?.city && (
-                    <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
-                      <MapPin className="w-3 h-3" />
-                      <span>
-                        {NORTHERN_CYPRUS_CITIES.find(city => city.value === listing.location?.city)?.label || listing.location.city}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Owner */}
-                  <div className="mt-2 pt-2 border-t">
-                    <p className="text-sm text-gray-600">
-                      by {listing.owner.firstName && listing.owner.lastName 
-                        ? `${listing.owner.firstName} ${listing.owner.lastName}`
-                        : listing.owner.username}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                {/* Owner and Actions */}
+                <div className="mt-2 pt-2 border-t flex items-center justify-between">
+                  <p className="text-sm text-gray-600">
+                    by {listing.owner.firstName && listing.owner.lastName 
+                      ? `${listing.owner.firstName} ${listing.owner.lastName}`
+                      : listing.owner.username}
+                  </p>
+                  <Link href={`/listings/${listing.id}`}>
+                    <Button variant="outline" size="sm">
+                      View Details
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
