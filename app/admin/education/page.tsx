@@ -56,13 +56,13 @@ export default function AdminEducationPage() {
   const [loading, setLoading] = useState(true)
   const [programFilters, setProgramFilters] = useState({
     search: '',
-    status: '',
-    level: '',
-    featured: ''
+    status: 'all',
+    level: 'all',
+    featured: 'all'
   })
   const [applicationFilters, setApplicationFilters] = useState({
     search: '',
-    status: '',
+    status: 'all',
     sortBy: 'newest'
   })
 
@@ -134,9 +134,9 @@ export default function AdminEducationPage() {
     const matchesSearch = !programFilters.search || 
       program.title.toLowerCase().includes(programFilters.search.toLowerCase()) ||
       program.institution.name.toLowerCase().includes(programFilters.search.toLowerCase())
-    const matchesStatus = !programFilters.status || program.status === programFilters.status
-    const matchesLevel = !programFilters.level || program.level === programFilters.level
-    const matchesFeatured = !programFilters.featured || 
+    const matchesStatus = programFilters.status === 'all' || program.status === programFilters.status
+    const matchesLevel = programFilters.level === 'all' || program.level === programFilters.level
+    const matchesFeatured = programFilters.featured === 'all' || 
       (programFilters.featured === 'featured' && program.featured) ||
       (programFilters.featured === 'not-featured' && !program.featured)
     
@@ -150,7 +150,7 @@ export default function AdminEducationPage() {
         app.personalInfo.lastName.toLowerCase().includes(applicationFilters.search.toLowerCase()) ||
         app.personalInfo.email.toLowerCase().includes(applicationFilters.search.toLowerCase()) ||
         app.programId.title.toLowerCase().includes(applicationFilters.search.toLowerCase())
-      const matchesStatus = !applicationFilters.status || app.status === applicationFilters.status
+      const matchesStatus = applicationFilters.status === 'all' || app.status === applicationFilters.status
       
       return matchesSearch && matchesStatus
     })
@@ -326,10 +326,26 @@ export default function AdminEducationPage() {
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Statuses</SelectItem>
+                    <SelectItem value="all">All Statuses</SelectItem>
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="inactive">Inactive</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select 
+                  value={programFilters.level} 
+                  onValueChange={(value) => setProgramFilters(prev => ({ ...prev, level: value }))}
+                >
+                  <SelectTrigger className="w-full md:w-48">
+                    <SelectValue placeholder="Filter by level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Levels</SelectItem>
+                    <SelectItem value="undergraduate">Undergraduate</SelectItem>
+                    <SelectItem value="graduate">Graduate</SelectItem>
+                    <SelectItem value="doctorate">Doctorate</SelectItem>
+                    <SelectItem value="certificate">Certificate</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -341,7 +357,7 @@ export default function AdminEducationPage() {
                     <SelectValue placeholder="Featured status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Programs</SelectItem>
+                    <SelectItem value="all">All Programs</SelectItem>
                     <SelectItem value="featured">Featured Only</SelectItem>
                     <SelectItem value="not-featured">Not Featured</SelectItem>
                   </SelectContent>
@@ -440,7 +456,7 @@ export default function AdminEducationPage() {
                 <p className="text-muted-foreground mb-4">
                   No programs match your current filters.
                 </p>
-                <Button onClick={() => setProgramFilters({ search: '', status: '', level: '', featured: '' })}>
+                <Button onClick={() => setProgramFilters({ search: '', status: 'all', level: 'all', featured: 'all' })}>
                   Clear Filters
                 </Button>
               </CardContent>
@@ -473,7 +489,7 @@ export default function AdminEducationPage() {
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Statuses</SelectItem>
+                    <SelectItem value="all">All Statuses</SelectItem>
                     <SelectItem value="submitted">Submitted</SelectItem>
                     <SelectItem value="under_review">Under Review</SelectItem>
                     <SelectItem value="approved">Approved</SelectItem>
@@ -571,7 +587,7 @@ export default function AdminEducationPage() {
                 <p className="text-muted-foreground mb-4">
                   No applications match your current filters.
                 </p>
-                <Button onClick={() => setApplicationFilters({ search: '', status: '', sortBy: 'newest' })}>
+                <Button onClick={() => setApplicationFilters({ search: '', status: 'all', sortBy: 'newest' })}>
                   Clear Filters
                 </Button>
               </CardContent>
