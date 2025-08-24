@@ -17,7 +17,7 @@ import {
   School, Award, FileCheck, Heart, Building
 } from "lucide-react"
 import Link from 'next/link'
-import { toast } from 'sonner'
+import { useToast } from '@/components/ui/toast'
 
 interface EducationalProgram {
   _id: string
@@ -105,6 +105,7 @@ const COUNTRIES = [
 export default function ApplicationPage() {
   const params = useParams()
   const router = useRouter()
+  const { toast } = useToast()
   const [program, setProgram] = useState<EducationalProgram | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -217,13 +218,23 @@ export default function ApplicationPage() {
       
       if (response.ok) {
         const data = await response.json()
-        toast.success('Application submitted successfully!')
+        toast({
+          title: 'Success!',
+          description: 'Your application has been submitted successfully!',
+          variant: 'success',
+          duration: 3000
+        })
         router.push(`/dashboard/applications/${data.application._id}`)
       } else {
         throw new Error('Failed to submit application')
       }
     } catch (error) {
-      toast.error('Failed to submit application. Please try again.')
+      toast({
+        title: 'Submission Failed',
+        description: 'Failed to submit application. Please try again.',
+        variant: 'error',
+        duration: 3000
+      })
     } finally {
       setSubmitting(false)
     }

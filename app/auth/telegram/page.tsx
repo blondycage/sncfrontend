@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, CheckCircle, XCircle, Send, User } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { authApi } from "@/lib/api"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/toast"
 
 const USER_ROLES = [
   "Student",

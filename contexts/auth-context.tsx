@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
 import { authApi, ApiError } from "@/lib/api"
 import { useRouter } from "next/navigation"
+import { useToast } from "@/components/ui/use-toast"
 // Helper function to set cookies
 const setCookie = (name: string, value: string, days: number = 7) => {
   const expires = new Date()
@@ -72,7 +73,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const isAuthenticated = !!user && !!token
-
+  const { toast } = useToast()
   // Load user from localStorage on mount
   useEffect(() => {
     const loadUserFromStorage = () => {
@@ -122,7 +123,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (email: string, password: string) => {
     try {
       const response = await authApi.login({ email, password })
-
+      toast({
+        title: "Success",
+        description: "Login successful",
+        variant: "success",
+        duration: 3000,
+      })
       if (response.success && response.token && response.user) {
         setToken(response.token)
         setUser(response.user)
@@ -141,10 +147,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       } else {
        // console.log("Login failed", response)
+        toast({
+        title: "Error",
+        description: "Login failed",
+        variant: "error",
+        duration: 3000,
+      })
         throw new Error(response.message || response.error || "Login failed")
       }
     } catch (error) {
       console.error("Login error:", error)
+      toast({
+        title: "Error",
+        description: "Login failed",
+        variant: "error",
+        duration: 3000,
+      })
       throw error
     }
   }
@@ -163,7 +181,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (response.success && response.token && response.user) {
         setToken(response.token)
         setUser(response.user)
-
+        toast({
+        title: "Success",
+        description: "Registration successful",
+        variant: "success",
+        duration: 3000,
+      })
         // Store in localStorage
         localStorage.setItem("authToken", response.token)
         localStorage.setItem("user", JSON.stringify(response.user))
@@ -172,10 +195,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setCookie("token", response.token)
         setCookie("user", JSON.stringify(response.user))
       } else {
+        toast({
+        title: "Error",
+        description: "Registration failed",
+        variant: "error",
+        duration: 3000,
+      })
         throw new Error(response.message || response.error || "Registration failed")
       }
     } catch (error) {
       console.error("Registration error:", error)
+      toast({
+        title: "Error",
+        description: "Registration failed",
+        variant: "error",
+        duration: 3000,
+      })
       throw error
     }
   }
@@ -183,6 +218,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = () => {
     setUser(null)
     setToken(null)
+    toast({
+      title: "Success",
+      description: "Logout successful",
+      variant: "success",
+      duration: 3000,
+    })
 
     // Clear localStorage
     localStorage.removeItem("authToken")

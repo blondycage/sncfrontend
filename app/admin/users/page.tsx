@@ -40,7 +40,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/toast";
 import { 
   MoreHorizontal, 
   Search, 

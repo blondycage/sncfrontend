@@ -229,22 +229,22 @@ export default function AdminEducationPage() {
   }
 
   return (
-    <div className="container py-8">
+    <div className="w-full max-w-none">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Education Administration</h1>
-          <p className="text-muted-foreground mt-1">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">Education Administration</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Manage educational programs and applications
           </p>
         </div>
-        <div className="flex space-x-2">
-          <Button onClick={fetchData} variant="outline">
+        <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2">
+          <Button onClick={fetchData} variant="outline" size="sm" className="w-full sm:w-auto">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
-          <Link href="/admin/education/programs/new">
-            <Button>
+          <Link href="/admin/education/programs/new" className="w-full sm:w-auto">
+            <Button size="sm" className="w-full">
               <Plus className="h-4 w-4 mr-2" />
               New Program
             </Button>
@@ -254,7 +254,7 @@ export default function AdminEducationPage() {
 
       {/* Statistics */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center space-x-2">

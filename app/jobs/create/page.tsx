@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
-import { toast } from 'sonner'
+import { useToast } from '@/components/ui/toast'
 import { Plus, X, Save, ArrowLeft } from 'lucide-react'
 
 interface JobFormData {
@@ -51,6 +51,7 @@ const FREQUENCIES = ['per year', 'per month', 'per hour']
 
 export default function CreateJobPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -167,11 +168,22 @@ export default function CreateJobPage() {
     if (!formData.title || !formData.role || !formData.description || !formData.company.name || 
         !formData.location.city || !formData.location.country || !formData.jobType || 
         !formData.workLocation || !formData.contactEmail) {
-      toast.error('Please fill in all required fields')
+      toast({
+        title: 'Validation Error',
+        description: 'Please fill in all required fields',
+        variant: 'error',
+        duration: 3000
+      })
       return
     }
 
     setSubmitting(true)
+    toast({
+      title: 'Creating job...',
+      description: 'Please wait while we create your job posting',
+      variant: 'info',
+      duration: 3000
+    })
 
     try {
       const submitData = {
@@ -194,14 +206,29 @@ export default function CreateJobPage() {
 
       if (response.ok) {
         const job = await response.json()
-        toast.success('Job posted successfully! It will be reviewed before going live.')
+        toast({
+          title: 'Success!',
+          description: 'Job posted successfully! It will be reviewed before going live.',
+          variant: 'success',
+          duration: 3000
+        })
         router.push(`/jobs/${job._id}`)
       } else {
         const error = await response.json()
-        toast.error(error.message || 'Failed to create job')
+        toast({
+          title: 'Creation Failed',
+          description: error.message || 'Failed to create job',
+          variant: 'error',
+          duration: 3000
+        })
       }
     } catch (error) {
-      toast.error('Failed to create job')
+      toast({
+        title: 'Creation Failed',
+        description: 'Failed to create job. Please try again.',
+        variant: 'error',
+        duration: 3000
+      })
     } finally {
       setSubmitting(false)
     }

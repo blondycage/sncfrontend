@@ -79,24 +79,20 @@ const sidebarItems = [
     href: '/admin/education'
   },
   {
+    title: 'Blog',
+    icon: FileText,
+    href: '/admin/blog'
+  },
+  {
     title: 'Promotions',
     icon: Megaphone,
     items: [
       { title: 'Active Promotions', href: '/admin/promotions' },
       { title: 'Payment Review', href: '/admin/promotions/payments' },
-      { title: 'Promotion Settings', href: '/admin/promotions/settings' }
+      { title: 'Promotion Settings', href: '/admin/settings/promotions' }
     ]
   },
-  {
-    title: 'Reports & Analytics',
-    icon: BarChart3,
-    href: '/admin/analytics'
-  },
-  {
-    title: 'System Settings',
-    icon: Settings,
-    href: '/admin/settings'
-  }
+  
 ];
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
@@ -155,20 +151,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const SidebarContent = () => (
     <div className="h-full flex flex-col">
       {/* Logo */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-4 sm:p-6 border-b border-gray-200">
         <div className="flex items-center space-x-3">
-          <div className="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-lg">
-            <Shield className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-lg">
+            <Shield className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
           </div>
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">Admin Panel</h2>
-            <p className="text-sm text-gray-500">Control Center</p>
+          <div className="min-w-0">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 truncate">Admin Panel</h2>
+            <p className="text-xs sm:text-sm text-gray-500 truncate">Control Center</p>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+      <nav className="flex-1 px-3 sm:px-4 py-4 sm:py-6 space-y-1 sm:space-y-2 overflow-y-auto">
         {sidebarItems.map((item) => (
           <div key={item.title}>
             {item.items ? (
@@ -177,31 +173,31 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <Button
                   variant="ghost"
                   className={cn(
-                    "w-full justify-between font-normal",
+                    "w-full justify-between font-normal text-sm py-2 h-auto",
                     item.items.some(subItem => isActive(subItem.href)) && "bg-blue-50 text-blue-700"
                   )}
                   onClick={() => toggleExpanded(item.title)}
                 >
-                  <div className="flex items-center space-x-3">
-                    <item.icon className="w-5 h-5" />
-                    <span>{item.title}</span>
+                  <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                    <item.icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span className="truncate text-left">{item.title}</span>
                   </div>
                   <ChevronDown 
                     className={cn(
-                      "w-4 h-4 transition-transform duration-200",
+                      "w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 flex-shrink-0",
                       expandedItems.includes(item.title) && "rotate-180"
                     )} 
                   />
                 </Button>
                 {expandedItems.includes(item.title) && (
-                  <div className="ml-8 mt-2 space-y-1">
+                  <div className="ml-6 sm:ml-8 mt-1 sm:mt-2 space-y-1">
                     {item.items.map((subItem) => (
                       <Button
                         key={subItem.href}
                         variant="ghost"
                         size="sm"
                         className={cn(
-                          "w-full justify-start font-normal text-sm",
+                          "w-full justify-start font-normal text-xs sm:text-sm py-1.5 h-auto",
                           isActive(subItem.href) && "bg-blue-100 text-blue-700"
                         )}
                         onClick={() => {
@@ -209,7 +205,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                           setSidebarOpen(false);
                         }}
                       >
-                        {subItem.title}
+                        <span className="truncate text-left">{subItem.title}</span>
                       </Button>
                     ))}
                   </div>
@@ -220,7 +216,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <Button
                 variant="ghost"
                 className={cn(
-                  "w-full justify-start font-normal",
+                  "w-full justify-start font-normal text-sm py-2 h-auto",
                   isActive(item.href!, item.exact) && "bg-blue-50 text-blue-700"
                 )}
                 onClick={() => {
@@ -228,8 +224,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   setSidebarOpen(false);
                 }}
               >
-                <item.icon className="w-5 h-5 mr-3" />
-                {item.title}
+                <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                  <item.icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                  <span className="truncate text-left">{item.title}</span>
+                </div>
               </Button>
             )}
           </div>
@@ -237,16 +235,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </nav>
 
       {/* User section */}
-      <div className="p-4 border-t border-gray-200">
-        <div className="flex items-center space-x-3">
-          <Avatar className="w-10 h-10">
+      <div className="p-3 sm:p-4 border-t border-gray-200">
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
             <AvatarImage src={user?.photoUrl} alt={getDisplayName()} />
-            <AvatarFallback className="bg-blue-100 text-blue-600">
+            <AvatarFallback className="bg-blue-100 text-blue-600 text-xs sm:text-sm">
               {getInitials(user?.firstName, user?.lastName, user?.username)}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">
+            <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
               {getDisplayName()}
             </p>
             <p className="text-xs text-gray-500 truncate">
@@ -275,39 +273,46 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main Content */}
       <div className="lg:pl-64">
         {/* Top Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200">
-          <div className="px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
+        <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+          <div className="px-3 sm:px-4 lg:px-6 xl:px-8">
+            <div className="flex justify-between items-center h-14 sm:h-16">
               {/* Mobile menu button */}
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="lg:hidden"
-                    onClick={() => setSidebarOpen(true)}
-                  >
-                    <Menu className="w-6 h-6" />
-                    <span className="sr-only">Open sidebar</span>
-                  </Button>
-                </SheetTrigger>
-              </Sheet>
-
-              {/* Page title - will be dynamic */}
-              <div className="flex-1">
-                <h1 className="text-2xl font-semibold text-gray-900 lg:hidden">
+              <div className="flex items-center lg:hidden">
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="mr-2"
+                      onClick={() => setSidebarOpen(true)}
+                    >
+                      <Menu className="w-5 h-5" />
+                      <span className="sr-only">Open sidebar</span>
+                    </Button>
+                  </SheetTrigger>
+                </Sheet>
+                
+                {/* Mobile page title */}
+                <h1 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
                   Admin Panel
                 </h1>
               </div>
 
+              {/* Desktop page title - hidden on mobile */}
+              <div className="hidden lg:block">
+                <h1 className="text-xl xl:text-2xl font-semibold text-gray-900">
+                  {/* Dynamic title will be set by individual pages */}
+                </h1>
+              </div>
+
               {/* Right side actions */}
-              <div className="flex items-center space-x-4">
-                {/* Notifications */}
-                <Button variant="ghost" size="sm" className="relative">
-                  <Bell className="w-5 h-5" />
+              <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4">
+                {/* Notifications - hidden on very small screens */}
+                <Button variant="ghost" size="sm" className="relative hidden xs:flex">
+                  <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
                   <Badge 
                     variant="destructive" 
-                    className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center text-xs p-0"
+                    className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-xs p-0"
                   >
                     3
                   </Badge>
@@ -316,20 +321,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 {/* User menu */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8">
+                    <Button variant="ghost" className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full">
+                      <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
                         <AvatarImage src={user?.photoUrl} alt={getDisplayName()} />
-                        <AvatarFallback className="bg-blue-100 text-blue-600">
+                        <AvatarFallback className="bg-blue-100 text-blue-600 text-xs sm:text-sm">
                           {getInitials(user?.firstName, user?.lastName, user?.username)}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end">
+                  <DropdownMenuContent className="w-48 sm:w-56" align="end">
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{getDisplayName()}</p>
-                        <p className="text-xs leading-none text-muted-foreground">
+                        <p className="text-xs sm:text-sm font-medium leading-none truncate">{getDisplayName()}</p>
+                        <p className="text-xs leading-none text-muted-foreground truncate">
                           {user?.email || 'Administrator'}
                         </p>
                       </div>
@@ -337,16 +342,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => router.push('/dashboard')}>
                       <User className="mr-2 h-4 w-4" />
-                      <span>User Dashboard</span>
+                      <span className="text-sm">User Dashboard</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => router.push('/admin/settings/profile')}>
                       <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
+                      <span className="text-sm">Settings</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
+                      <span className="text-sm">Log out</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -356,8 +361,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1">
-          <div className="px-4 sm:px-6 lg:px-8 py-8">
+        <main className="flex-1 min-h-screen bg-gray-50">
+          <div className="px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
             {children}
           </div>
         </main>

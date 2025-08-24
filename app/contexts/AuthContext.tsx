@@ -17,6 +17,8 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
+  isAuthenticating: boolean;
+  isRegistering: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -29,6 +31,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -48,8 +52,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   
   // Register via email/password with toasts and redirect
   const register = async (payload: { username: string; email: string; password: string; firstName?: string; lastName?: string; role?: string; }): Promise<void> => {
+    if (isRegistering) return;
+    
     try {
-      toast({ title: 'Creating your account...', description: 'Please wait', variant: 'info', duration: 1500 })
+      setIsRegistering(true);
+      toast({ title: 'Creating your account...', description: 'Please wait', variant: 'info', duration: 3000 })
       const res = await authApi.register(payload as any)
       if (!res.success || !res.token || !res.user) {
         throw new Error(res.message || 'Registration failed')
@@ -62,14 +69,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       router.push('/dashboard')
     } catch (err: any) {
       const msg = err?.message || 'Registration failed. Please try again.'
-      toast({ title: 'Registration failed', description: msg, variant: 'error', duration: 4000 })
+      toast({ title: 'Registration failed', description: msg, variant: 'error', duration: 3000 })
       throw err
+    } finally {
+      setIsRegistering(false);
     }
   }
 
   const login = async (email: string, password: string) => {
+    if (isAuthenticating) return;
+    
     try {
-      toast({ title: 'Signing in...', description: 'Please wait while we authenticate you', variant: 'info', duration: 1500 })
+      setIsAuthenticating(true);
+      toast({ title: 'Signing in...', description: 'Please wait while we authenticate you', variant: 'info', duration: 3000 })
       const res = await authApi.login({ email, password })
       if (!res.success || !res.token || !res.user) {
         throw new Error(res.message || 'Login failed')
@@ -83,8 +95,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       router.push(role === 'admin' ? '/admin' : '/dashboard')
     } catch (err: any) {
       const msg = err?.message || 'Login failed. Please try again.'
-      toast({ title: 'Login failed', description: msg, variant: 'error', duration: 4000 })
+      toast({ title: 'Login failed', description: msg, variant: 'error', duration: 3000 })
       throw err
+    } finally {
+      setIsAuthenticating(false);
     }
   };
 
@@ -93,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     deleteCookie('token');
     deleteCookie('user');
-    toast({ title: 'Logged out', description: 'You have been logged out', variant: 'info', duration: 2500 });
+    toast({ title: 'Logged out', description: 'You have been logged out successfully', variant: 'success', duration: 3000 });
     router.push('/auth/login');
   };
 
@@ -134,6 +148,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     user,
     isLoading,
+    isAuthenticating,
+    isRegistering,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
     login,

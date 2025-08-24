@@ -25,7 +25,7 @@ import {
   Building,
   Package
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/contexts/auth-context";
 import { listingsApi, uploadApi } from "@/lib/api";
 

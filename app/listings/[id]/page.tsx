@@ -31,7 +31,7 @@ import {
   ChevronRight,
   X
 } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/toast";
 import PromoteModal from "@/components/promotions/PromoteModal";
 import { FavoriteButton } from "@/components/ui/favorite-button";
 import { ReportButton } from "@/components/ui/report-button";
@@ -366,12 +366,12 @@ export default function ListingDetailPage() {
     if (!showImageModal || !listing || listing.image_urls.length === 0) return null;
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
-        <div className="relative max-w-4xl max-h-full">
+      <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-2 sm:p-4">
+        <div className="relative w-full h-full max-w-5xl max-h-full flex items-center justify-center">
           <Button
             variant="outline"
             size="sm"
-            className="absolute top-4 right-4 z-10 bg-white/20 backdrop-blur"
+            className="absolute top-2 sm:top-4 right-2 sm:right-4 z-10 bg-white/20 backdrop-blur border-white/20"
             onClick={() => setShowImageModal(false)}
           >
             <X className="h-4 w-4" />
@@ -388,7 +388,7 @@ export default function ListingDetailPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur"
+                className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur border-white/20"
                 onClick={prevImage}
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -396,7 +396,7 @@ export default function ListingDetailPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur"
+                className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur border-white/20"
                 onClick={nextImage}
               >
                 <ChevronRight className="h-4 w-4" />
@@ -404,7 +404,7 @@ export default function ListingDetailPage() {
             </>
           )}
           
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm">
+          <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded">
             {currentImageIndex + 1} / {listing.image_urls.length}
           </div>
         </div>
@@ -455,17 +455,19 @@ export default function ListingDetailPage() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-14 sm:h-16">
             <Button 
               variant="ghost" 
               onClick={() => router.back()}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 text-sm sm:text-base"
+              size="sm"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back
+              <span className="hidden xs:inline">Back</span>
             </Button>
             
-            <div className="flex items-center gap-2">
+            {/* Desktop Actions */}
+            <div className="hidden md:flex items-center gap-2">
               <FavoriteButton
                 listingId={listing._id}
                 isFavorited={listing.isFavorited || false}
@@ -515,17 +517,26 @@ export default function ListingDetailPage() {
                   </Button>
                 </div>
               )}
-              
-              {!listing.isOwner && (
+            </div>
+            
+            {/* Mobile Actions */}
+            <div className="md:hidden flex items-center gap-1">
+              <FavoriteButton
+                listingId={listing._id}
+                isFavorited={listing.isFavorited || false}
+                size="sm"
+              />
+              <Button variant="outline" size="sm" onClick={handleShare}>
+                <Share2 className="h-4 w-4" />
+              </Button>
+              {listing.isOwner && (
                 <Button
-                  variant="outline"
+                  variant="default"
                   size="sm"
-                  onClick={handleReport}
-                  disabled={actionLoading === 'report'}
-                  className="text-red-600 hover:text-red-700"
+                  onClick={() => setPromoteOpen(true)}
+                  className="bg-amber-500 hover:bg-amber-600"
                 >
-                  <Flag className="h-4 w-4 mr-1" />
-                  Report
+                  <DollarSign className="h-4 w-4" />
                 </Button>
               )}
             </div>
@@ -533,11 +544,46 @@ export default function ListingDetailPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Mobile Action Bar */}
+      <div className="md:hidden bg-white border-b px-4 py-2">
+        <div className="flex gap-2 overflow-x-auto">
+          {listing.isOwner ? (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push(`/listings/${id}/edit`)}
+                className="whitespace-nowrap"
+              >
+                <Edit className="h-4 w-4 mr-1" />
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDelete}
+                disabled={actionLoading === 'delete'}
+                className="text-red-600 hover:text-red-700 whitespace-nowrap"
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
+              </Button>
+            </>
+          ) : (
+            <ReportButton
+              listingId={listing._id}
+              listingTitle={listing.title}
+              size="sm"
+            />
+          )}
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         <PromoteModal open={promoteOpen} onOpenChange={setPromoteOpen} listingId={String(id)} listingCategory={listing.category} />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Images */}
             <Card>
               <CardContent className="p-0">
@@ -546,7 +592,7 @@ export default function ListingDetailPage() {
                     <img
                       src={listing.image_urls[currentImageIndex]}
                       alt={listing.title}
-                      className="w-full h-64 sm:h-96 object-cover rounded-t-lg cursor-pointer"
+                      className="w-full h-48 xs:h-64 sm:h-80 lg:h-96 object-cover rounded-t-lg cursor-pointer"
                       onClick={() => setShowImageModal(true)}
                     />
                     
@@ -576,20 +622,20 @@ export default function ListingDetailPage() {
                     )}
                   </div>
                 ) : (
-                  <div className="w-full h-64 sm:h-96 bg-gray-100 rounded-t-lg flex items-center justify-center">
-                    <CategoryIcon className="h-16 w-16 text-gray-400" />
+                  <div className="w-full h-48 xs:h-64 sm:h-80 lg:h-96 bg-gray-100 rounded-t-lg flex items-center justify-center">
+                    <CategoryIcon className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400" />
                   </div>
                 )}
                 
                 {/* Thumbnail strip */}
                 {listing.image_urls.length > 1 && (
-                  <div className="p-4 flex gap-2 overflow-x-auto">
+                  <div className="p-3 sm:p-4 flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300">
                     {listing.image_urls.map((url, index) => (
                       <img
                         key={index}
                         src={url}
                         alt={`${listing.title} ${index + 1}`}
-                        className={`w-16 h-16 object-cover rounded cursor-pointer border-2 ${
+                        className={`w-14 h-14 sm:w-16 sm:h-16 object-cover rounded cursor-pointer border-2 flex-shrink-0 ${
                           index === currentImageIndex ? 'border-blue-500' : 'border-gray-200'
                         }`}
                         onClick={() => setCurrentImageIndex(index)}
@@ -602,31 +648,29 @@ export default function ListingDetailPage() {
 
             {/* Title and Basic Info */}
             <Card>
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <CategoryIcon className="h-5 w-5 text-gray-500" />
-                      <Badge variant="secondary">{listing.category}</Badge>
-                      <Badge className={getStatusColor(listing.status, listing.moderationStatus)}>
-                        {getStatusText(listing.status, listing.moderationStatus)}
-                      </Badge>
-                    </div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{listing.title}</h1>
-                    <div className="text-2xl font-bold text-blue-600">
-                      {formatPrice(listing.price, listing.pricing_frequency)}
-                    </div>
+              <CardContent className="p-4 sm:p-6">
+                <div className="mb-4">
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <CategoryIcon className="h-5 w-5 text-gray-500" />
+                    <Badge variant="secondary" className="text-xs sm:text-sm">{listing.category}</Badge>
+                    <Badge className={`${getStatusColor(listing.status, listing.moderationStatus)} text-xs sm:text-sm`}>
+                      {getStatusText(listing.status, listing.moderationStatus)}
+                    </Badge>
+                  </div>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 leading-tight">{listing.title}</h1>
+                  <div className="text-xl sm:text-2xl font-bold text-blue-600 mb-2">
+                    {formatPrice(listing.price, listing.pricing_frequency)}
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-4 text-sm text-gray-500">
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-500">
                   <div className="flex items-center gap-1">
-                    <Eye className="h-4 w-4" />
-                    {listing.views} views
+                    <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>{listing.views} views</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    Posted {new Date(listing.createdAt).toLocaleDateString()}
+                    <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>Posted {new Date(listing.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
               </CardContent>
@@ -634,67 +678,67 @@ export default function ListingDetailPage() {
 
             {/* Description */}
             <Card>
-              <CardHeader>
-                <CardTitle>Description</CardTitle>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg sm:text-xl">Description</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 whitespace-pre-line">{listing.description}</p>
+              <CardContent className="pt-0">
+                <p className="text-gray-700 whitespace-pre-line text-sm sm:text-base leading-relaxed">{listing.description}</p>
               </CardContent>
             </Card>
 
-          {/* Video (YouTube) */}
-          {listing.video_url && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Video Tour</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
-                  <iframe
-                    className="h-full w-full"
-                    src={(function(url:string){
-                      try {
-                        const u=new URL(url);
-                        // YouTube watch or share links -> embed
-                        if (u.hostname.includes('youtube.com')) {
-                          const v=u.searchParams.get('v');
-                          if (v) return `https://www.youtube.com/embed/${v}`;
-                          // youtu.be with /embed or other paths
-                          if (u.pathname.startsWith('/embed/')) return url;
-                        }
-                        if (u.hostname.includes('youtu.be')) {
-                          const id=u.pathname.replace('/','');
-                          if (id) return `https://www.youtube.com/embed/${id}`;
-                        }
-                        return url;
-                      } catch { return url; }
-                    })(listing.video_url)}
-                    title="YouTube video player"
-                    frameBorder={0}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    allowFullScreen
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          )}
+            {/* Video (YouTube) */}
+            {listing.video_url && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg sm:text-xl">Video Tour</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
+                    <iframe
+                      className="h-full w-full"
+                      src={(function(url:string){
+                        try {
+                          const u=new URL(url);
+                          // YouTube watch or share links -> embed
+                          if (u.hostname.includes('youtube.com')) {
+                            const v=u.searchParams.get('v');
+                            if (v) return `https://www.youtube.com/embed/${v}`;
+                            // youtu.be with /embed or other paths
+                            if (u.pathname.startsWith('/embed/')) return url;
+                          }
+                          if (u.hostname.includes('youtu.be')) {
+                            const id=u.pathname.replace('/','');
+                            if (id) return `https://www.youtube.com/embed/${id}`;
+                          }
+                          return url;
+                        } catch { return url; }
+                      })(listing.video_url)}
+                      title="YouTube video player"
+                      frameBorder={0}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      allowFullScreen
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Location */}
             {(listing.location.address || listing.location.city) && (
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5" />
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                    <MapPin className="h-4 w-4 sm:h-5 sm:w-5" />
                     Location
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-0">
                   <div className="space-y-2">
                     {listing.location.address && (
-                      <p className="text-gray-700">{listing.location.address}</p>
+                      <p className="text-gray-700 text-sm sm:text-base">{listing.location.address}</p>
                     )}
-                    <div className="flex gap-2 text-sm text-gray-500">
+                    <div className="flex flex-wrap gap-1 text-xs sm:text-sm text-gray-500">
                       {listing.location.city && <span>{listing.location.city}</span>}
                       {listing.location.region && <span>• {listing.location.region}</span>}
                       {listing.location.country && <span>• {listing.location.country}</span>}
@@ -706,38 +750,38 @@ export default function ListingDetailPage() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Owner Info */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <User className="h-4 w-4 sm:h-5 sm:w-5" />
                   Listed by
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0">
                 <div className="flex items-center gap-3 mb-4">
-                  <Avatar className="h-12 w-12">
+                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
                     <AvatarImage src={listing.owner.avatar} />
-                    <AvatarFallback>
+                    <AvatarFallback className="text-sm">
                       {listing.owner.firstName?.[0] || listing.owner.username?.[0] || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <p className="font-semibold">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm sm:text-base truncate">
                       {listing.owner.firstName && listing.owner.lastName 
                         ? `${listing.owner.firstName} ${listing.owner.lastName}` 
                         : listing.owner.username}
                     </p>
                     {listing.owner.role && (
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs mt-1">
                         {listing.owner.role}
                       </Badge>
                     )}
                   </div>
                 </div>
                 
-                <Button className="w-full mb-2">
+                <Button className="w-full text-sm sm:text-base" size="sm">
                   <MessageSquare className="h-4 w-4 mr-2" />
                   Send Message
                 </Button>
@@ -747,34 +791,34 @@ export default function ListingDetailPage() {
             {/* Contact Info */}
             {(listing.contact.phone || listing.contact.email || listing.contact.whatsapp) && (
               <Card>
-                <CardHeader>
-                  <CardTitle>Contact Information</CardTitle>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg sm:text-xl">Contact Information</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-3 pt-0">
                   {listing.contact.phone && (
                     <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-gray-500" />
-                      <a href={`tel:${listing.contact.phone}`} className="text-blue-600 hover:underline">
+                      <Phone className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                      <a href={`tel:${listing.contact.phone}`} className="text-blue-600 hover:underline text-sm sm:text-base break-all">
                         {listing.contact.phone}
                       </a>
                     </div>
                   )}
                   {listing.contact.email && (
                     <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-gray-500" />
-                      <a href={`mailto:${listing.contact.email}`} className="text-blue-600 hover:underline">
+                      <Mail className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                      <a href={`mailto:${listing.contact.email}`} className="text-blue-600 hover:underline text-sm sm:text-base break-all">
                         {listing.contact.email}
                       </a>
                     </div>
                   )}
                   {listing.contact.whatsapp && (
                     <div className="flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4 text-gray-500" />
+                      <MessageSquare className="h-4 w-4 text-gray-500 flex-shrink-0" />
                       <a 
                         href={`https://wa.me/${listing.contact.whatsapp.replace(/[^0-9]/g, '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-green-600 hover:underline"
+                        className="text-green-600 hover:underline text-sm sm:text-base break-all"
                       >
                         WhatsApp: {listing.contact.whatsapp}
                       </a>
@@ -786,27 +830,28 @@ export default function ListingDetailPage() {
 
             {/* Safety Tips */}
             <Card className="bg-yellow-50">
-              <CardHeader>
-                <CardTitle>Safety Tips</CardTitle>
-                <CardDescription>Please keep these safety tips in mind</CardDescription>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg sm:text-xl">Safety Tips</CardTitle>
+                <CardDescription className="text-sm">Please keep these safety tips in mind</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <p className="text-sm">• Meet in a public place for viewings and transactions</p>
-                <p className="text-sm">• Never send money or payments before seeing the property</p>
-                <p className="text-sm">• Be wary of deals that seem too good to be true</p>
-                <p className="text-sm">• Report suspicious listings or behavior</p>
+              <CardContent className="space-y-2 pt-0">
+                <p className="text-xs sm:text-sm">• Meet in a public place for viewings and transactions</p>
+                <p className="text-xs sm:text-sm">• Never send money or payments before seeing the property</p>
+                <p className="text-xs sm:text-sm">• Be wary of deals that seem too good to be true</p>
+                <p className="text-xs sm:text-sm">• Report suspicious listings or behavior</p>
               </CardContent>
             </Card>
 
             {/* Report Button */}
             {!listing.isOwner && (
-              <Card>
+              <Card className="lg:block hidden">
                 <CardContent className="pt-6">
                   <Button 
                     variant="outline" 
-                    className="w-full" 
+                    className="w-full text-sm sm:text-base" 
                     onClick={handleReport}
                     disabled={actionLoading === 'report'}
+                    size="sm"
                   >
                     <Flag className="h-4 w-4 mr-2" />
                     Report Listing

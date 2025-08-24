@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUpload } from '@/components/ui/image-upload';
-import { toast } from 'sonner';
+import { useToast } from '@/components/ui/toast';
 import { listingsApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 
@@ -114,6 +114,7 @@ export function CreateListingForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [currentTag, setCurrentTag] = useState('');
   const router = useRouter();
+  const { toast } = useToast();
 
   // Handle form field changes
   const handleChange = (field: string, value: any) => {
@@ -230,16 +231,32 @@ export function CreateListingForm() {
     console.log('📋 Form Data State:', formData);
     
     if (!validateForm()) {
-      toast.error('Please fix the errors in the form');
+      toast({
+        title: 'Validation Error',
+        description: 'Please fix the errors in the form',
+        variant: 'error',
+        duration: 3000
+      });
       return;
     }
 
     setLoading(true);
+    toast({
+      title: 'Creating listing...',
+      description: 'Please wait while we create your listing',
+      variant: 'info',
+      duration: 3000
+    });
 
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
-        toast.error('Please log in to create a listing');
+        toast({
+          title: 'Authentication Required',
+          description: 'Please log in to create a listing',
+          variant: 'error',
+          duration: 3000
+        });
         router.push('/auth/login');
         return;
       }
@@ -285,14 +302,24 @@ export function CreateListingForm() {
       console.log('✅ API Response:', response);
 
       if (response.success) {
-        toast.success('Listing created successfully!');
+        toast({
+          title: 'Success!',
+          description: 'Your listing has been created successfully',
+          variant: 'success',
+          duration: 3000
+        });
         router.push('/dashboard');
       } else {
         throw new Error(response.message || 'Failed to create listing');
       }
     } catch (error: any) {
       console.error('❌ Form submission error:', error);
-      toast.error(error.message || 'Failed to create listing. Please try again.');
+      toast({
+        title: 'Creation Failed',
+        description: error.message || 'Failed to create listing. Please try again.',
+        variant: 'error',
+        duration: 3000
+      });
     } finally {
       setLoading(false);
     }

@@ -1,3 +1,5 @@
+import { useToast } from "@/components/ui/use-toast"
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 
 // API Response types
@@ -80,32 +82,11 @@ async function apiRequest<T = any>(
     const data = await response.json()
 
     if (!response.ok) {
-      // Show error toast on client with server message
-      try {
-        if (typeof window !== 'undefined') {
-          const { toast } = await import('@/components/ui/use-toast')
-          toast({
-            title: 'Request failed',
-            description: data.message || data.error || `HTTP ${response.status}`,
-            variant: 'error',
-          })
-        }
-      } catch {}
+      alert(data.message || data.error || 'Request failed')
       throw new ApiError(response.status, data.message || data.error || 'Request failed', data)
     }
 
-    // Success toast for write operations if server returned a message
-    try {
-      const method = (defaultOptions.method || 'GET').toString().toUpperCase()
-      if (typeof window !== 'undefined' && method !== 'GET' && (data?.message || data?.success)) {
-        const { toast } = await import('@/components/ui/use-toast')
-        toast({
-          title: 'Success',
-          description: data.message || 'Operation completed successfully',
-          variant: 'success',
-        })
-      }
-    } catch {}
+    // No automatic success toast - handle in components for better control
 
     return data
   } catch (error) {
@@ -113,13 +94,7 @@ async function apiRequest<T = any>(
       throw error
     }
     
-    // Handle network errors
-    try {
-      if (typeof window !== 'undefined') {
-        const { toast } = await import('@/components/ui/use-toast')
-        toast({ title: 'Network error', description: 'Network error or server unavailable', variant: 'error' })
-      }
-    } catch {}
+    // Network errors are handled in components for better control
     throw new ApiError(0, 'Network error or server unavailable')
   }
 }
@@ -134,20 +109,20 @@ export const authApi = {
     lastName: string
     role: string
   }): Promise<AuthResponse> => {
-    return apiRequest<AuthResponse>('/auth/register', {
+    return apiRequest('/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
-    })
+    }) as Promise<AuthResponse>
   },
 
   login: async (credentials: {
     email: string
     password: string
   }): Promise<AuthResponse> => {
-    return apiRequest<AuthResponse>('/auth/login', {
+    return apiRequest('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
-    })
+    }) as Promise<AuthResponse>
   },
 
   logout: async (): Promise<ApiResponse> => {
@@ -191,10 +166,10 @@ export const authApi = {
     role: string
     email?: string
   }): Promise<AuthResponse> => {
-    return apiRequest<AuthResponse>('/auth/telegram', {
+    return apiRequest('/auth/telegram', {
       method: 'POST',
       body: JSON.stringify(authData),
-    })
+    }) as Promise<AuthResponse>
   },
 }
 
@@ -482,6 +457,18 @@ export const promotionsApi = {
   submitPaymentProof: async (promotionId: string, txHash: string, screenshotUrl: string) => {
     return apiRequest(`/promotions/${promotionId}/payment-proof`, { method: 'PUT', body: JSON.stringify({ txHash, screenshotUrl }) });
   },
+
+  // Get user's promotions
+  getUserPromotions: async (params: any = {}) => {
+    const query = new URLSearchParams();
+    Object.keys(params).forEach(key => {
+      if (params[key] !== undefined) {
+        query.append(key, params[key].toString());
+      }
+    });
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return apiRequest(`/promotions/user/promotions${qs}`);
+  },
 };
 
 // Admin Promotions API
@@ -507,5 +494,20 @@ export const adminPromotionsApi = {
       method: 'PUT',
       body: JSON.stringify(config)
     });
+  }
+};
+
+// User Promotions API
+export const userPromotionsApi = {
+  // Get user's promotions
+  getUserPromotions: async (params: any = {}) => {
+    const query = new URLSearchParams();
+    Object.keys(params).forEach(key => {
+      if (params[key] !== undefined) {
+        query.append(key, params[key].toString());
+      }
+    });
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return apiRequest(`/promotions/user/promotions${qs}`);
   }
 };

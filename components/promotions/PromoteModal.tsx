@@ -7,8 +7,21 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/use-toast";
 import { promotionsApi, uploadApi } from "@/lib/api";
 import Image from "next/image";
+import QRCode from 'qrcode';
+import { Copy, CheckCircle, ExternalLink, Wallet } from "lucide-react";
+
+interface Chain {
+  name: string;
+  displayName: string;
+  enabled: boolean;
+  walletAddress: string;
+  symbol: string;
+}
 
 interface PromoteModalProps {
   open: boolean;
@@ -18,9 +31,10 @@ interface PromoteModalProps {
 }
 
 export default function PromoteModal({ open, onOpenChange, listingId, listingCategory }: PromoteModalProps) {
+  const { toast } = useToast();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [prices, setPrices] = useState<any>({ homepage: [], category_top: [] });
-  const [chains, setChains] = useState<string[]>([]);
+  const [chains, setChains] = useState<Chain[]>([]);
   const [placement, setPlacement] = useState<'homepage' | 'category_top' | ''>('');
   const [durationDays, setDurationDays] = useState<number>(7);
   const [chain, setChain] = useState<string>('');
@@ -32,6 +46,7 @@ export default function PromoteModal({ open, onOpenChange, listingId, listingCat
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string>('');
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
+  const [copiedAddress, setCopiedAddress] = useState<string>('');
 
   useEffect(() => {
     if (!open) return;
@@ -40,7 +55,7 @@ export default function PromoteModal({ open, onOpenChange, listingId, listingCat
         const res = await promotionsApi.getPublicConfig();
         if (res.success) {
           setPrices(res.data.prices || { homepage: [], category_top: [] });
-          setChains(res.data.chainsAvailable || []);
+          setChains(res.data.chains || []);
         }
       } catch {}
     })();
@@ -56,7 +71,55 @@ export default function PromoteModal({ open, onOpenChange, listingId, listingCat
     setTxHash('');
     setScreenshotUrl('');
     setError('');
+    setQrDataUrl('');
+    setCopiedAddress('');
   }, [open]);
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedAddress(text);
+      toast({
+        title: "Copied!",
+        description: "Wallet address copied to clipboard",
+        duration: 3000
+      });
+      
+      setTimeout(() => setCopiedAddress(''), 2000);
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to copy to clipboard",
+        variant: "destructive",
+        duration: 3000
+      });
+    }
+  };
+
+  const generateQRCode = async (address: string, amount?: string, symbol?: string) => {
+    try {
+      let qrData = address;
+      if (amount && symbol) {
+        // Create a payment URL for better UX
+        if (symbol === 'BTC') {
+          qrData = `bitcoin:${address}?amount=${amount}`;
+        } else if (symbol === 'ETH') {
+          qrData = `ethereum:${address}?value=${amount}`;
+        }
+      }
+      const qrCodeDataUrl = await QRCode.toDataURL(qrData, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+      setQrDataUrl(qrCodeDataUrl);
+    } catch (error) {
+      console.error('Failed to generate QR code:', error);
+    }
+  };
 
   const durationOptions = useMemo(() => {
     return placement ? (prices[placement] || []) : [];
@@ -64,8 +127,12 @@ export default function PromoteModal({ open, onOpenChange, listingId, listingCat
 
   const selectedPrice = useMemo(() => {
     const found = durationOptions.find((p: any) => p.days === durationDays);
-    return found ? `${found.amount} ${found.currency}` : '';
+    return found ? { amount: found.amount, currency: found.currency } : null;
   }, [durationOptions, durationDays]);
+
+  const selectedChain = useMemo(() => {
+    return chains.find(c => c.name === chain);
+  }, [chains, chain]);
 
   const handleCreate = async () => {
     if (!placement || !durationDays || !chain) {
@@ -77,12 +144,16 @@ export default function PromoteModal({ open, onOpenChange, listingId, listingCat
       const res = await promotionsApi.createPromotion({ listingId, placement, durationDays, chain });
       if (!res.success) throw new Error(res.message || 'Failed to create promotion');
       setPromotion(res.data.promotion);
-      // capture QR code for the selected chain's wallet
-      if (res.data.payment?.qrDataUrl) {
-        setQrDataUrl(res.data.payment.qrDataUrl);
-      } else {
-        setQrDataUrl('');
+      
+      // Generate QR code for the wallet address
+      if (selectedChain?.walletAddress && selectedPrice) {
+        await generateQRCode(
+          selectedChain.walletAddress, 
+          selectedPrice.amount?.toString(), 
+          selectedChain.symbol
+        );
       }
+      
       setStep(2);
       setError('');
     } catch (e: any) {
@@ -113,7 +184,7 @@ export default function PromoteModal({ open, onOpenChange, listingId, listingCat
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Promote Listing</DialogTitle>
         </DialogHeader>
@@ -125,126 +196,311 @@ export default function PromoteModal({ open, onOpenChange, listingId, listingCat
         )}
 
         {step === 1 && (
-          <div className="space-y-4">
-            <div>
-              <Label>Placement</Label>
-              <Select value={placement} onValueChange={(v: any) => setPlacement(v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select placement" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="homepage">Homepage Hero</SelectItem>
-                  <SelectItem value="category_top">Top of Category ({listingCategory})</SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-base font-medium">Placement</Label>
+                  <p className="text-sm text-muted-foreground mb-2">Choose where to promote your listing</p>
+                  <Select value={placement} onValueChange={(v: any) => setPlacement(v)}>
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Select placement" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="homepage" className="p-4">
+                        <div>
+                          <div className="font-medium">Homepage Hero</div>
+                          <div className="text-sm text-muted-foreground">Prime visibility on homepage</div>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="category_top" className="p-4">
+                        <div>
+                          <div className="font-medium">Top of Category</div>
+                          <div className="text-sm text-muted-foreground">Featured in {listingCategory} category</div>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label className="text-base font-medium">Duration & Pricing</Label>
+                  <p className="text-sm text-muted-foreground mb-2">Select promotion duration</p>
+                  <Select value={String(durationDays)} onValueChange={(v) => setDurationDays(parseInt(v))}>
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Select duration" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {durationOptions.map((opt: any) => (
+                        <SelectItem key={opt.days} value={String(opt.days)} className="p-4">
+                          <div className="flex justify-between items-center w-full">
+                            <span>{opt.days} days</span>
+                            <Badge variant="outline">{opt.amount} {opt.currency}</Badge>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-base font-medium">Payment Method</Label>
+                  <p className="text-sm text-muted-foreground mb-2">Choose cryptocurrency for payment</p>
+                  <Select value={chain} onValueChange={(v) =>{if(v==='ethereum') setChain('eth'); else if(v==='bitcoin') setChain('btc'); else if(v==='usdt_erc20') setChain('usdt_erc20'); else if(v==='usdt_trc20') setChain('usdt_trc20'); else setChain(v)}}>
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Select payment method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {chains.filter(c => c.enabled).map((c) => (
+                        <SelectItem key={c.name} value={c.name} className="p-4">
+                          <div className="flex items-center gap-3">
+                            <Wallet className="h-4 w-4" />
+                            <div>
+                              <div className="font-medium">{c.displayName}</div>
+                              <div className="text-sm text-muted-foreground">{c.symbol}</div>
+                            </div>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {selectedPrice && selectedChain && (
+                  <Card>
+                    <CardContent className="p-4">
+                      <h4 className="font-medium mb-2">Summary</h4>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span>Placement:</span>
+                          <span className="capitalize">{placement?.replace('_', ' ')}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Duration:</span>
+                          <span>{durationDays} days</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Payment:</span>
+                          <span>{selectedChain.displayName} ({selectedChain.symbol})</span>
+                        </div>
+                        <div className="flex justify-between font-medium border-t pt-1 mt-2">
+                          <span>Total:</span>
+                          <span>{selectedPrice.amount} {selectedPrice.currency}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             </div>
-            <div>
-              <Label>Duration</Label>
-              <Select value={String(durationDays)} onValueChange={(v) => setDurationDays(parseInt(v))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select duration" />
-                </SelectTrigger>
-                <SelectContent>
-                  {durationOptions.map((opt: any) => (
-                    <SelectItem key={opt.days} value={String(opt.days)}>
-                      {opt.days} days — {opt.amount} {opt.currency}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Payment Chain</Label>
-              <Select value={chain} onValueChange={(v) => setChain(v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select chain" />
-                </SelectTrigger>
-                <SelectContent>
-                  {chains.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex justify-end gap-2">
+            
+            <div className="flex flex-col sm:flex-row justify-end gap-3">
               <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-              <Button onClick={handleCreate} disabled={creating}>Continue</Button>
+              <Button onClick={handleCreate} disabled={creating || !placement || !durationDays || !chain}>
+                {creating ? 'Creating...' : 'Continue to Payment'}
+              </Button>
             </div>
           </div>
         )}
 
         {step === 2 && promotion && (
-          <div className="space-y-4">
-            <div className="text-sm text-gray-600">Pay the amount below and provide the payment details.</div>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div><span className="font-medium">Placement:</span> {promotion.pricing.placement}</div>
-              <div><span className="font-medium">Duration:</span> {promotion.pricing.durationDays} days</div>
-              <div><span className="font-medium">Amount:</span> {promotion.pricing.amount} {promotion.pricing.currency}</div>
-              <div><span className="font-medium">Chain:</span> {promotion.pricing.chain}</div>
-              <div className="col-span-2"><span className="font-medium">Wallet:</span> {promotion.payment.walletAddress || '—'}</div>
-            </div>
-            {qrDataUrl && (
-              <div className="flex justify-center">
-                <Image src={qrDataUrl} alt="Wallet QR" width={160} height={160} />
-              </div>
-            )}
-            <div>
-              <Label>Transaction Hash</Label>
-              <Input value={txHash} onChange={(e) => setTxHash(e.target.value)} placeholder="Paste your tx hash" />
-            </div>
-            <div className="space-y-2">
-              <Label>Payment Screenshot</Label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-              />
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={!selectedFile || uploading}
-                  onClick={async () => {
-                    if (!selectedFile) return;
-                    try {
-                      setUploading(true);
-                      const res = await uploadApi.uploadImage(selectedFile);
-                      if (res.success) {
-                        setScreenshotUrl(res.data.url);
-                        setError('');
-                      } else {
-                        setError(res.message || 'Upload failed');
-                      }
-                    } catch (e: any) {
-                      setError(e?.message || 'Upload failed');
-                    } finally {
-                      setUploading(false);
-                    }
-                  }}
-                >
-                  {uploading ? 'Uploading…' : 'Upload to Cloudinary'}
-                </Button>
-                {screenshotUrl && (
-                  <span className="text-xs text-green-700">Uploaded</span>
-                )}
-              </div>
-              {screenshotUrl && (
-                <div className="mt-2">
-                  <Image src={screenshotUrl} alt="Screenshot preview" width={200} height={120} className="rounded border" />
+          <div className="space-y-6">
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* Payment Information */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Payment Details</h3>
+                  <Card>
+                    <CardContent className="p-4 space-y-3">
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div><span className="font-medium text-muted-foreground">Placement:</span></div>
+                        <div className="capitalize">{promotion.pricing.placement.replace('_', ' ')}</div>
+                        <div><span className="font-medium text-muted-foreground">Duration:</span></div>
+                        <div>{promotion.pricing.durationDays} days</div>
+                        <div><span className="font-medium text-muted-foreground">Amount:</span></div>
+                        <div className="font-semibold">{promotion.pricing.amount} {promotion.pricing.currency}</div>
+                        <div><span className="font-medium text-muted-foreground">Network:</span></div>
+                        <div className="flex items-center gap-2">
+                          {selectedChain?.displayName} ({selectedChain?.symbol})
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              )}
+                
+                {/* Wallet Address */}
+                <div>
+                  <Label className="text-base font-medium">Wallet Address</Label>
+                  <p className="text-sm text-muted-foreground mb-2">Send payment to this address</p>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Wallet className="h-5 w-5 text-muted-foreground" />
+                        <span className="font-medium">{selectedChain?.displayName}</span>
+                      </div>
+                      <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                        <code className="flex-1 text-sm break-all font-mono">
+                          {selectedChain?.walletAddress}
+                        </code>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyToClipboard(selectedChain?.walletAddress || '')}
+                          className="shrink-0"
+                        >
+                          {copiedAddress === selectedChain?.walletAddress ? (
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+              
+              {/* QR Code */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">QR Code</h3>
+                  <Card>
+                    <CardContent className="p-6 flex flex-col items-center">
+                      {qrDataUrl ? (
+                        <div className="text-center space-y-3">
+                          <Image 
+                            src={qrDataUrl} 
+                            alt="Wallet QR Code" 
+                            width={200} 
+                            height={200} 
+                            className="border rounded-lg"
+                          />
+                          <p className="text-sm text-muted-foreground max-w-xs">
+                            Scan with your crypto wallet to pay
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="w-48 h-48 bg-muted rounded-lg flex items-center justify-center">
+                          <p className="text-sm text-muted-foreground">QR Code generating...</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
             </div>
-            <div className="flex justify-between gap-2">
-              <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
-              <Button onClick={handleSubmitProof} disabled={creating || uploading || !screenshotUrl || !txHash}>Submit Proof</Button>
+            
+            {/* Payment Proof Section */}
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-semibold mb-4">Submit Payment Proof</h3>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div>
+                  <Label className="text-base font-medium">Transaction Hash</Label>
+                  <p className="text-sm text-muted-foreground mb-2">Enter the transaction hash from your payment</p>
+                  <Input 
+                    value={txHash} 
+                    onChange={(e) => setTxHash(e.target.value)} 
+                    placeholder="0x..." 
+                    className="h-12 font-mono"
+                  />
+                </div>
+                
+                <div>
+                  <Label className="text-base font-medium">Payment Screenshot</Label>
+                  <p className="text-sm text-muted-foreground mb-2">Upload a screenshot of your payment</p>
+                  <div className="space-y-3">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                      className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={!selectedFile || uploading}
+                      onClick={async () => {
+                        if (!selectedFile) return;
+                        try {
+                          setUploading(true);
+                          const res = await uploadApi.uploadImage(selectedFile);
+                          if (res.success) {
+                            setScreenshotUrl(res.data.url);
+                            setError('');
+                            toast({
+                              title: "Success",
+                              description: "Screenshot uploaded successfully",
+                              duration: 3000
+                            });
+                          } else {
+                            setError(res.message || 'Upload failed');
+                          }
+                        } catch (e: any) {
+                          setError(e?.message || 'Upload failed');
+                        } finally {
+                          setUploading(false);
+                        }
+                      }}
+                      className="w-full sm:w-auto"
+                    >
+                      {uploading ? 'Uploading...' : 'Upload Screenshot'}
+                    </Button>
+                    {screenshotUrl && (
+                      <div className="flex items-center gap-2 text-sm text-green-700">
+                        <CheckCircle className="h-4 w-4" />
+                        <span>Screenshot uploaded successfully</span>
+                      </div>
+                    )}
+                  </div>
+                  {screenshotUrl && (
+                    <div className="mt-4">
+                      <Image 
+                        src={screenshotUrl} 
+                        alt="Payment screenshot" 
+                        width={300} 
+                        height={200} 
+                        className="rounded border max-w-full h-auto"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4">
+              <Button variant="outline" onClick={() => setStep(1)}>Back to Configuration</Button>
+              <Button 
+                onClick={handleSubmitProof} 
+                disabled={creating || uploading || !screenshotUrl || !txHash}
+                className="sm:min-w-[140px]"
+              >
+                {creating ? 'Submitting...' : 'Submit Payment Proof'}
+              </Button>
             </div>
           </div>
         )}
 
         {step === 3 && (
-          <div className="space-y-3">
-            <div className="text-green-700">Payment proof submitted. Your promotion is pending review.</div>
-            <Button onClick={() => onOpenChange(false)}>Close</Button>
+          <div className="text-center space-y-4 py-8">
+            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-green-700 mb-2">Payment Submitted Successfully!</h3>
+              <p className="text-muted-foreground mb-4">
+                Your payment proof has been submitted and is now pending review. You'll receive a notification once your promotion is approved.
+              </p>
+              <div className="text-sm text-muted-foreground">
+                <p>• Review typically takes 2-24 hours</p>
+                <p>• You can check status in your dashboard</p>
+                <p>• Promotion will activate once approved</p>
+              </div>
+            </div>
+            <Button onClick={() => onOpenChange(false)} className="min-w-[120px]">
+              Done
+            </Button>
           </div>
         )}
       </DialogContent>

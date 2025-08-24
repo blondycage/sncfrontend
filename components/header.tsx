@@ -97,6 +97,20 @@ export default function Header() {
             <span>Browse Listings</span>
           </Link>
 
+          <Link 
+            href="/blog" 
+            className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+          >
+            <span>Blog</span>
+          </Link>
+
+          <Link 
+            href="/promotions" 
+            className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+          >
+            <span>Promote</span>
+          </Link>
+
           {/* Cities Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -187,14 +201,7 @@ export default function Header() {
                   <Building className="mr-2 h-4 w-4" />
                   <span>Dashboard</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
+               
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
@@ -248,6 +255,22 @@ export default function Header() {
             >
               <Search className="h-4 w-4" />
               <span>Browse Listings</span>
+            </Link>
+
+            <Link 
+              href="/blog" 
+              className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <span>Blog</span>
+            </Link>
+
+            <Link 
+              href="/promotions" 
+              className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <span>Promote</span>
             </Link>
 
             {/* Cities Section in Mobile */}

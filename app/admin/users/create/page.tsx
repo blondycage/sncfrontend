@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, User, Mail, Phone, Settings, Save, X } from 'lucide-react';
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/toast";
 
 interface CreateUserForm {
   username: string;
@@ -37,6 +37,7 @@ interface CreateUserForm {
 
 export default function CreateUserPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<CreateUserForm>({
@@ -141,6 +142,13 @@ export default function CreateUserPage() {
 
     setIsLoading(true);
     setError(null);
+    
+    toast({
+      title: 'Creating user...',
+      description: 'Please wait while we create the user account',
+      variant: 'info',
+      duration: 3000
+    });
 
     try {
       const token = localStorage.getItem('authToken');
@@ -170,13 +178,22 @@ export default function CreateUserPage() {
       toast({
         title: "Success!",
         description: `User ${data.user.username} created successfully`,
+        variant: 'success',
+        duration: 3000
       });
 
       // Navigate back to users list
       router.push('/admin/users');
     } catch (error) {
       console.error('Create user error:', error);
-      setError(error instanceof Error ? error.message : 'Failed to create user');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create user';
+      setError(errorMessage);
+      toast({
+        title: 'Creation Failed',
+        description: errorMessage,
+        variant: 'error',
+        duration: 3000
+      });
     } finally {
       setIsLoading(false);
     }

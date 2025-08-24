@@ -45,7 +45,7 @@ import {
   ShoppingCart,
   Briefcase
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/toast";
 import { FavoriteButton } from "@/components/ui/favorite-button";
 
 interface UserData {
