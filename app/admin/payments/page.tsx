@@ -22,7 +22,7 @@ interface Payment {
   paymentId: string
   user: { firstName: string; lastName: string; email: string }
   itemType: 'promotion' | 'listing' | 'property' | 'education_application' | 'featured_listing'
-  paymentType: 'promotion_fee' | 'listing_fee' | 'featured_listing' | 'application_fee' | 'premium_placement'
+  paymentType: 'promotion_fee' | 'listing_fee' | 'featured_listing' | 'application_fee' | 'premium_placement' | 'service_payment'
   status: 'pending' | 'submitted' | 'under_review' | 'verified' | 'rejected' | 'refunded'
   pricing: {
     amount: number
@@ -41,6 +41,14 @@ interface Payment {
     duration?: number
     placement?: string
     features?: string[]
+    serviceDetails?: {
+      listingTitle?: string
+      listingCategory?: string
+      ownerName?: string
+      ownerContact?: string
+      customAmount?: number
+      agreedTerms?: string
+    }
   }
   itemReference?: any
   timeline: Array<{
@@ -212,7 +220,8 @@ export default function AdminPaymentsPage() {
       'listing_fee': 'Listing Fee', 
       'featured_listing': 'Featured Listing',
       'application_fee': 'Application Fee',
-      'premium_placement': 'Premium Placement'
+      'premium_placement': 'Premium Placement',
+      'service_payment': 'Service Payment'
     }
     return labels[type as keyof typeof labels] || type
   }
@@ -399,6 +408,7 @@ export default function AdminPaymentsPage() {
                 <SelectItem value="featured_listing">Featured Listing</SelectItem>
                 <SelectItem value="listing_fee">Listing Fee</SelectItem>
                 <SelectItem value="application_fee">Application Fee</SelectItem>
+                <SelectItem value="service_payment">Service Payment</SelectItem>
               </SelectContent>
             </Select>
 
@@ -457,6 +467,21 @@ export default function AdminPaymentsPage() {
 
                   {payment.pricing.description && (
                     <p className="text-sm text-muted-foreground">{payment.pricing.description}</p>
+                  )}
+
+                  {payment.paymentType === 'service_payment' && payment.metadata?.serviceDetails && (
+                    <div className="text-sm space-y-1 bg-blue-50 p-3 rounded border-l-4 border-blue-400">
+                      <p className="font-medium text-blue-900">Service Payment Details:</p>
+                      {payment.metadata.serviceDetails.listingTitle && (
+                        <p><span className="font-medium">For:</span> {payment.metadata.serviceDetails.listingTitle}</p>
+                      )}
+                      {payment.metadata.serviceDetails.ownerName && (
+                        <p><span className="font-medium">Service Provider:</span> {payment.metadata.serviceDetails.ownerName}</p>
+                      )}
+                      {payment.metadata.serviceDetails.customAmount && (
+                        <p><span className="font-medium">Custom Amount:</span> {formatCurrency(payment.metadata.serviceDetails.customAmount)}</p>
+                      )}
+                    </div>
                   )}
 
                   {payment.payment.txHash && (
@@ -526,6 +551,34 @@ export default function AdminPaymentsPage() {
                               <p className="text-muted-foreground">{payment.pricing.chain.toUpperCase()}</p>
                             </div>
                           </div>
+
+                          {payment.paymentType === 'service_payment' && payment.metadata?.serviceDetails && (
+                            <div className="bg-blue-50 p-4 rounded border">
+                              <Label className="font-medium text-blue-900">Service Payment Details</Label>
+                              <div className="mt-2 space-y-2 text-sm">
+                                {payment.metadata.serviceDetails.listingTitle && (
+                                  <div>
+                                    <span className="font-medium">Service/Listing:</span> {payment.metadata.serviceDetails.listingTitle}
+                                  </div>
+                                )}
+                                {payment.metadata.serviceDetails.listingCategory && (
+                                  <div>
+                                    <span className="font-medium">Category:</span> {payment.metadata.serviceDetails.listingCategory}
+                                  </div>
+                                )}
+                                {payment.metadata.serviceDetails.ownerName && (
+                                  <div>
+                                    <span className="font-medium">Service Provider:</span> {payment.metadata.serviceDetails.ownerName}
+                                  </div>
+                                )}
+                                {payment.metadata.serviceDetails.ownerContact && (
+                                  <div>
+                                    <span className="font-medium">Provider Contact:</span> {payment.metadata.serviceDetails.ownerContact}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
 
                           {payment.payment.txHash && (
                             <div>

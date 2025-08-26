@@ -38,6 +38,7 @@ import { ReportButton } from "@/components/ui/report-button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Input } from '@/components/ui/input';
 
 interface Listing {
   _id: string;
@@ -96,9 +97,9 @@ export default function ListingDetailPage() {
   const [promoteOpen, setPromoteOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [paymentData, setPaymentData] = useState({
-    paymentType: 'featured_listing',
+    paymentType: 'service_payment',
     chain: 'eth',
-    durationDays: 7
+    amount: 0
   });
   const [paymentLoading, setPaymentLoading] = useState(false);
   const fetchingRef = useRef(false);
@@ -332,6 +333,16 @@ export default function ListingDetailPage() {
       return;
     }
 
+    // Validate amount
+    if (!paymentData.amount || paymentData.amount <= 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid payment amount",
+        variant: "error"
+      });
+      return;
+    }
+
     setPaymentLoading(true);
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/create`, {
@@ -343,9 +354,16 @@ export default function ListingDetailPage() {
         body: JSON.stringify({
           itemType: 'listing',
           itemId: listing?._id,
-          paymentType: paymentData.paymentType,
+          paymentType: 'service_payment',
           chain: paymentData.chain,
-          durationDays: paymentData.durationDays
+          amount: paymentData.amount,
+          description: `Payment for ${listing?.title}`,
+          serviceDetails: {
+            listingTitle: listing?.title,
+            listingCategory: listing?.category,
+            ownerName: listing?.owner?.firstName + ' ' + listing?.owner?.lastName,
+            ownerContact: listing?.owner?.email
+          }
         })
       });
 
@@ -358,7 +376,7 @@ export default function ListingDetailPage() {
       
       toast({
         title: "Payment Created",
-        description: "Payment request created successfully. You will be redirected to complete payment."
+        description: `Payment request for ${paymentData.amount} USD created successfully.`
       });
 
       // Redirect to payment page or show payment details
@@ -864,33 +882,44 @@ export default function ListingDetailPage() {
                           size="sm"
                         >
                           <DollarSign className="h-4 w-4 mr-2" />
-                          Pay Now
+                          Pay for Service
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-md">
                         <DialogHeader>
-                          <DialogTitle>Pay for Listing Service</DialogTitle>
+                          <DialogTitle>Pay for Service</DialogTitle>
                           <DialogDescription>
-                            Choose a payment option for this listing
+                            Pay the owner directly for this {listing?.category?.toLowerCase() || 'service'}
                           </DialogDescription>
                         </DialogHeader>
                         
                         <div className="space-y-4">
+                          <div className="bg-gray-50 p-3 rounded-lg">
+                            <h4 className="font-semibold text-sm">{listing?.title}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              Owner: {listing?.owner?.firstName} {listing?.owner?.lastName}
+                            </p>
+                            {listing?.price && (
+                              <p className="text-sm text-muted-foreground">
+                                Listed Price: {formatPrice(listing.price, listing.pricing_frequency || 'one-time')}
+                              </p>
+                            )}
+                          </div>
+
                           <div>
-                            <Label htmlFor="paymentType">Service Type</Label>
-                            <Select 
-                              value={paymentData.paymentType} 
-                              onValueChange={(value) => setPaymentData(prev => ({ ...prev, paymentType: value }))}
-                            >
-                              <SelectTrigger className="mt-1">
-                                <SelectValue placeholder="Select service type" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="featured_listing">Featured Listing</SelectItem>
-                                <SelectItem value="listing_fee">Listing Fee</SelectItem>
-                                <SelectItem value="premium_placement">Premium Placement</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <Label htmlFor="amount">Payment Amount (USD)</Label>
+                            <Input
+                              type="number"
+                              placeholder="Enter amount"
+                              value={paymentData.amount || ''}
+                              onChange={(e) => setPaymentData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
+                              className="mt-1"
+                              min="0"
+                              step="0.01"
+                            />
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Enter the agreed amount with the service provider
+                            </p>
                           </div>
 
                           <div>
@@ -907,24 +936,6 @@ export default function ListingDetailPage() {
                                 <SelectItem value="btc">Bitcoin (BTC)</SelectItem>
                                 <SelectItem value="usdt_erc20">USDT (ERC20)</SelectItem>
                                 <SelectItem value="usdt_trc20">USDT (TRC20)</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div>
-                            <Label htmlFor="duration">Duration</Label>
-                            <Select 
-                              value={paymentData.durationDays.toString()} 
-                              onValueChange={(value) => setPaymentData(prev => ({ ...prev, durationDays: parseInt(value) }))}
-                            >
-                              <SelectTrigger className="mt-1">
-                                <SelectValue placeholder="Select duration" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="7">7 Days</SelectItem>
-                                <SelectItem value="14">14 Days</SelectItem>
-                                <SelectItem value="30">30 Days</SelectItem>
-                                <SelectItem value="90">90 Days</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
