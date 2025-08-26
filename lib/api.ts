@@ -1,4 +1,4 @@
-import { useToast } from "@/components/ui/use-toast"
+// Note: Direct toast calls will be handled by the components that use these API functions
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 
@@ -53,6 +53,13 @@ async function apiRequest<T = any>(
 ): Promise<ApiResponse<T>> {
   const url = `${API_BASE_URL}${endpoint}`
   
+  console.log('🌐 API Request:', {
+    method: options.method || 'GET',
+    url,
+    headers: options.headers,
+    timestamp: new Date().toISOString()
+  })
+  
   const defaultOptions: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
@@ -69,24 +76,54 @@ async function apiRequest<T = any>(
       const hasAuthHeader = (defaultOptions.headers as any)?.Authorization || (defaultOptions.headers as any)?.authorization
       const token = localStorage.getItem('authToken')
       if (!hasAuthHeader && token) {
-        (defaultOptions.headers as any) = {
+        console.log('🔑 Attaching auth token to request')
+        ;(defaultOptions.headers as any) = {
           ...(defaultOptions.headers as any),
           Authorization: `Bearer ${token}`,
         }
+      } else if (!token && !hasAuthHeader) {
+        console.log('⚠️  No auth token available')
       }
     }
-  } catch {}
+  } catch (tokenError) {
+    console.error('❌ Error handling auth token:', tokenError)
+  }
 
   try {
     const response = await fetch(url, defaultOptions)
-    const data = await response.json()
+    
+    console.log('📡 API Response:', {
+      status: response.status,
+      statusText: response.statusText,
+      url: response.url,
+      timestamp: new Date().toISOString()
+    })
 
-    if (!response.ok) {
-      alert(data.message || data.error || 'Request failed')
-      throw new ApiError(response.status, data.message || data.error || 'Request failed', data)
+    let data
+    try {
+      data = await response.json()
+    } catch (jsonError) {
+      console.error('❌ Failed to parse response as JSON:', jsonError)
+      throw new ApiError(response.status, 'Invalid response format')
     }
 
-    // No automatic success toast - handle in components for better control
+    if (!response.ok) {
+      const errorMessage = data.message || data.error || 'Request failed'
+      console.error('❌ API Error Response:', {
+        status: response.status,
+        message: errorMessage,
+        data,
+        timestamp: new Date().toISOString()
+      })
+      
+      throw new ApiError(response.status, errorMessage, data)
+    }
+
+    console.log('✅ API Success:', {
+      status: response.status,
+      data: data.success ? 'Success response' : data,
+      timestamp: new Date().toISOString()
+    })
 
     return data
   } catch (error) {
@@ -94,7 +131,12 @@ async function apiRequest<T = any>(
       throw error
     }
     
-    // Network errors are handled in components for better control
+    console.error('❌ Network or unexpected error:', {
+      error: error.message || error,
+      url,
+      timestamp: new Date().toISOString()
+    })
+    
     throw new ApiError(0, 'Network error or server unavailable')
   }
 }
@@ -109,20 +151,68 @@ export const authApi = {
     lastName: string
     role: string
   }): Promise<AuthResponse> => {
-    return apiRequest('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify(userData),
-    }) as Promise<AuthResponse>
+    console.log('👤 Registration attempt:', {
+      email: userData.email,
+      username: userData.username,
+      role: userData.role,
+      timestamp: new Date().toISOString()
+    })
+    
+    try {
+      const result = await apiRequest('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(userData),
+      }) as Promise<AuthResponse>
+      
+      console.log('✅ Registration successful:', {
+        success: true,
+        user: result.user?.id,
+        timestamp: new Date().toISOString()
+      })
+      
+      return result
+    } catch (error) {
+      console.error('❌ Registration failed:', {
+        error: error instanceof Error ? error.message : error,
+        email: userData.email,
+        timestamp: new Date().toISOString()
+      })
+      throw error
+    }
   },
 
   login: async (credentials: {
     email: string
     password: string
   }): Promise<AuthResponse> => {
-    return apiRequest('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(credentials),
-    }) as Promise<AuthResponse>
+    console.log('🔐 Login attempt:', {
+      email: credentials.email,
+      timestamp: new Date().toISOString()
+    })
+    
+    try {
+      const result = await apiRequest('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+      }) as Promise<AuthResponse>
+      
+      console.log('✅ Login successful:', {
+        success: true,
+        user: result.user?.id,
+        role: result.user?.role,
+        hasToken: !!result.token,
+        timestamp: new Date().toISOString()
+      })
+      
+      return result
+    } catch (error) {
+      console.error('❌ Login failed:', {
+        error: error instanceof Error ? error.message : error,
+        email: credentials.email,
+        timestamp: new Date().toISOString()
+      })
+      throw error
+    }
   },
 
   logout: async (): Promise<ApiResponse> => {

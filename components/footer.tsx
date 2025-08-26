@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Instagram, Send } from "lucide-react"
+import { Facebook, Instagram, Send } from "lucide-react"
 
 export default function Footer() {
   return (
@@ -10,11 +10,14 @@ export default function Footer() {
           <span className="text-sm text-muted-foreground">© {new Date().getFullYear()} All rights reserved.</span>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="#" aria-label="Instagram">
+          <Link href="https://www.instagram.com/searchnorthcyprus?igsh=NXlkeXAwZDN4anF4" aria-label="Instagram">
             <Instagram className="h-5 w-5 text-gray-500 hover:text-gray-700" />
           </Link>
-          <Link href="#" aria-label="Telegram">
+          <Link href="https://t.me/searchnorthcyprus" aria-label="Telegram">
             <Send className="h-5 w-5 text-gray-500 hover:text-gray-700" />
+          </Link>
+          <Link href="https://www.facebook.com/share/1a4bjuJ6iR/?mibextid=wwXIfr" aria-label="Facebook">
+            <Facebook className="h-5 w-5 text-gray-500 hover:text-gray-700" />
           </Link>
         </div>
       </div>

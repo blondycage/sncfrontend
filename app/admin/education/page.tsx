@@ -531,7 +531,7 @@ export default function AdminEducationPage() {
 
           {/* Applications List */}
           <div className="space-y-4">
-            {filteredApplications.map((application) => (
+            {!!filteredApplications && filteredApplications.map((application) => (
               <Card key={application._id}>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -544,8 +544,12 @@ export default function AdminEducationPage() {
                           <p className="text-sm text-muted-foreground">{application.personalInfo.email}</p>
                         </div>
                         <div className="text-sm">
-                          <p className="font-medium">{application.programId.title}</p>
-                          <p className="text-muted-foreground">{application.programId.institution.name}</p>
+                          <p className="font-medium">
+                            {application.programId?.title || 'Program Title N/A'}
+                          </p>
+                          <p className="text-muted-foreground">
+                            {application.programId?.institution?.name || 'Institution N/A'}
+                          </p>
                         </div>
                       </div>
                     </div>

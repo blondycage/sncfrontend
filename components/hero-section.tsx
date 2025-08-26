@@ -138,7 +138,7 @@ export default function HeroSection() {
                   <p className="text-sm text-white/80">Get early access and exclusive updates</p>
                 </div>
                 <a
-                  href="https://t.me/sncplatform"
+                  href="https://t.me/searchnorthcyprus"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"

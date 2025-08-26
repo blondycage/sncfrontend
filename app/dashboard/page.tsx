@@ -1320,67 +1320,65 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50">
       {/* User Detail Modal */}
       <UserDetailModal />
       
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-gray-900">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center h-auto sm:h-16 py-3 sm:py-0">
+            <div className="flex items-center space-x-2 sm:space-x-4 mb-3 sm:mb-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                 {user?.role === 'admin' ? 'Admin Dashboard' : 'Dashboard'}
               </h1>
-              <Badge variant="secondary" className={user?.role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}>
+              <Badge variant="secondary" className={`text-xs sm:text-sm whitespace-nowrap ${user?.role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
                 {user?.role === 'admin' ? 'Admin' : (user?.telegramId ? 'Telegram User' : 'Email User')}
               </Badge>
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4 overflow-x-auto">
               {user?.role === 'admin' && (
-                <Button variant="outline" size="sm" onClick={() => router.push('/admin')}>
-                  <Shield className="h-4 w-4 mr-2" />
-                  Admin Panel
+                <Button variant="outline" size="sm" onClick={() => router.push('/admin')} className="whitespace-nowrap">
+                  <Shield className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="hidden xs:inline">Admin Panel</span>
+                  <span className="xs:hidden">Admin</span>
                 </Button>
               )}
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="flex-shrink-0">
                 <Bell className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="flex-shrink-0">
                 <Settings className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
+              <Button variant="outline" size="sm" onClick={handleLogout} className="whitespace-nowrap">
+                <LogOut className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Logout</span>
+                <span className="xs:hidden">Exit</span>
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Card */}
-          
-
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <div className="space-y-6">
           {/* Main Content */}
-          <div className="lg:col-span-3 space-y-6">
             {/* Welcome Message */}
             <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-2xl font-bold mb-2">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-center sm:text-left">
+                  <div className="mb-4 sm:mb-0">
+                    <h2 className="text-xl sm:text-2xl font-bold mb-2">
                       Welcome back, {user.firstName || user.username || 'User'}! 👋
                     </h2>
-                    <p className="text-blue-100">
+                    <p className="text-blue-100 text-sm sm:text-base">
                       Ready to manage your listings? Create new ones or update existing ones.
                     </p>
                   </div>
-                  <div className="hidden sm:block">
+                  <div className="hidden md:block flex-shrink-0">
                     <div className="bg-white/20 rounded-full p-3">
-                      <Building className="h-8 w-8" />
+                      <Building className="h-8 w-8 mx-auto" />
                     </div>
                   </div>
                 </div>
@@ -1389,54 +1387,54 @@ export default function DashboardPage() {
 
             {/* Quick Actions */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <Activity className="h-5 w-5" />
                   Quick Actions
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-sm">
                   Get started with these popular actions
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
                   <Button 
-                    className="h-20 flex-col space-y-2" 
+                    className="h-16 sm:h-20 flex-col space-y-1 sm:space-y-2 p-2 sm:p-4" 
                     variant="outline"
                     onClick={() => router.push('/listings')}
                   >
-                    <Search className="h-6 w-6" />
-                    <span>Browse Listings</span>
+                    <Search className="h-4 w-4 sm:h-6 sm:w-6" />
+                    <span className="text-xs sm:text-sm">Browse Listings</span>
                   </Button>
                   <Button 
-                    className="h-20 flex-col space-y-2" 
+                    className="h-16 sm:h-20 flex-col space-y-1 sm:space-y-2 p-2 sm:p-4" 
                     variant="outline"
                     onClick={() => router.push('/create-listing')}
                   >
-                    <PlusCircle className="h-6 w-6" />
-                    <span>Create Listing</span>
+                    <PlusCircle className="h-4 w-4 sm:h-6 sm:w-6" />
+                    <span className="text-xs sm:text-sm">Create Listing</span>
                   </Button>
                   <Button 
-                    className="h-20 flex-col space-y-2" 
+                    className="h-16 sm:h-20 flex-col space-y-1 sm:space-y-2 p-2 sm:p-4" 
                     variant="outline"
                     onClick={() => router.push('/jobs')}
                   >
-                    <Briefcase className="h-6 w-6" />
-                    <span>Browse Jobs</span>
+                    <Briefcase className="h-4 w-4 sm:h-6 sm:w-6" />
+                    <span className="text-xs sm:text-sm">Browse Jobs</span>
                   </Button>
                   {user && (
                     <Button 
-                      className="h-20 flex-col space-y-2" 
+                      className="h-16 sm:h-20 flex-col space-y-1 sm:space-y-2 p-2 sm:p-4" 
                       variant="outline"
                       onClick={() => router.push('/jobs/create')}
                     >
-                      <Building className="h-6 w-6" />
-                      <span>Post Job</span>
+                      <Building className="h-4 w-4 sm:h-6 sm:w-6" />
+                      <span className="text-xs sm:text-sm">Post Job</span>
                     </Button>
                   )}
                  
                   <Button 
-                    className="h-20 flex-col space-y-2" 
+                    className="h-16 sm:h-20 flex-col space-y-1 sm:space-y-2 p-2 sm:p-4" 
                     variant="outline"
                     onClick={() => {
                       setShowFavorites(!showFavorites);
@@ -1445,59 +1443,59 @@ export default function DashboardPage() {
                       }
                     }}
                   >
-                    <Star className="h-6 w-6" />
-                    <span>Favorites</span>
+                    <Star className="h-4 w-4 sm:h-6 sm:w-6" />
+                    <span className="text-xs sm:text-sm">Favorites</span>
                   </Button>
                 </div>
               </CardContent>
             </Card>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-3 sm:p-4 lg:p-6">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Total Listings</p>
-                      <p className="text-2xl font-bold">{stats.totalListings}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total Listings</p>
+                      <p className="text-lg sm:text-xl lg:text-2xl font-bold">{stats.totalListings}</p>
                     </div>
-                    <Building className="h-8 w-8 text-blue-500" />
-          </div>
-                </CardContent>
-              </Card>
-              
-          <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Active Listings</p>
-                      <p className="text-2xl font-bold">{stats.activeListings}</p>
-                    </div>
-                    <TrendingUp className="h-8 w-8 text-green-500" />
-                </div>
+                    <Building className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500 flex-shrink-0" />
+                  </div>
                 </CardContent>
               </Card>
               
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-3 sm:p-4 lg:p-6">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Total Views</p>
-                      <p className="text-2xl font-bold">{stats.totalViews}</p>
-                </div>
-                    <Eye className="h-8 w-8 text-purple-500" />
-              </div>
-            </CardContent>
-          </Card>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Active Listings</p>
+                      <p className="text-lg sm:text-xl lg:text-2xl font-bold">{stats.activeListings}</p>
+                    </div>
+                    <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 flex-shrink-0" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-3 sm:p-4 lg:p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total Views</p>
+                      <p className="text-lg sm:text-xl lg:text-2xl font-bold">{stats.totalViews}</p>
+                    </div>
+                    <Eye className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500 flex-shrink-0" />
+                  </div>
+                </CardContent>
+              </Card>
 
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-3 sm:p-4 lg:p-6">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Expiring Soon</p>
-                      <p className="text-2xl font-bold">{stats.expiringSoon}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Expiring Soon</p>
+                      <p className="text-lg sm:text-xl lg:text-2xl font-bold">{stats.expiringSoon}</p>
                     </div>
-                    <AlertCircle className="h-8 w-8 text-orange-500" />
+                    <AlertCircle className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500 flex-shrink-0" />
                   </div>
                 </CardContent>
               </Card>

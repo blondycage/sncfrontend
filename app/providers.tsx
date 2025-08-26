@@ -2,15 +2,13 @@
 
 import { AuthProvider } from "@/contexts/auth-context"
 import { ToastProvider } from "@/components/ui/toast"
-import { Toaster } from "@/components/ui/toaster"
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <AuthProvider>
-      <ToastProvider>
+    <ToastProvider>
+      <AuthProvider>
         {children}
-        <Toaster />
-      </ToastProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </ToastProvider>
   );
 } 

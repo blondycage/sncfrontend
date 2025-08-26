@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
 import { authApi, ApiError } from "@/lib/api"
 import { useRouter } from "next/navigation"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/components/ui/toast"
 // Helper function to set cookies
 const setCookie = (name: string, value: string, days: number = 7) => {
   const expires = new Date()
@@ -127,7 +127,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         title: "Success",
         description: "Login successful",
         variant: "success",
-        duration: 3000,
       })
       if (response.success && response.token && response.user) {
         setToken(response.token)
@@ -151,17 +150,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         title: "Error",
         description: "Login failed",
         variant: "error",
-        duration: 3000,
       })
         throw new Error(response.message || response.error || "Login failed")
       }
     } catch (error) {
       console.error("Login error:", error)
       toast({
-        title: "Error",
-        description: "Login failed",
+        title: "Error", 
+        description: error instanceof ApiError ? error.message : "Login failed - please try again",
         variant: "error",
-        duration: 3000,
       })
       throw error
     }
@@ -183,9 +180,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(response.user)
         toast({
         title: "Success",
-        description: "Registration successful",
+        description: "Registration successful! Welcome to SearchNorthCyprus",
         variant: "success",
-        duration: 3000,
       })
         // Store in localStorage
         localStorage.setItem("authToken", response.token)
@@ -197,9 +193,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } else {
         toast({
         title: "Error",
-        description: "Registration failed",
+        description: response.message || "Registration failed - please try again",
         variant: "error",
-        duration: 3000,
       })
         throw new Error(response.message || response.error || "Registration failed")
       }
@@ -207,9 +202,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.error("Registration error:", error)
       toast({
         title: "Error",
-        description: "Registration failed",
+        description: error instanceof ApiError ? error.message : "Registration failed - please try again",
         variant: "error",
-        duration: 3000,
       })
       throw error
     }
@@ -220,9 +214,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setToken(null)
     toast({
       title: "Success",
-      description: "Logout successful",
+      description: "You have been logged out successfully",
       variant: "success",
-      duration: 3000,
     })
 
     // Clear localStorage

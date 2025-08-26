@@ -18,7 +18,9 @@ import {
   MessageSquare,
   Briefcase,
   GraduationCap,
-  BarChart3
+  BarChart3,
+  CreditCard,
+  Mail
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/components/ui/toast';
@@ -313,6 +315,42 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <Button size="sm" variant="outline" className="self-start sm:self-center">Manage</Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="hover:shadow-lg transition-all duration-200 cursor-pointer"
+              onClick={() => router.push('/admin/payments')}
+            >
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                  <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                    <CreditCard className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <h4 className="text-sm sm:text-base font-semibold truncate">Payments</h4>
+                      <p className="text-xs sm:text-sm text-gray-600 truncate">Manage payments & proofs</p>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline" className="self-start sm:self-center">View</Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="hover:shadow-lg transition-all duration-200 cursor-pointer"
+              onClick={() => router.push('/admin/subscribers')}
+            >
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                  <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                    <Mail className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-500 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <h4 className="text-sm sm:text-base font-semibold truncate">Newsletter</h4>
+                      <p className="text-xs sm:text-sm text-gray-600 truncate">Manage subscribers</p>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline" className="self-start sm:self-center">View</Button>
                 </div>
               </CardContent>
             </Card>

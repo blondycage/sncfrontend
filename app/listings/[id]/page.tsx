@@ -35,6 +35,9 @@ import { useToast } from "@/components/ui/toast";
 import PromoteModal from "@/components/promotions/PromoteModal";
 import { FavoriteButton } from "@/components/ui/favorite-button";
 import { ReportButton } from "@/components/ui/report-button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 interface Listing {
   _id: string;
@@ -91,6 +94,13 @@ export default function ListingDetailPage() {
   const [showImageModal, setShowImageModal] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [promoteOpen, setPromoteOpen] = useState(false);
+  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [paymentData, setPaymentData] = useState({
+    paymentType: 'featured_listing',
+    chain: 'eth',
+    durationDays: 7
+  });
+  const [paymentLoading, setPaymentLoading] = useState(false);
   const fetchingRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -307,6 +317,63 @@ export default function ListingDetailPage() {
       });
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  const handlePayment = async () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to make payments",
+        variant: "error"
+      });
+      router.push('/auth/login');
+      return;
+    }
+
+    setPaymentLoading(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/create`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          itemType: 'listing',
+          itemId: listing?._id,
+          paymentType: paymentData.paymentType,
+          chain: paymentData.chain,
+          durationDays: paymentData.durationDays
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create payment');
+      }
+
+      const data = await response.json();
+      
+      toast({
+        title: "Payment Created",
+        description: "Payment request created successfully. You will be redirected to complete payment."
+      });
+
+      // Redirect to payment page or show payment details
+      router.push(`/payments/${data.data.payment._id}`);
+      
+    } catch (error) {
+      console.error('Error creating payment:', error);
+      toast({
+        title: "Payment Error",
+        description: error instanceof Error ? error.message : "Failed to create payment",
+        variant: "error"
+      });
+    } finally {
+      setPaymentLoading(false);
+      setPaymentOpen(false);
     }
   };
 
@@ -781,10 +848,104 @@ export default function ListingDetailPage() {
                   </div>
                 </div>
                 
-                <Button className="w-full text-sm sm:text-base" size="sm">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Send Message
-                </Button>
+                <div className="space-y-2">
+                  <Button className="w-full text-sm sm:text-base" size="sm">
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Send Message
+                  </Button>
+                  
+                  {/* Pay Now Button - Only show for non-owners */}
+                  {!listing.isOwner && (
+                    <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}>
+                      <DialogTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          className="w-full text-sm sm:text-base bg-green-50 hover:bg-green-100 border-green-300 text-green-700"
+                          size="sm"
+                        >
+                          <DollarSign className="h-4 w-4 mr-2" />
+                          Pay Now
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Pay for Listing Service</DialogTitle>
+                          <DialogDescription>
+                            Choose a payment option for this listing
+                          </DialogDescription>
+                        </DialogHeader>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="paymentType">Service Type</Label>
+                            <Select 
+                              value={paymentData.paymentType} 
+                              onValueChange={(value) => setPaymentData(prev => ({ ...prev, paymentType: value }))}
+                            >
+                              <SelectTrigger className="mt-1">
+                                <SelectValue placeholder="Select service type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="featured_listing">Featured Listing</SelectItem>
+                                <SelectItem value="listing_fee">Listing Fee</SelectItem>
+                                <SelectItem value="premium_placement">Premium Placement</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <Label htmlFor="chain">Payment Method</Label>
+                            <Select 
+                              value={paymentData.chain} 
+                              onValueChange={(value) => setPaymentData(prev => ({ ...prev, chain: value }))}
+                            >
+                              <SelectTrigger className="mt-1">
+                                <SelectValue placeholder="Select payment method" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="eth">Ethereum (ETH)</SelectItem>
+                                <SelectItem value="btc">Bitcoin (BTC)</SelectItem>
+                                <SelectItem value="usdt_erc20">USDT (ERC20)</SelectItem>
+                                <SelectItem value="usdt_trc20">USDT (TRC20)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <Label htmlFor="duration">Duration</Label>
+                            <Select 
+                              value={paymentData.durationDays.toString()} 
+                              onValueChange={(value) => setPaymentData(prev => ({ ...prev, durationDays: parseInt(value) }))}
+                            >
+                              <SelectTrigger className="mt-1">
+                                <SelectValue placeholder="Select duration" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="7">7 Days</SelectItem>
+                                <SelectItem value="14">14 Days</SelectItem>
+                                <SelectItem value="30">30 Days</SelectItem>
+                                <SelectItem value="90">90 Days</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setPaymentOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button 
+                            onClick={handlePayment}
+                            disabled={paymentLoading}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            {paymentLoading ? 'Creating...' : 'Proceed to Payment'}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
