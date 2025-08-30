@@ -13,7 +13,6 @@ import {
   Eye, UserPlus
 } from "lucide-react"
 import Link from 'next/link'
-import Image from 'next/image'
 
 interface EducationalProgram {
   _id: string
@@ -129,7 +128,6 @@ export default function ProgramDetailPage() {
   const [program, setProgram] = useState<EducationalProgram | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   useEffect(() => {
     const fetchProgram = async () => {
@@ -233,23 +231,17 @@ export default function ProgramDetailPage() {
 
         {/* Hero Section */}
         <div className="relative mb-12">
-          <div className="relative h-80 md:h-96 rounded-xl overflow-hidden shadow-lg">
-            <Image
-              src={program.images[currentImageIndex]?.url || '/placeholder.svg'}
-              alt={program.title}
-              fill
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-black/40" />
+          <div className="relative h-80 md:h-96 rounded-xl overflow-hidden shadow-lg bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800">
+            <div className="absolute inset-0 bg-black/20" />
             <div className="absolute inset-0 flex items-center justify-center text-white text-center p-6 md:p-8">
               <div>
                 <div className="flex items-center justify-center mb-6">
                   <IconComponent className="h-8 w-8 mr-3" />
-                  <Badge className="bg-primary text-white px-4 py-2 text-sm">
+                  <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30 px-4 py-2 text-sm">
                     {levelData.label}
                   </Badge>
                   {program.featured && (
-                    <Badge className="bg-amber-500 text-white ml-3 px-4 py-2 text-sm">
+                    <Badge className="bg-amber-500/90 backdrop-blur-sm text-white ml-3 px-4 py-2 text-sm">
                       Featured
                     </Badge>
                   )}
@@ -263,21 +255,6 @@ export default function ProgramDetailPage() {
               </div>
             </div>
           </div>
-          
-          {/* Image Navigation */}
-          {program.images.length > 1 && (
-            <div className="flex justify-center mt-6 space-x-3">
-              {program.images.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentImageIndex(index)}
-                  className={`w-4 h-4 rounded-full transition-all duration-200 ${
-                    index === currentImageIndex ? 'bg-primary scale-110' : 'bg-muted hover:bg-muted-foreground/50'
-                  }`}
-                />
-              ))}
-            </div>
-          )}
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">

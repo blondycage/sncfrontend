@@ -104,16 +104,17 @@ export default function KyreniaPage() {
         </div>
       </div>
 
-      <div className="container py-8">
-        <div className="mb-8">
-          <p className="text-lg">
+      <div className="container px-6 py-12 mx-auto max-w-7xl">
+        <div className="mb-12 px-4">
+          <p className="text-lg leading-relaxed">
             Kyrenia is a beautiful coastal city in North Cyprus, known for its historic harbor, castle, and stunning
             mountain backdrop. It's a popular destination for tourists and expats alike.
           </p>
         </div>
 
-        <Tabs defaultValue="properties">
-          <TabsList className="mb-6 grid w-full grid-cols-4">
+        <div className="px-4">
+          <Tabs defaultValue="properties">
+            <TabsList className="mb-8 grid w-full grid-cols-4">
             <TabsTrigger value="properties">
               <BedDouble className="mr-2 h-4 w-4" />
               Properties
@@ -263,7 +264,8 @@ export default function KyreniaPage() {
               </Link>
             </div>
           </TabsContent>
-        </Tabs>
+          </Tabs>
+        </div>
       </div>
     </div>
   )

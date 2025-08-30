@@ -511,10 +511,81 @@ export const uploadApi = {
     } catch (error: any) {
       throw new Error(error.message || 'Upload failed');
     }
+  },
+
+  uploadDocument: async (file: File): Promise<{ success: boolean; data: { url: string; public_id: string; resource_type: string; format: string; bytes: number }; message: string }> => {
+    try {
+      const formData = new FormData();
+      formData.append('document', file);
+
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/upload/document`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to upload document');
+      }
+
+      const data = await response.json();
+
+      return {
+        success: data.success,
+        data: data.data,
+        message: data.message
+      };
+    } catch (error: any) {
+      throw new Error(error.message || 'Upload failed');
+    }
   }
 };
 
 export default apiRequest 
+
+// Categories API functions
+export const categoriesApi = {
+  getProperties: async (params: { limit?: number; city?: string; category?: string; sortBy?: string } = {}) => {
+    const query = new URLSearchParams()
+    if (params.limit) query.append('limit', params.limit.toString())
+    if (params.city) query.append('city', params.city)
+    if (params.category) query.append('category', params.category)
+    if (params.sortBy) query.append('sortBy', params.sortBy)
+    const qs = query.toString() ? `?${query.toString()}` : ''
+    return apiRequest(`/listings${qs}`)
+  },
+
+  getJobs: async (params: { limit?: number; city?: string; sortBy?: string } = {}) => {
+    const query = new URLSearchParams()
+    if (params.limit) query.append('limit', params.limit.toString())
+    if (params.city) query.append('city', params.city)
+    if (params.sortBy) query.append('sortBy', params.sortBy)
+    const qs = query.toString() ? `?${query.toString()}` : ''
+    return apiRequest(`/jobs${qs}`)
+  },
+
+  getEducationPrograms: async (params: { limit?: number; city?: string; sortBy?: string } = {}) => {
+    const query = new URLSearchParams()
+    if (params.limit) query.append('limit', params.limit.toString())
+    if (params.city) query.append('city', params.city)
+    if (params.sortBy) query.append('sortBy', params.sortBy)
+    const qs = query.toString() ? `?${query.toString()}` : ''
+    return apiRequest(`/education/programs${qs}`)
+  },
+
+  getServices: async (params: { limit?: number; city?: string; sortBy?: string } = {}) => {
+    const query = new URLSearchParams()
+    if (params.limit) query.append('limit', params.limit.toString())
+    if (params.city) query.append('city', params.city)
+    if (params.sortBy) query.append('sortBy', params.sortBy)
+    const qs = query.toString() ? `?${query.toString()}` : ''
+    return apiRequest(`/listings${qs}`)
+  }
+}
 
 // Promotions API functions
 export const promotionsApi = {

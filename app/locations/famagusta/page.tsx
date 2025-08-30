@@ -101,16 +101,17 @@ export default function FamagustaPage() {
         </div>
       </div>
 
-      <div className="container py-8">
-        <div className="mb-8">
-          <p className="text-lg">
+      <div className="container px-6 py-12 mx-auto max-w-7xl">
+        <div className="mb-12 px-4">
+          <p className="text-lg leading-relaxed">
             Famagusta is a city on the east coast of North Cyprus, known for its historic walled city, beautiful
             beaches, and vibrant university life. It's a perfect blend of history and modernity.
           </p>
         </div>
 
-        <Tabs defaultValue="properties">
-          <TabsList className="mb-6 grid w-full grid-cols-4">
+        <div className="px-4">
+          <Tabs defaultValue="properties">
+            <TabsList className="mb-8 grid w-full grid-cols-4">
             <TabsTrigger value="properties">
               <BedDouble className="mr-2 h-4 w-4" />
               Properties
@@ -260,7 +261,8 @@ export default function FamagustaPage() {
               </Link>
             </div>
           </TabsContent>
-        </Tabs>
+          </Tabs>
+        </div>
       </div>
     </div>
   )

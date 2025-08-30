@@ -233,6 +233,58 @@ export default function ApplicationDetailPage() {
     }
   }
 
+  const verifyDocument = async (documentName: string) => {
+    if (!application) return
+
+    try {
+      const token = localStorage.getItem('authToken')
+      
+      // Map document display names to field names
+      const documentMap: { [key: string]: string } = {
+        'passport id datapage': 'passportDatapage',
+        'passport photograph': 'passportPhotograph',
+        'waec/neco results': 'waecNecoResults',
+        'bachelor\'s transcript': 'bachelorTranscript',
+        'bachelor\'s diploma': 'bachelorDiploma',
+        'master\'s transcript': 'masterTranscript',
+        'master\'s diploma': 'masterDiploma',
+        'research proposal': 'researchProposal',
+        'cv/resume': 'cv',
+        'english proficiency test': 'englishProficiency'
+      }
+
+      const fieldName = documentMap[documentName.toLowerCase()] || documentName.toLowerCase().replace(/[^a-z0-9]/g, '')
+      
+      const response = await fetch(`/api/admin/education/applications/${application._id}/documents/verify`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          documentType: fieldName,
+          verified: true
+        })
+      })
+
+      if (response.ok) {
+        toast({
+          title: 'Document Verified',
+          description: `${documentName} has been verified successfully`,
+        })
+        fetchApplication() // Refresh data
+      } else {
+        throw new Error('Failed to verify document')
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to verify document',
+        variant: 'destructive',
+      })
+    }
+  }
+
   const getStatusBadge = (status: string) => {
     const config = {
       draft: { color: 'bg-gray-500', label: 'Draft', icon: Clock },
@@ -321,6 +373,17 @@ export default function ApplicationDetailPage() {
             <Download className="h-3 w-3 mr-1" />
             Download
           </Button>
+          {!doc.verified && (
+            <Button
+              size="sm"
+              variant="default"
+              onClick={() => verifyDocument(name)}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <CheckCircle className="h-3 w-3 mr-1" />
+              Verify
+            </Button>
+          )}
         </div>
       </div>
     )

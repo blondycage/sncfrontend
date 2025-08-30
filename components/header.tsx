@@ -27,6 +27,7 @@ import {
 import { useAuth } from "@/contexts/auth-context"
 import { useState } from "react"
 import Image from "next/image"
+import GTranslateWidget from "@/components/google-translate"
 
 // Major cities in Northern Cyprus
 const MAJOR_CITIES = [
@@ -169,6 +170,10 @@ export default function Header() {
 
         {/* Desktop Auth Section */}
         <div className="hidden md:flex items-center space-x-4">
+          {/* Google Translate Widget */}
+          <div className="flex items-center space-x-1">
+            <GTranslateWidget />
+          </div>
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -243,6 +248,10 @@ export default function Header() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t bg-white">
           <div className="container px-4 py-4 space-y-4">
+            {/* Mobile Language Selector */}
+            <div className="flex items-center space-x-2 py-2 border-b border-gray-200">
+              <GTranslateWidget />
+            </div>
             <Link 
               href="/listings" 
               className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
@@ -349,22 +358,7 @@ export default function Header() {
                     <Building className="h-4 w-4" />
                     <span>Dashboard</span>
                   </Link>
-                  <Link 
-                    href="/dashboard/profile" 
-                    className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <User className="h-4 w-4" />
-                    <span>Profile</span>
-                  </Link>
-                  <Link 
-                    href="/dashboard/settings" 
-                    className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
-                  </Link>
+                
                   <button 
                     onClick={() => {
                       handleLogout();

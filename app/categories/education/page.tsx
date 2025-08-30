@@ -311,14 +311,16 @@ export default function EducationPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
               {featuredPrograms.slice(0, 3).map((program) => (
                 <Card key={program._id} className="overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                  <CardHeader className="relative p-6 pb-4">
-                    <Badge className="absolute left-4 top-4 bg-amber-500 text-white px-3 py-1">
-                      Featured
-                    </Badge>
-                    <Badge className="absolute right-4 top-4 bg-primary px-3 py-1">
-                      {getLevelLabel(program.level)}
-                    </Badge>
-                    <CardTitle className="line-clamp-2 mt-10 text-xl leading-tight">{program.title}</CardTitle>
+                  <CardHeader className="p-6 pb-4">
+                    <div className="flex justify-between items-start mb-4">
+                      <Badge className="bg-amber-500 text-white px-3 py-1">
+                        Featured
+                      </Badge>
+                      <Badge className="bg-primary px-3 py-1">
+                        {getLevelLabel(program.level)}
+                      </Badge>
+                    </div>
+                    <CardTitle className="line-clamp-2 text-xl leading-tight">{program.title}</CardTitle>
                     <div className="text-sm font-medium text-primary mt-2">{program.institution.name}</div>
                     <div className="flex items-center text-sm text-muted-foreground mt-1">
                       <MapPin className="mr-2 h-4 w-4" />
@@ -536,16 +538,18 @@ export default function EducationPage() {
                     const IconComponent = getLevelIcon(program.level)
                     return (
                       <Card key={program._id} className="overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                        <CardHeader className="relative p-6 pb-4">
-                          {program.featured && (
-                            <Badge className="absolute left-4 top-4 bg-amber-500 text-white px-3 py-1">
-                              Featured
+                        <CardHeader className="p-6 pb-4">
+                          <div className="flex justify-between items-start mb-4">
+                            {program.featured && (
+                              <Badge className="bg-amber-500 text-white px-3 py-1">
+                                Featured
+                              </Badge>
+                            )}
+                            <Badge className="bg-primary px-3 py-1 ml-auto">
+                              {getLevelLabel(program.level)}
                             </Badge>
-                          )}
-                          <Badge className="absolute right-4 top-4 bg-primary px-3 py-1">
-                            {getLevelLabel(program.level)}
-                          </Badge>
-                          <CardTitle className="line-clamp-2 mt-10 flex items-start text-xl leading-tight">
+                          </div>
+                          <CardTitle className="line-clamp-2 flex items-start text-xl leading-tight">
                             <IconComponent className="h-5 w-5 mr-3 mt-1 flex-shrink-0" />
                             {program.title}
                           </CardTitle>

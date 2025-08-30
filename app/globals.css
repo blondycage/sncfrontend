@@ -57,3 +57,155 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* GTranslate Widget Styles */
+.gtranslate_wrapper {
+  @apply inline-flex items-center;
+  position: relative;
+}
+
+.gtranslate_wrapper select,
+.gtranslate_wrapper .gt_switcher {
+  @apply px-3 py-2 border border-input rounded-md text-sm bg-background hover:bg-accent hover:text-accent-foreground transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:border-input shadow-sm;
+  min-width: 120px !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.5rem center !important;
+  background-size: 1rem !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+  color: hsl(var(--foreground)) !important;
+  background-color: hsl(var(--background)) !important;
+  border-color: hsl(var(--border)) !important;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+
+.gtranslate_wrapper select:hover,
+.gtranslate_wrapper .gt_switcher:hover {
+  @apply bg-accent text-accent-foreground;
+  background-color: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
+
+.gtranslate_wrapper select:focus,
+.gtranslate_wrapper .gt_switcher:focus {
+  @apply ring-2 ring-ring;
+}
+
+/* Override GTranslate default styles */
+.gtranslate_wrapper .gt_switcher_wrapper {
+  display: inline-block !important;
+  position: relative !important;
+}
+
+.gtranslate_wrapper .gt_switcher {
+  display: inline-block !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Ensure dropdown functionality on mobile */
+.gtranslate_wrapper .gt_switcher,
+.gtranslate_wrapper select {
+  touch-action: manipulation !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Force proper mobile dropdown behavior */
+@media (max-width: 768px) {
+  .gtranslate_wrapper select {
+    -webkit-appearance: menulist !important;
+    -moz-appearance: menulist !important;
+    appearance: menulist !important;
+    background-image: none !important;
+  }
+  
+  .gtranslate_wrapper .gt_switcher {
+    position: relative !important;
+  }
+  
+  .gtranslate_wrapper .gt_switcher_wrapper {
+    position: relative !important;
+    z-index: 999 !important;
+  }
+}
+
+/* Ensure GTranslate dropdown is properly positioned */
+.gtranslate_wrapper .gt_switcher_wrapper .gt_switcher {
+  position: relative !important;
+}
+
+.gtranslate_wrapper .gt_switcher_wrapper .gt_switcher_wrapper {
+  position: relative !important;
+}
+
+/* Style the dropdown options */
+.gtranslate_wrapper select option {
+  @apply bg-background text-foreground;
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+  padding: 8px 12px !important;
+}
+
+/* Flag icons styling */
+.gtranslate_wrapper img {
+  @apply inline-block mr-2;
+  width: 16px !important;
+  height: auto !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .gtranslate_wrapper select,
+  .gtranslate_wrapper .gt_switcher {
+    min-width: 110px !important;
+    @apply text-xs px-2 py-1.5;
+    font-size: 12px !important;
+  }
+  
+  .gtranslate_wrapper img {
+    width: 14px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .gtranslate_wrapper select,
+  .gtranslate_wrapper .gt_switcher {
+    min-width: 100px !important;
+    @apply text-xs px-2 py-1;
+    font-size: 11px !important;
+  }
+  
+  .gtranslate_wrapper img {
+    width: 12px !important;
+  }
+}
+
+/* Mobile menu specific styles */
+.md\\:hidden .gtranslate_wrapper select,
+.md\\:hidden .gtranslate_wrapper .gt_switcher {
+  @apply w-full max-w-[150px];
+}
+
+/* Dark mode support */
+.dark .gtranslate_wrapper select {
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--background));
+  border-color: hsl(var(--border));
+}
+
+.dark .gtranslate_wrapper select:hover {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.dark .gtranslate_wrapper select option {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}

@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 import Link from 'next/link'
 import { useToast } from '@/components/ui/toast'
+import { DocumentUpload } from '@/components/ui/document-upload'
 
 interface EducationalProgram {
   _id: string
@@ -81,17 +82,17 @@ interface ApplicationData {
   // Final step
   declaration: boolean
   
-  // Documents
-  passportDatapage: File | null
-  passportPhotograph: File | null
-  waecNecoResults: File | null
-  bachelorTranscript: File | null
-  bachelorDiploma: File | null
-  masterTranscript: File | null
-  masterDiploma: File | null
-  cv: File | null
-  researchProposal: File | null
-  englishProficiency: File | null
+  // Documents - store URLs and cloudinary IDs
+  passportDatapage: { url: string; cloudinaryId?: string } | null
+  passportPhotograph: { url: string; cloudinaryId?: string } | null
+  waecNecoResults: { url: string; cloudinaryId?: string } | null
+  bachelorTranscript: { url: string; cloudinaryId?: string } | null
+  bachelorDiploma: { url: string; cloudinaryId?: string } | null
+  masterTranscript: { url: string; cloudinaryId?: string } | null
+  masterDiploma: { url: string; cloudinaryId?: string } | null
+  cv: { url: string; cloudinaryId?: string } | null
+  researchProposal: { url: string; cloudinaryId?: string } | null
+  englishProficiency: { url: string; cloudinaryId?: string } | null
 }
 
 const STEPS = [
@@ -173,16 +174,13 @@ export default function ApplicationPage() {
     setApplicationData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleFileUpload = async (field: keyof ApplicationData, file: File | null) => {
-    if (!file) {
+  const handleDocumentUpload = (field: keyof ApplicationData) => (url: string, cloudinaryId?: string) => {
+    if (!url) {
       updateApplicationData(field, null)
       return
     }
     
-    updateApplicationData(field, file)
-    
-    // If we have an application ID, upload the document immediately
-    // For now, we'll store the file and upload it when the application is created
+    updateApplicationData(field, { url, cloudinaryId })
   }
 
   const validateStep = (step: number): boolean => {
@@ -268,6 +266,29 @@ export default function ApplicationPage() {
     await Promise.all(uploadPromises)
   }
 
+  const prepareDocuments = () => {
+    const documentFields = [
+      'passportDatapage', 'passportPhotograph', 'waecNecoResults', 'bachelorTranscript',
+      'bachelorDiploma', 'masterTranscript', 'masterDiploma', 'cv', 'researchProposal', 'englishProficiency'
+    ]
+
+    const documents: any = {}
+    
+    documentFields.forEach(field => {
+      const doc = applicationData[field as keyof ApplicationData]
+      if (doc && typeof doc === 'object' && 'url' in doc) {
+        documents[field] = {
+          uploaded: true,
+          url: doc.url,
+          cloudinaryId: doc.cloudinaryId,
+          verified: false
+        }
+      }
+    })
+
+    return documents
+  }
+
   const handleSubmit = async () => {
     if (!program || !validateStep(currentStep)) return
     
@@ -339,6 +360,9 @@ export default function ApplicationPage() {
         })
       }
 
+      // Add documents to the payload
+      applicationPayload.documents = prepareDocuments()
+
       let token = localStorage.getItem('authToken')
       
       // For testing purposes, use the test token we generated earlier
@@ -359,14 +383,6 @@ export default function ApplicationPage() {
       if (response.ok) {
         const data = await response.json()
         const applicationId = data.data._id
-        
-        // Upload documents if any exist
-        try {
-          await uploadDocuments(applicationId, token)
-        } catch (documentError) {
-          console.error('Document upload error:', documentError)
-          // Don't fail the entire application for document upload errors
-        }
 
         toast({
           title: 'Success!',
@@ -841,127 +857,101 @@ export default function ApplicationPage() {
                 </h3>
                 <div className="grid grid-cols-1 gap-6">
                   {/* Passport Documents */}
-                  <div className="border rounded-lg p-6">
-                    <Label className="text-base font-medium mb-4 block">Passport ID Datapage *</Label>
-                    <Input
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={(e) => handleFileUpload('passportDatapage', e.target.files?.[0] || null)}
-                      className="h-11"
-                    />
-                    <p className="text-sm text-muted-foreground mt-2">Upload a clear scan of your passport ID page (PDF, JPG, PNG)</p>
-                  </div>
+                  <DocumentUpload
+                    label="Passport ID Datapage"
+                    required
+                    currentDocument={applicationData.passportDatapage ? { url: applicationData.passportDatapage.url, name: "Passport ID Page" } : undefined}
+                    onDocumentChange={handleDocumentUpload('passportDatapage')}
+                    acceptedTypes={['.pdf', '.jpg', '.jpeg', '.png']}
+                    className="border rounded-lg p-6"
+                  />
 
-                  <div className="border rounded-lg p-6">
-                    <Label className="text-base font-medium mb-4 block">Passport Photograph *</Label>
-                    <Input
-                      type="file"
-                      accept=".jpg,.jpeg,.png"
-                      onChange={(e) => handleFileUpload('passportPhotograph', e.target.files?.[0] || null)}
-                      className="h-11"
-                    />
-                    <p className="text-sm text-muted-foreground mt-2">Upload a recent passport-size photograph (JPG, PNG)</p>
-                  </div>
+                  <DocumentUpload
+                    label="Passport Photograph"
+                    required
+                    currentDocument={applicationData.passportPhotograph ? { url: applicationData.passportPhotograph.url, name: "Passport Photo" } : undefined}
+                    onDocumentChange={handleDocumentUpload('passportPhotograph')}
+                    acceptedTypes={['.jpg', '.jpeg', '.png']}
+                    className="border rounded-lg p-6"
+                  />
 
                   {/* Academic Documents */}
-                  <div className="border rounded-lg p-6">
-                    <Label className="text-base font-medium mb-4 block">WAEC/NECO Results *</Label>
-                    <Input
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={(e) => handleFileUpload('waecNecoResults', e.target.files?.[0] || null)}
-                      className="h-11"
-                    />
-                    <p className="text-sm text-muted-foreground mt-2">Upload your WAEC/NECO certificate showing 6+ credits</p>
-                  </div>
+                  <DocumentUpload
+                    label="WAEC/NECO Results"
+                    required
+                    currentDocument={applicationData.waecNecoResults ? { url: applicationData.waecNecoResults.url, name: "WAEC/NECO Results" } : undefined}
+                    onDocumentChange={handleDocumentUpload('waecNecoResults')}
+                    acceptedTypes={['.pdf', '.jpg', '.jpeg', '.png']}
+                    className="border rounded-lg p-6"
+                  />
 
                   {/* Undergraduate Documents (for transfer and postgraduate) */}
                   {(program?.level.includes('transfer') || program?.level.includes('postgraduate')) && (
                     <>
-                      <div className="border rounded-lg p-6">
-                        <Label className="text-base font-medium mb-4 block">Bachelor's Transcript *</Label>
-                        <Input
-                          type="file"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(e) => handleFileUpload('bachelorTranscript', e.target.files?.[0] || null)}
-                          className="h-11"
-                        />
-                        <p className="text-sm text-muted-foreground mt-2">Upload your bachelor's degree transcript</p>
-                      </div>
+                      <DocumentUpload
+                        label="Bachelor's Transcript"
+                        required
+                        currentDocument={applicationData.bachelorTranscript ? { url: applicationData.bachelorTranscript.url, name: "Bachelor's Transcript" } : undefined}
+                        onDocumentChange={handleDocumentUpload('bachelorTranscript')}
+                        acceptedTypes={['.pdf', '.jpg', '.jpeg', '.png']}
+                        className="border rounded-lg p-6"
+                      />
 
-                      <div className="border rounded-lg p-6">
-                        <Label className="text-base font-medium mb-4 block">Bachelor's Diploma</Label>
-                        <Input
-                          type="file"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(e) => handleFileUpload('bachelorDiploma', e.target.files?.[0] || null)}
-                          className="h-11"
-                        />
-                        <p className="text-sm text-muted-foreground mt-2">Upload your bachelor's degree certificate</p>
-                      </div>
+                      <DocumentUpload
+                        label="Bachelor's Diploma"
+                        currentDocument={applicationData.bachelorDiploma ? { url: applicationData.bachelorDiploma.url, name: "Bachelor's Diploma" } : undefined}
+                        onDocumentChange={handleDocumentUpload('bachelorDiploma')}
+                        acceptedTypes={['.pdf', '.jpg', '.jpeg', '.png']}
+                        className="border rounded-lg p-6"
+                      />
                     </>
                   )}
 
                   {/* Postgraduate Documents (for PhD) */}
                   {program?.level === 'postgraduate_phd' && (
                     <>
-                      <div className="border rounded-lg p-6">
-                        <Label className="text-base font-medium mb-4 block">Master's Transcript</Label>
-                        <Input
-                          type="file"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(e) => handleFileUpload('masterTranscript', e.target.files?.[0] || null)}
-                          className="h-11"
-                        />
-                        <p className="text-sm text-muted-foreground mt-2">Upload your master's degree transcript</p>
-                      </div>
+                      <DocumentUpload
+                        label="Master's Transcript"
+                        currentDocument={applicationData.masterTranscript ? { url: applicationData.masterTranscript.url, name: "Master's Transcript" } : undefined}
+                        onDocumentChange={handleDocumentUpload('masterTranscript')}
+                        acceptedTypes={['.pdf', '.jpg', '.jpeg', '.png']}
+                        className="border rounded-lg p-6"
+                      />
 
-                      <div className="border rounded-lg p-6">
-                        <Label className="text-base font-medium mb-4 block">Master's Diploma</Label>
-                        <Input
-                          type="file"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(e) => handleFileUpload('masterDiploma', e.target.files?.[0] || null)}
-                          className="h-11"
-                        />
-                        <p className="text-sm text-muted-foreground mt-2">Upload your master's degree certificate</p>
-                      </div>
+                      <DocumentUpload
+                        label="Master's Diploma"
+                        currentDocument={applicationData.masterDiploma ? { url: applicationData.masterDiploma.url, name: "Master's Diploma" } : undefined}
+                        onDocumentChange={handleDocumentUpload('masterDiploma')}
+                        acceptedTypes={['.pdf', '.jpg', '.jpeg', '.png']}
+                        className="border rounded-lg p-6"
+                      />
 
-                      <div className="border rounded-lg p-6">
-                        <Label className="text-base font-medium mb-4 block">Research Proposal</Label>
-                        <Input
-                          type="file"
-                          accept=".pdf,.doc,.docx"
-                          onChange={(e) => handleFileUpload('researchProposal', e.target.files?.[0] || null)}
-                          className="h-11"
-                        />
-                        <p className="text-sm text-muted-foreground mt-2">Upload your research proposal (PDF, DOC, DOCX)</p>
-                      </div>
+                      <DocumentUpload
+                        label="Research Proposal"
+                        currentDocument={applicationData.researchProposal ? { url: applicationData.researchProposal.url, name: "Research Proposal" } : undefined}
+                        onDocumentChange={handleDocumentUpload('researchProposal')}
+                        acceptedTypes={['.pdf', '.doc', '.docx']}
+                        className="border rounded-lg p-6"
+                      />
                     </>
                   )}
 
                   {/* Optional Documents */}
-                  <div className="border rounded-lg p-6">
-                    <Label className="text-base font-medium mb-4 block">CV/Resume (Optional)</Label>
-                    <Input
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      onChange={(e) => handleFileUpload('cv', e.target.files?.[0] || null)}
-                      className="h-11"
-                    />
-                    <p className="text-sm text-muted-foreground mt-2">Upload your current CV/Resume (PDF, DOC, DOCX)</p>
-                  </div>
+                  <DocumentUpload
+                    label="CV/Resume (Optional)"
+                    currentDocument={applicationData.cv ? { url: applicationData.cv.url, name: "CV/Resume" } : undefined}
+                    onDocumentChange={handleDocumentUpload('cv')}
+                    acceptedTypes={['.pdf', '.doc', '.docx']}
+                    className="border rounded-lg p-6"
+                  />
 
-                  <div className="border rounded-lg p-6">
-                    <Label className="text-base font-medium mb-4 block">English Proficiency Test (Optional)</Label>
-                    <Input
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={(e) => handleFileUpload('englishProficiency', e.target.files?.[0] || null)}
-                      className="h-11"
-                    />
-                    <p className="text-sm text-muted-foreground mt-2">Upload IELTS/TOEFL results if available</p>
-                  </div>
+                  <DocumentUpload
+                    label="English Proficiency Test (Optional)"
+                    currentDocument={applicationData.englishProficiency ? { url: applicationData.englishProficiency.url, name: "English Proficiency Test" } : undefined}
+                    onDocumentChange={handleDocumentUpload('englishProficiency')}
+                    acceptedTypes={['.pdf', '.jpg', '.jpeg', '.png']}
+                    className="border rounded-lg p-6"
+                  />
                 </div>
               </div>
             )}
@@ -1279,19 +1269,19 @@ export default function ApplicationPage() {
                     <h4 className="font-semibold mb-4">Documents</h4>
                     <div className="space-y-2 text-sm">
                       {/* Required Documents */}
-                      {applicationData.passportDatapage && (
+                      {applicationData.passportDatapage?.url && (
                         <div className="flex items-center justify-between">
                           <span className="font-medium">Passport ID Datapage:</span>
                           <span className="text-green-600">✓ Uploaded</span>
                         </div>
                       )}
-                      {applicationData.passportPhotograph && (
+                      {applicationData.passportPhotograph?.url && (
                         <div className="flex items-center justify-between">
                           <span className="font-medium">Passport Photograph:</span>
                           <span className="text-green-600">✓ Uploaded</span>
                         </div>
                       )}
-                      {applicationData.waecNecoResults && (
+                      {applicationData.waecNecoResults?.url && (
                         <div className="flex items-center justify-between">
                           <span className="font-medium">WAEC/NECO Results:</span>
                           <span className="text-green-600">✓ Uploaded</span>
@@ -1299,43 +1289,43 @@ export default function ApplicationPage() {
                       )}
                       
                       {/* Conditional Documents */}
-                      {applicationData.bachelorTranscript && (
+                      {applicationData.bachelorTranscript?.url && (
                         <div className="flex items-center justify-between">
                           <span className="font-medium">Bachelor's Transcript:</span>
                           <span className="text-green-600">✓ Uploaded</span>
                         </div>
                       )}
-                      {applicationData.bachelorDiploma && (
+                      {applicationData.bachelorDiploma?.url && (
                         <div className="flex items-center justify-between">
                           <span className="font-medium">Bachelor's Diploma:</span>
                           <span className="text-green-600">✓ Uploaded</span>
                         </div>
                       )}
-                      {applicationData.masterTranscript && (
+                      {applicationData.masterTranscript?.url && (
                         <div className="flex items-center justify-between">
                           <span className="font-medium">Master's Transcript:</span>
                           <span className="text-green-600">✓ Uploaded</span>
                         </div>
                       )}
-                      {applicationData.masterDiploma && (
+                      {applicationData.masterDiploma?.url && (
                         <div className="flex items-center justify-between">
                           <span className="font-medium">Master's Diploma:</span>
                           <span className="text-green-600">✓ Uploaded</span>
                         </div>
                       )}
-                      {applicationData.researchProposal && (
+                      {applicationData.researchProposal?.url && (
                         <div className="flex items-center justify-between">
                           <span className="font-medium">Research Proposal:</span>
                           <span className="text-green-600">✓ Uploaded</span>
                         </div>
                       )}
-                      {applicationData.cv && (
+                      {applicationData.cv?.url && (
                         <div className="flex items-center justify-between">
                           <span className="font-medium">CV/Resume:</span>
                           <span className="text-green-600">✓ Uploaded</span>
                         </div>
                       )}
-                      {applicationData.englishProficiency && (
+                      {applicationData.englishProficiency?.url && (
                         <div className="flex items-center justify-between">
                           <span className="font-medium">English Proficiency Test:</span>
                           <span className="text-green-600">✓ Uploaded</span>
