@@ -107,10 +107,7 @@ export default function HeroSection() {
               <p className="mt-2 text-lg text-white/80">Your ultimate search platform for everything in North Cyprus</p>
             </div>
           
-            <p className="text-white/80">
-              Search for services, schools, rentals, apartments, scholarships, job opportunities, and much more - all in
-              one place.
-            </p>
+           
             <div className="relative mt-2 overflow-hidden rounded-lg border border-white/20 bg-white/10 p-4 backdrop-blur-md">
               <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-blue-500/30 blur-xl"></div>
               <div className="absolute -bottom-6 -left-6 h-20 w-20 rounded-full bg-blue-600/20 blur-xl"></div>
@@ -134,7 +131,7 @@ export default function HeroSection() {
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-medium text-white">Join Our Telegram Channel</h3>
+                  <h3 className="text-lg font-medium text-white">Join Our Community</h3>
                   <p className="text-sm text-white/80">Get early access and exclusive updates</p>
                 </div>
                 <a

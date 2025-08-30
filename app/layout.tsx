@@ -1,11 +1,11 @@
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import { Lexend } from "next/font/google"
 import "./globals.css"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { Providers } from "./providers"
 
-const inter = Inter({ subsets: ["latin"] })
+const lexend = Lexend({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "SNC - Your Ad Listing Platform", 
@@ -19,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={lexend.className}>
         <Providers>
           <div className="flex min-h-screen flex-col">
             <Header />
