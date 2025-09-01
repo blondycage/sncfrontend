@@ -23,7 +23,9 @@ import {
   CheckCircle,
   XCircle,
   FileText,
-  Send
+  Send,
+  MessageCircle,
+  Phone
 } from 'lucide-react'
 
 interface Job {
@@ -57,6 +59,7 @@ interface Job {
   benefits: string[]
   applicationDeadline?: string
   contactEmail: string
+  contactPhone?: string
   applicationCount: number
   views: number
   status: string
@@ -179,6 +182,18 @@ export default function JobDetailClient({ job }: JobDetailClientProps) {
   }
 
   const isDeadlinePassed = job.applicationDeadline && new Date(job.applicationDeadline) < new Date()
+
+  const handleWhatsAppMessage = () => {
+    if (!job.contactPhone) {
+      toast.error('No contact number available for this listing')
+      return
+    }
+    
+    const message = `Hi! I am interested in the "${job.title}" position from SNC.to`
+    const whatsappUrl = `https://wa.me/${job.contactPhone.replace(/[^\d]/g, '')}?text=${encodeURIComponent(message)}`
+    window.open(whatsappUrl, '_blank')
+  }
+
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -388,6 +403,42 @@ export default function JobDetailClient({ job }: JobDetailClientProps) {
                       </div>
                     </DialogContent>
                   </Dialog>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Contact Options */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Contact Employer</CardTitle>
+                <CardDescription>
+                  Get in touch directly with the employer
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button
+                  onClick={handleWhatsAppMessage}
+                  variant="outline"
+                  className="w-full justify-start gap-2 hover:bg-green-50 hover:border-green-500 hover:text-green-700"
+                  disabled={!job.contactPhone}
+                >
+                  <Phone className="h-4 w-4" />
+                  WhatsApp Employer
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-2 opacity-50 cursor-not-allowed"
+                  disabled={true}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Telegram (Coming Soon)
+                </Button>
+                
+                {!job.contactPhone && (
+                  <p className="text-xs text-muted-foreground text-center">
+                    Contact information not available for this listing
+                  </p>
                 )}
               </CardContent>
             </Card>

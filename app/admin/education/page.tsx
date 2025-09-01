@@ -32,10 +32,11 @@ interface Program {
 interface Application {
   _id: string
   applicationId: string
-  programId: { title: string; institution: { name: string } }
+  program: { title: string; institution: { name: string } }
   personalInfo: { firstName: string; lastName: string; email: string }
-  status: 'submitted' | 'under_review' | 'approved' | 'rejected'
-  submittedAt: string
+  status: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected'
+  createdAt: string
+  lastModified: string
 }
 
 interface AdminStats {
@@ -164,7 +165,7 @@ export default function AdminEducationPage() {
         app.personalInfo.firstName.toLowerCase().includes(applicationFilters.search.toLowerCase()) ||
         app.personalInfo.lastName.toLowerCase().includes(applicationFilters.search.toLowerCase()) ||
         app.personalInfo.email.toLowerCase().includes(applicationFilters.search.toLowerCase()) ||
-        app.programId.title.toLowerCase().includes(applicationFilters.search.toLowerCase())
+        app.program.title.toLowerCase().includes(applicationFilters.search.toLowerCase())
       const matchesStatus = applicationFilters.status === 'all' || app.status === applicationFilters.status
       
       return matchesSearch && matchesStatus
@@ -172,9 +173,9 @@ export default function AdminEducationPage() {
     .sort((a, b) => {
       switch (applicationFilters.sortBy) {
         case 'newest':
-          return new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         case 'oldest':
-          return new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime()
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         case 'name':
           return `${a.personalInfo.firstName} ${a.personalInfo.lastName}`.localeCompare(
             `${b.personalInfo.firstName} ${b.personalInfo.lastName}`
@@ -197,6 +198,7 @@ export default function AdminEducationPage() {
       active: { color: 'bg-green-500', label: 'Active' },
       inactive: { color: 'bg-gray-500', label: 'Inactive' },
       pending: { color: 'bg-yellow-500', label: 'Pending' },
+      draft: { color: 'bg-gray-400', label: 'Draft' },
       submitted: { color: 'bg-blue-500', label: 'Submitted' },
       under_review: { color: 'bg-yellow-500', label: 'Under Review' },
       approved: { color: 'bg-green-500', label: 'Approved' },
@@ -243,7 +245,7 @@ export default function AdminEducationPage() {
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
-          <Link href="/admin/education/programs/new" className="w-full sm:w-auto">
+          <Link href="/education/programs/new" className="w-full sm:w-auto">
             <Button size="sm" className="w-full">
               <Plus className="h-4 w-4 mr-2" />
               New Program
@@ -437,7 +439,7 @@ export default function AdminEducationPage() {
                           <Eye className="h-4 w-4" />
                         </Button>
                       </Link>
-                      <Link href={`/admin/education/programs/${program._id}/edit`}>
+                      <Link href={`/education/programs/${program._id}/edit`}>
                         <Button variant="outline" size="sm">
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -505,6 +507,7 @@ export default function AdminEducationPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
                     <SelectItem value="submitted">Submitted</SelectItem>
                     <SelectItem value="under_review">Under Review</SelectItem>
                     <SelectItem value="approved">Approved</SelectItem>
@@ -533,38 +536,40 @@ export default function AdminEducationPage() {
           <div className="space-y-4">
             {!!filteredApplications && filteredApplications.map((application) => (
               <Card key={application._id}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center space-x-4">
-                        <div>
-                          <h3 className="font-semibold">
+                      <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                        <div className="min-w-0">
+                          <h3 className="font-semibold truncate">
                             {application.personalInfo.firstName} {application.personalInfo.lastName}
                           </h3>
-                          <p className="text-sm text-muted-foreground">{application.personalInfo.email}</p>
+                          <p className="text-sm text-muted-foreground truncate">{application.personalInfo.email}</p>
                         </div>
-                        <div className="text-sm">
-                          <p className="font-medium">
-                            {application.programId?.title || 'Program Title N/A'}
+                        <div className="text-sm min-w-0">
+                          <p className="font-medium truncate">
+                            {application.program?.title || 'Program Title N/A'}
                           </p>
-                          <p className="text-muted-foreground">
-                            {application.programId?.institution?.name || 'Institution N/A'}
+                          <p className="text-muted-foreground truncate">
+                            {application.program?.institution?.name || 'Institution N/A'}
                           </p>
                         </div>
                       </div>
                     </div>
                     
-                    <div className="flex items-center space-x-4">
-                      <div className="text-right text-sm">
-                        <p className="text-muted-foreground">Submitted</p>
-                        <p>{formatDate(application.submittedAt)}</p>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                      <div className="flex items-center justify-between sm:justify-start sm:space-x-4">
+                        <div className="text-sm">
+                          <p className="text-muted-foreground">Created</p>
+                          <p className="font-medium">{formatDate(application.createdAt)}</p>
+                        </div>
+                        
+                        {getStatusBadge(application.status)}
                       </div>
                       
-                      {getStatusBadge(application.status)}
-                      
-                      <div className="flex space-x-2">
-                        <Link href={`/admin/education/applications/${application._id}`}>
-                          <Button variant="outline" size="sm">
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Link href={`/admin/education/applications/${application._id}`} className="w-full sm:w-auto">
+                          <Button variant="outline" size="sm" className="w-full sm:w-auto">
                             <Eye className="h-4 w-4 mr-2" />
                             Review
                           </Button>
@@ -575,7 +580,7 @@ export default function AdminEducationPage() {
                             <Button
                               size="sm"
                               onClick={() => handleApplicationAction(application._id, 'approved')}
-                              className="bg-green-600 hover:bg-green-700"
+                              className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
                             >
                               <CheckCircle className="h-4 w-4 mr-2" />
                               Approve
@@ -584,6 +589,7 @@ export default function AdminEducationPage() {
                               variant="destructive"
                               size="sm"
                               onClick={() => handleApplicationAction(application._id, 'rejected')}
+                              className="w-full sm:w-auto"
                             >
                               <XCircle className="h-4 w-4 mr-2" />
                               Reject

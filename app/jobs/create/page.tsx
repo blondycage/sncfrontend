@@ -46,8 +46,8 @@ interface JobFormData {
 
 const JOB_TYPES = ['Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance']
 const WORK_LOCATIONS = ['On-site', 'Remote', 'Hybrid']
-const CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD', 'AUD']
-const FREQUENCIES = ['per year', 'per month', 'per hour']
+const CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD', 'TRY']
+const FREQUENCIES = ['yearly', 'monthly', 'weekly', 'daily']
 
 export default function CreateJobPage() {
   const router = useRouter()
@@ -78,7 +78,7 @@ export default function CreateJobPage() {
       min: '',
       max: '',
       currency: 'USD',
-      frequency: 'per year',
+      frequency: 'yearly',
       negotiable: false
     },
     jobType: '',
@@ -212,7 +212,7 @@ export default function CreateJobPage() {
           variant: 'success',
           duration: 3000
         })
-        router.push(`/jobs/${job._id}`)
+        router.push(`/jobs`)
       } else {
         const error = await response.json()
         toast({

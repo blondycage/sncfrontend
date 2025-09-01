@@ -340,8 +340,11 @@ export default function CreateListingPage() {
         description: "Your listing has been created successfully",
         variant: "default"
       });
-
-      router.push('/dashboard');
+if(user?.role === "admin"){
+  router.push('/admin/listings');
+}else{
+  router.push('/dashboard');
+}
 
     } catch (error: any) {
       console.error('Error creating listing:', error);

@@ -38,65 +38,146 @@ export default function SearchSection() {
   }
 
   return (
-    <div className="container px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <div className="container px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
       <form onSubmit={handleSearch}>
         <div className="mx-auto max-w-5xl">
-          <div className="flex flex-col sm:flex-row items-center bg-white rounded-full shadow-xl border border-gray-200 p-2 sm:p-3">
-            {/* What are you searching for */}
-            <div className="flex-1 w-full sm:w-auto px-4 sm:px-6 py-3 sm:border-r border-gray-200 cursor-pointer hover:bg-gray-50 rounded-l-full">
-              <label className="block text-xs font-bold text-gray-900 mb-1">What are you searching for?</label>
-              <Input 
-                placeholder="Jobs, properties, services, education..."
-                className="border-0 p-0 text-sm placeholder:text-gray-500 focus:ring-0 shadow-none"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            
-            {/* Category */}
-            <div className="flex-1 w-full sm:w-auto px-4 sm:px-6 py-3 sm:border-r border-gray-200 cursor-pointer hover:bg-gray-50">
-              <label className="block text-xs font-bold text-gray-900 mb-1">Category</label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="border-0 p-0 h-auto text-sm shadow-none focus:ring-0">
-                  <SelectValue placeholder="All categories" className="text-gray-500" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="properties">Properties</SelectItem>
-                  <SelectItem value="jobs">Jobs</SelectItem>
-                  <SelectItem value="services">Services</SelectItem>
-                  <SelectItem value="education">Education</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Location */}
-            <div className="flex-1 w-full sm:w-auto px-4 sm:px-6 py-3 cursor-pointer hover:bg-gray-50">
-              <label className="block text-xs font-bold text-gray-900 mb-1">Location</label>
-              <Select value={location} onValueChange={setLocation}>
-                <SelectTrigger className="border-0 p-0 h-auto text-sm shadow-none focus:ring-0">
-                  <SelectValue placeholder="All locations" className="text-gray-500" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Locations</SelectItem>
-                  <SelectItem value="kyrenia">Kyrenia</SelectItem>
-                  <SelectItem value="famagusta">Famagusta</SelectItem>
-                  <SelectItem value="nicosia">Nicosia</SelectItem>
-                  <SelectItem value="karpaz">Karpaz Peninsula</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Search Button */}
-            <div className="ml-0 sm:ml-2 mt-3 sm:mt-0">
+          {/* Mobile/Tablet Layout (stacked) */}
+          <div className="md:hidden">
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4 space-y-4">
+              {/* What are you searching for - Mobile */}
+              <div className="w-full">
+                <label className="block text-xs font-bold text-gray-900 mb-2">What are you searching for?</label>
+                <Input 
+                  placeholder="Jobs, properties, services, education..."
+                  className="w-full text-sm placeholder:text-gray-500 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              
+              {/* Category and Location - Mobile (side by side) */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="w-full">
+                  <label className="block text-xs font-bold text-gray-900 mb-2">Category</label>
+                  <Select value={category} onValueChange={setCategory}>
+                    <SelectTrigger className="w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                      <SelectValue placeholder="All categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      <SelectItem value="properties">Properties</SelectItem>
+                      <SelectItem value="jobs">Jobs</SelectItem>
+                      <SelectItem value="services">Services</SelectItem>
+                      <SelectItem value="education">Education</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="w-full">
+                  <label className="block text-xs font-bold text-gray-900 mb-2">Location</label>
+                  <Select value={location} onValueChange={setLocation}>
+                    <SelectTrigger className="w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                      <SelectValue placeholder="All locations" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Locations</SelectItem>
+                      <SelectItem value="nicosia">Nicosia (Lefkoşa)</SelectItem>
+                      <SelectItem value="kyrenia">Kyrenia (Girne)</SelectItem>
+                      <SelectItem value="famagusta">Famagusta (Gazimağusa)</SelectItem>
+                      <SelectItem value="morphou">Morphou (Güzelyurt)</SelectItem>
+                      <SelectItem value="iskele">İskele</SelectItem>
+                      <SelectItem value="karpaz">Karpaz Peninsula</SelectItem>
+                      <SelectItem value="alsancak">Alsancak</SelectItem>
+                      <SelectItem value="lapta">Lapta</SelectItem>
+                      <SelectItem value="catalkoy">Çatalköy</SelectItem>
+                      <SelectItem value="esentepe">Esentepe</SelectItem>
+                      <SelectItem value="bogaz">Boğaz</SelectItem>
+                      <SelectItem value="dipkarpaz">Dipkarpaz</SelectItem>
+                      <SelectItem value="lefke">Lefke</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              {/* Search Button - Mobile */}
               <Button 
                 type="submit"
-                size="lg"
-                className="bg-blue-600 hover:bg-blue-700 rounded-full w-12 h-12 p-0"
+                className="w-full bg-blue-600 hover:bg-blue-700 py-3 text-sm font-medium"
               >
-                <Search className="h-4 w-4 text-white" />
-                <span className="sr-only">Search</span>
+                <Search className="h-4 w-4 mr-2" />
+                Search Now
               </Button>
+            </div>
+          </div>
+
+          {/* Desktop Layout (horizontal) */}
+          <div className="hidden md:block">
+            <div className="flex items-center bg-white rounded-full shadow-xl border border-gray-200 p-2 lg:p-3">
+              {/* What are you searching for - Desktop */}
+              <div className="flex-1 px-4 lg:px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 rounded-l-full">
+                <label className="block text-xs font-bold text-gray-900 mb-1">What are you searching for?</label>
+                <Input 
+                  placeholder="Jobs, properties, services, education..."
+                  className="border-0 p-0 text-sm placeholder:text-gray-500 focus:ring-0 shadow-none"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              
+              {/* Category - Desktop */}
+              <div className="flex-1 px-4 lg:px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50">
+                <label className="block text-xs font-bold text-gray-900 mb-1">Category</label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger className="border-0 p-0 h-auto text-sm shadow-none focus:ring-0">
+                    <SelectValue placeholder="All categories" className="text-gray-500" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    <SelectItem value="properties">Properties</SelectItem>
+                    <SelectItem value="jobs">Jobs</SelectItem>
+                    <SelectItem value="services">Services</SelectItem>
+                    <SelectItem value="education">Education</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Location - Desktop */}
+              <div className="flex-1 px-4 lg:px-6 py-3 cursor-pointer hover:bg-gray-50">
+                <label className="block text-xs font-bold text-gray-900 mb-1">Location</label>
+                <Select value={location} onValueChange={setLocation}>
+                  <SelectTrigger className="border-0 p-0 h-auto text-sm shadow-none focus:ring-0">
+                    <SelectValue placeholder="All locations" className="text-gray-500" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Locations</SelectItem>
+                    <SelectItem value="nicosia">Nicosia (Lefkoşa)</SelectItem>
+                    <SelectItem value="kyrenia">Kyrenia (Girne)</SelectItem>
+                    <SelectItem value="famagusta">Famagusta (Gazimağusa)</SelectItem>
+                    <SelectItem value="morphou">Morphou (Güzelyurt)</SelectItem>
+                    <SelectItem value="iskele">İskele</SelectItem>
+                    <SelectItem value="karpaz">Karpaz Peninsula</SelectItem>
+                    <SelectItem value="alsancak">Alsancak</SelectItem>
+                    <SelectItem value="lapta">Lapta</SelectItem>
+                    <SelectItem value="catalkoy">Çatalköy</SelectItem>
+                    <SelectItem value="esentepe">Esentepe</SelectItem>
+                    <SelectItem value="bogaz">Boğaz</SelectItem>
+                    <SelectItem value="dipkarpaz">Dipkarpaz</SelectItem>
+                    <SelectItem value="lefke">Lefke</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Search Button - Desktop */}
+              <div className="ml-2 lg:ml-3">
+                <Button 
+                  type="submit"
+                  size="lg"
+                  className="bg-blue-600 hover:bg-blue-700 rounded-full w-12 h-12 p-0"
+                >
+                  <Search className="h-4 w-4 text-white" />
+                  <span className="sr-only">Search</span>
+                </Button>
+              </div>
             </div>
           </div>
         </div>

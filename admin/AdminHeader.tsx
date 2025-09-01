@@ -41,9 +41,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
-          <Button variant="ghost" size="icon">
-            <Bell className="h-5 w-5" />
-          </Button>
+         
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -176,14 +176,16 @@ export default function DashboardPage() {
         });
         
       setUser(parsedUser);
+      
+      // Redirect admins to admin dashboard
+      if (parsedUser?.role === 'admin') {
+        console.log('🔄 Dashboard: Admin detected, redirecting to admin panel');
+        router.push('/admin');
+        return;
+      }
         
         // Fetch user's listings
         await fetchUserListings(parsedUser, token);
-        
-        // Fetch user management data if admin
-        if (parsedUser?.role === 'admin') {
-          await fetchUserStats(token);
-        }
       } catch (parseError) {
         console.error('❌ Dashboard: Error parsing user data:', parseError);
         localStorage.removeItem('authToken');
@@ -1266,7 +1268,7 @@ export default function DashboardPage() {
               <Button
                 variant="ghost"
                 className="mt-2 w-full text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                onClick={() => router.push('/admin/listings/pending')}
+                onClick={() => router.push('/admin/listings')}
               >
                 Review Listings
               </Button>
@@ -1290,30 +1292,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
-              <Activity className="h-4 w-4 text-gray-500" />
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => router.push('/admin/settings')}
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                Platform Settings
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => router.push('/admin/analytics')}
-              >
-                <TrendingUp className="h-4 w-4 mr-2" />
-                View Analytics
-              </Button>
-            </CardContent>
-          </Card>
+     
         </div>
       </div>
     );
@@ -1345,9 +1324,7 @@ export default function DashboardPage() {
                   <span className="xs:hidden">Admin</span>
                 </Button>
               )}
-              <Button variant="ghost" size="sm" className="flex-shrink-0">
-                <Bell className="h-4 w-4" />
-              </Button>
+             
               <Button variant="ghost" size="sm" className="flex-shrink-0">
                 <Settings className="h-4 w-4" />
               </Button>

@@ -308,15 +308,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               {/* Right side actions */}
               <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4">
                 {/* Notifications - hidden on very small screens */}
-                <Button variant="ghost" size="sm" className="relative hidden xs:flex">
-                  <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <Badge 
-                    variant="destructive" 
-                    className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-xs p-0"
-                  >
-                    3
-                  </Badge>
-                </Button>
+            
 
                 {/* User menu */}
                 <DropdownMenu>
@@ -344,10 +336,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       <User className="mr-2 h-4 w-4" />
                       <span className="text-sm">User Dashboard</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/admin/settings/profile')}>
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span className="text-sm">Settings</span>
-                    </DropdownMenuItem>
+                   
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />

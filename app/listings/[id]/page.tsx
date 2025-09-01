@@ -29,7 +29,8 @@ import {
   Briefcase,
   ChevronLeft,
   ChevronRight,
-  X
+  X,
+  MessageCircle
 } from 'lucide-react';
 import { useToast } from "@/components/ui/toast";
 import PromoteModal from "@/components/promotions/PromoteModal";
@@ -429,6 +430,22 @@ export default function ListingDetailPage() {
     if (status === 'active') return 'Active';
     if (status === 'expired') return 'Expired';
     return status;
+  };
+
+  const handleWhatsAppMessage = () => {
+    const phone = listing?.contact?.phone || listing?.contact?.whatsapp;
+    if (!phone) {
+      toast({
+        title: "No Contact Number",
+        description: "No contact number available for this listing",
+        variant: "error"
+      });
+      return;
+    }
+    
+    const message = `Hi! I am interested in "${listing.title}" from SNC.to`;
+    const whatsappUrl = `https://wa.me/${phone.replace(/[^\d]/g, '')}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   const nextImage = () => {
@@ -867,9 +884,24 @@ export default function ListingDetailPage() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Button className="w-full text-sm sm:text-base" size="sm">
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Send Message
+                  <Button 
+                    onClick={handleWhatsAppMessage}
+                    className="w-full text-sm sm:text-base bg-green-600 hover:bg-green-700" 
+                    size="sm"
+                    disabled={!listing?.contact?.phone && !listing?.contact?.whatsapp}
+                  >
+                    <Phone className="h-4 w-4 mr-2" />
+                    WhatsApp Owner
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="w-full text-sm sm:text-base opacity-50 cursor-not-allowed" 
+                    size="sm"
+                    disabled={true}
+                  >
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Telegram (Coming Soon)
                   </Button>
                   
                   {/* Pay Now Button - Only show for non-owners */}
