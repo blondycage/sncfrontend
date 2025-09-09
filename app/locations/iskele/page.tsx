@@ -54,11 +54,11 @@ export default function KarpazPage() {
         const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
         // Note: listings 'city' accepts 'dipkarpaz' or 'karpas'. Using 'dipkarpaz' here.
         const [propsRes, servicesRes, jobsRes, eduRes] = await Promise.all([
-          fetch(`${api}/listings?listingType=real_estate&city=dipkarpaz&limit=6`, { cache: 'no-store' }),
-          fetch(`${api}/listings?category=service&city=dipkarpaz&limit=6`, { cache: 'no-store' }),
-          fetch(`${api}/jobs?city=Karpaz&limit=6`, { cache: 'no-store' }),
+          fetch(`${api}/listings?listingType=real_estate&city=iskele&limit=6`, { cache: 'no-store' }),
+          fetch(`${api}/listings?category=service&city=iskele&limit=6`, { cache: 'no-store' }),
+          fetch(`${api}/jobs?city=Iskele&limit=6`, { cache: 'no-store' }),
           // Education programs in Karpaz region
-          fetch(`${api}/education/programs?city=${encodeURIComponent('Karpaz')}&limit=6`, { cache: 'no-store' }),
+          fetch(`${api}/education/programs?city=${encodeURIComponent('Iskele')}&limit=6`, { cache: 'no-store' }),
         ])
 
         const propsJson = propsRes.ok ? await propsRes.json() : { data: [] }
@@ -161,8 +161,8 @@ export default function KarpazPage() {
                 )
               })}
 
-              <Link href="/listings?listingType=real_estate&city=dipkarpaz" className="flex items-center justify-center">
-                <Button variant="outline">View All Properties in Karpaz</Button>
+              <Link href="/listings?listingType=real_estate&city=iskele" className="flex items-center justify-center">
+                <Button variant="outline">View All Properties in Iskele</Button>
               </Link>
             </div>
           </TabsContent>
@@ -192,8 +192,8 @@ export default function KarpazPage() {
                 </Card>
               ))}
 
-              <Link href="/jobs?city=Karpaz" className="flex items-center justify-center">
-                <Button variant="outline">View All Jobs in Karpaz</Button>
+              <Link href="/jobs?city=Iskele" className="flex items-center justify-center">
+                <Button variant="outline">View All Jobs in Iskele</Button>
               </Link>
             </div>
           </TabsContent>
@@ -223,8 +223,8 @@ export default function KarpazPage() {
                 </Card>
               ))}
 
-              <Link href={`/education?city=${encodeURIComponent('Karpaz')}`} className="flex items-center justify-center">
-                <Button variant="outline">View All Education in Karpaz</Button>
+              <Link href={`/education?city=${encodeURIComponent('Iskele')}`} className="flex items-center justify-center">
+                <Button variant="outline">View All Education in Iskele</Button>
               </Link>
             </div>
           </TabsContent>
@@ -258,8 +258,8 @@ export default function KarpazPage() {
                 )
               })}
 
-              <Link href="/listings?category=service&city=dipkarpaz" className="flex items-center justify-center">
-                <Button variant="outline">View All Services in Karpaz</Button>
+              <Link href="/listings?category=service&city=iskele" className="flex items-center justify-center">
+                <Button variant="outline">View All Services in Iskele</Button>
               </Link>
             </div>
           </TabsContent>

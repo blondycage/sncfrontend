@@ -10,7 +10,7 @@ export default function Footer() {
     { value: 'famagusta', label: 'Famagusta', slug: 'famagusta' },
     { value: 'nicosia', label: 'Nicosia', slug: 'nicosia' },
     { value: 'kyrenia', label: 'Girne', slug: 'kyrenia' },
-    { value: 'karpaz', label: 'Karpaz', slug: 'karpaz' },
+    { value: 'iskele', label: 'Iskele', slug: 'iskele' },
   ]
 
   return (

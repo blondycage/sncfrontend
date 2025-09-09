@@ -576,9 +576,9 @@ export default function ListingsPage() {
                 {/* Owner and Actions */}
                 <div className="mt-2 pt-2 border-t flex items-center justify-between">
                   <p className="text-sm text-gray-600">
-                    by {listing.owner.firstName && listing.owner.lastName 
+                    by {listing.owner?.firstName && listing.owner?.lastName 
                       ? `${listing.owner.firstName} ${listing.owner.lastName}`
-                      : listing.owner.username}
+                      : listing.owner?.username || 'Unknown User'}
                   </p>
                   <Link href={`/listings/${listing.id}`}>
                     <Button variant="outline" size="sm">

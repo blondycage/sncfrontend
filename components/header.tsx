@@ -34,7 +34,7 @@ const MAJOR_CITIES = [
   { value: 'famagusta', label: 'Famagusta', slug: 'famagusta', description: 'Historic port city' },
   { value: 'nicosia', label: 'Nicosia', slug: 'nicosia', description: 'Capital city' },
   { value: 'kyrenia', label: 'Girne', slug: 'kyrenia', description: 'Coastal resort town' },
-  { value: 'karpaz', label: 'Karpaz', slug: 'karpaz', description: 'Peninsula region' },
+  { value: 'iskele', label: 'Iskele', slug: 'iskele', description: 'Peninsula region' },
 ];
 
 export default function Header() {
@@ -138,7 +138,7 @@ export default function Header() {
                       <MapPin className="h-4 w-4" />
                       <span>{city.label}</span>
                     </div>
-                    <span className="text-xs text-gray-500">{city.description}</span>
+                  
                   </Link>
                 </DropdownMenuItem>
               ))}
