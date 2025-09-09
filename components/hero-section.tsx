@@ -101,45 +101,45 @@ export default function HeroSection() {
 
       {/* Content */}
       <div className="relative z-10">
-        <div className="container grid grid-cols-1 gap-8 px-4 py-16 md:grid-cols-2 md:py-24">
-          <div className="flex flex-col justify-center space-y-6 text-white">
+        <div className="container grid grid-cols-1 gap-6 sm:gap-8 px-4 py-12 sm:py-16 md:grid-cols-2 md:py-24">
+          <div className="flex flex-col justify-center space-y-4 sm:space-y-6 text-white">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">Search North Cyprus</h1>
-              <p className="mt-2 text-lg text-white/80">Your ultimate search platform for everything in North Cyprus</p>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-center md:text-left">Search North Cyprus</h1>
+              <p className="mt-2 text-base sm:text-lg text-white/80 text-center md:text-left">Your ultimate search platform for everything in North Cyprus</p>
             </div>
           
            
-            <div className="relative mt-2 overflow-hidden rounded-lg border border-white/20 bg-white/10 p-4 backdrop-blur-md">
+            <div className="relative mt-2 overflow-hidden rounded-lg border border-white/20 bg-white/10 p-3 sm:p-4 backdrop-blur-md">
               <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-blue-500/30 blur-xl"></div>
               <div className="absolute -bottom-6 -left-6 h-20 w-20 rounded-full bg-blue-600/20 blur-xl"></div>
 
-              <div className="relative flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white">
+              <div className="relative flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-blue-600 text-white flex-shrink-0">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
+                    width="20"
+                    height="20"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="lucide lucide-send"
+                    className="sm:w-6 sm:h-6"
                   >
                     <path d="m22 2-7 20-4-9-9-4Z" />
                     <path d="M22 2 11 13" />
                   </svg>
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-medium text-white">Join Our Community</h3>
-                  <p className="text-sm text-white/80">Get early access and exclusive updates</p>
+                <div className="flex-1 text-center sm:text-left">
+                  <h3 className="text-base sm:text-lg font-medium text-white">Join Our Community</h3>
+                  <p className="text-xs sm:text-sm text-white/80">Get early access and exclusive updates</p>
                 </div>
                 <a
                   href="https://t.me/searchnorthcyprus"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                  className="rounded-md bg-blue-600 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white transition-colors hover:bg-blue-700 flex-shrink-0"
                 >
                   Join Now
                 </a>

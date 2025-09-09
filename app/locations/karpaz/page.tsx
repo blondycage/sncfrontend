@@ -57,8 +57,8 @@ export default function KarpazPage() {
           fetch(`${api}/listings?listingType=real_estate&city=dipkarpaz&limit=6`, { cache: 'no-store' }),
           fetch(`${api}/listings?category=service&city=dipkarpaz&limit=6`, { cache: 'no-store' }),
           fetch(`${api}/jobs?city=Karpaz&limit=6`, { cache: 'no-store' }),
-          // Education city validation uses specific set; use İskele district for Karpaz region
-          fetch(`${api}/education/programs?city=${encodeURIComponent('İskele')}&limit=6`, { cache: 'no-store' }),
+          // Education programs in Karpaz region
+          fetch(`${api}/education/programs?city=${encodeURIComponent('Karpaz')}&limit=6`, { cache: 'no-store' }),
         ])
 
         const propsJson = propsRes.ok ? await propsRes.json() : { data: [] }
@@ -113,22 +113,22 @@ export default function KarpazPage() {
 
         <div className="px-4">
           <Tabs defaultValue="properties">
-            <TabsList className="mb-8 grid w-full grid-cols-4">
-            <TabsTrigger value="properties">
-              <BedDouble className="mr-2 h-4 w-4" />
-              Properties
+            <TabsList className="mb-8 grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+            <TabsTrigger value="properties" className="flex-col gap-1 py-2 px-2 sm:flex-row sm:gap-2 sm:py-3 sm:px-4">
+              <BedDouble className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-[10px] sm:text-sm">Properties</span>
             </TabsTrigger>
-            <TabsTrigger value="jobs">
-              <Briefcase className="mr-2 h-4 w-4" />
-              Jobs
+            <TabsTrigger value="jobs" className="flex-col gap-1 py-2 px-2 sm:flex-row sm:gap-2 sm:py-3 sm:px-4">
+              <Briefcase className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-[10px] sm:text-sm">Jobs</span>
             </TabsTrigger>
-            <TabsTrigger value="education">
-              <GraduationCap className="mr-2 h-4 w-4" />
-              Education
+            <TabsTrigger value="education" className="flex-col gap-1 py-2 px-2 sm:flex-row sm:gap-2 sm:py-3 sm:px-4">
+              <GraduationCap className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-[10px] sm:text-sm">Education</span>
             </TabsTrigger>
-            <TabsTrigger value="services">
-              <ShoppingBag className="mr-2 h-4 w-4" />
-              Services
+            <TabsTrigger value="services" className="flex-col gap-1 py-2 px-2 sm:flex-row sm:gap-2 sm:py-3 sm:px-4">
+              <ShoppingBag className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-[10px] sm:text-sm">Services</span>
             </TabsTrigger>
           </TabsList>
 
@@ -223,8 +223,8 @@ export default function KarpazPage() {
                 </Card>
               ))}
 
-              <Link href={`/education?city=${encodeURIComponent('İskele')}`} className="flex items-center justify-center">
-                <Button variant="outline">View All Education in İskele</Button>
+              <Link href={`/education?city=${encodeURIComponent('Karpaz')}`} className="flex items-center justify-center">
+                <Button variant="outline">View All Education in Karpaz</Button>
               </Link>
             </div>
           </TabsContent>

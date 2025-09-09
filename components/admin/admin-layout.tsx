@@ -64,7 +64,6 @@ const sidebarItems = [
     icon: Building,
     items: [
       { title: 'All Listings', href: '/admin/listings' },
-      { title: 'Pending Approval', href: '/admin/listings/pending' },
       { title: 'Reported Content', href: '/admin/listings/reported' }
     ]
   },
@@ -122,29 +121,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     router.push('/');
   };
 
-  const getInitials = (firstName?: string, lastName?: string, username?: string) => {
-    if (firstName && lastName) {
-      return `${firstName[0]}${lastName[0]}`.toUpperCase();
-    }
-    if (firstName) {
-      return firstName[0].toUpperCase();
-    }
-    if (username) {
-      return username[0].toUpperCase();
-    }
+  const getInitials = (firstName?: string | null, lastName?: string | null, username?: string | null) => {
+    if (firstName && lastName) return `${firstName[0]}${lastName[0]}`.toUpperCase();
+    if (firstName) return firstName[0].toUpperCase();
+    if (username) return username[0].toUpperCase();
     return 'A';
   };
 
   const getDisplayName = () => {
-    if (user?.firstName && user?.lastName) {
-      return `${user.firstName} ${user.lastName}`;
-    }
-    if (user?.firstName) {
-      return user.firstName;
-    }
-    if (user?.username) {
-      return user.username;
-    }
+    const firstName = user?.firstName || '';
+    const lastName = user?.lastName || '';
+    const username = user?.username || '';
+    if (firstName && lastName) return `${firstName} ${lastName}`;
+    if (firstName) return firstName;
+    if (username) return username;
     return 'Admin';
   };
 

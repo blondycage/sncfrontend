@@ -34,12 +34,7 @@ interface DashboardStats {
   totalJobs: number;
   totalEducation: number;
   activePromotions: number;
-  totalViews: number;
-  recentActivity: {
-    newUsers: number;
-    newListings: number;
-    newReports: number;
-  };
+  // removed: totalViews and recentActivity
 }
 
 export default function AdminDashboard() {
@@ -54,12 +49,6 @@ export default function AdminDashboard() {
     totalJobs: 0,
     totalEducation: 0,
     activePromotions: 0,
-    totalViews: 0,
-    recentActivity: {
-      newUsers: 0,
-      newListings: 0,
-      newReports: 0
-    }
   });
 
   const isAdmin = user?.role === 'admin';
@@ -97,13 +86,8 @@ export default function AdminDashboard() {
           reportedListings: data.data?.listings?.reported || data.data?.listings?.flagged || 0,
           totalJobs: data.data?.jobs?.total || 0,
           totalEducation: data.data?.education?.total || 0,
-          activePromotions: data.data?.promotions?.active || 0,
-          totalViews: data.data?.analytics?.totalViews || 0,
-          recentActivity: {
-            newUsers: data.data?.recent?.newUsers || 5, // Default some demo values
-            newListings: data.data?.recent?.newListings || 12,
-            newReports: data.data?.recent?.newReports || 0
-          }
+          // Active promos should be checked by moderationStatus
+          activePromotions: data.data?.promotions?.activeByModeration || data.data?.promotions?.active || 0,
         });
       } catch (error) {
         console.error('Error fetching admin stats:', error);
@@ -146,7 +130,12 @@ export default function AdminDashboard() {
       {/* Welcome Header */}
       <div className="mb-6 sm:mb-8">
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 break-words">
-          Welcome back, {user?.firstName || user?.username || 'Admin'}! 👋
+          {(() => {
+            const firstName = user?.firstName || '';
+            const username = user?.username || '';
+            const display = firstName || username || 'Admin';
+            return <>Welcome back, {display}! 👋</>;
+          })()}
         </h1>
         <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">
           Here's what's happening with your platform today.
@@ -162,9 +151,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0">
             <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{stats.totalUsers}</div>
-            <p className="text-xs sm:text-sm text-green-600 mt-1">
-              +{stats.recentActivity.newUsers} this week
-            </p>
+            {/* recentActivity removed */}
           </CardContent>
         </Card>
 
@@ -175,9 +162,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0">
             <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{totalContent}</div>
-            <p className="text-xs sm:text-sm text-green-600 mt-1">
-              +{stats.recentActivity.newListings} new items
-            </p>
+            {/* recentActivity removed */}
           </CardContent>
         </Card>
 
@@ -198,18 +183,18 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-purple-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">Total Views</CardTitle>
-            <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500 flex-shrink-0" />
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
-              {stats.totalViews.toLocaleString()}
-            </div>
-            <p className="text-xs sm:text-sm text-gray-500 mt-1">Platform engagement</p>
-          </CardContent>
-        </Card>
+        {false && (
+          <Card className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-purple-500">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">Total Views</CardTitle>
+              <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500 flex-shrink-0" />
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6 pt-0">
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">0</div>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">Platform engagement</p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Secondary Stats */}
@@ -241,8 +226,9 @@ export default function AdminDashboard() {
         <Card className="text-center">
           <CardContent className="p-3 sm:p-4 lg:p-6">
             <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500 mx-auto mb-2" />
-            <div className="text-lg sm:text-xl lg:text-2xl font-bold">{stats.activePromotions}</div>
-            <p className="text-xs sm:text-sm text-gray-600">Active Promos</p>
+          {/* Remove Active Promos per request */}
+          <div className="text-lg sm:text-xl lg:text-2xl font-bold">-</div>
+          <p className="text-xs sm:text-sm text-gray-600">&nbsp;</p>
           </CardContent>
         </Card>
 
@@ -255,27 +241,27 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Action Cards and Activity */}
+      {/* Action Cards */}
       <div className="grid gap-6 sm:gap-8 lg:grid-cols-3">
         {/* Priority Actions */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-3">
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Priority Actions</h3>
           <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
             {stats.pendingApprovals > 0 && (
               <Card 
                 className="hover:shadow-lg transition-all duration-200 cursor-pointer border-l-4 border-l-orange-500"
-                onClick={() => router.push('/admin/listings/pending')}
+                onClick={() => router.push('/admin/listings?moderationStatus=pending')}
               >
                 <CardContent className="p-3 sm:p-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                     <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
                       <CheckSquare className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500 flex-shrink-0" />
                       <div className="min-w-0">
-                        <h4 className="text-sm sm:text-base font-semibold truncate">Pending Approvals</h4>
+                        <h4 className="text-sm sm:text-base font-semibold truncate">Pending Review</h4>
                         <p className="text-xs sm:text-sm text-gray-600 truncate">{stats.pendingApprovals} items waiting</p>
                       </div>
                     </div>
-                    <Button size="sm" className="self-start sm:self-center">Review</Button>
+                    <Button size="sm" className="self-start sm:self-center">Open</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -355,72 +341,8 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card 
-              className="hover:shadow-lg transition-all duration-200 cursor-pointer"
-              onClick={() => router.push('/admin/analytics')}
-            >
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-                  <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
-                    <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 flex-shrink-0" />
-                    <div className="min-w-0">
-                      <h4 className="text-sm sm:text-base font-semibold truncate">Analytics</h4>
-                      <p className="text-xs sm:text-sm text-gray-600 truncate">View detailed reports</p>
-                    </div>
-                  </div>
-                  <Button size="sm" variant="outline" className="self-start sm:self-center">View</Button>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Analytics card removed */}
           </div>
-        </div>
-
-        {/* Recent Activity */}
-        <div>
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Recent Activity</h3>
-          <Card>
-            <CardContent className="p-3 sm:p-4">
-              <div className="space-y-3 sm:space-y-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium truncate">{stats.recentActivity.newUsers} new users this week</p>
-                    <p className="text-xs text-gray-500">User registrations</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium truncate">{stats.recentActivity.newListings} new listings</p>
-                    <p className="text-xs text-gray-500">Content submissions</p>
-                  </div>
-                </div>
-                
-                {stats.recentActivity.newReports > 0 && (
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm font-medium truncate">{stats.recentActivity.newReports} new reports</p>
-                      <p className="text-xs text-gray-500">Requires attention</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="pt-3 sm:pt-4 border-t">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full text-xs sm:text-sm"
-                    onClick={() => router.push('/admin/activity')}
-                  >
-                    <Activity className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                    View All Activity
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>

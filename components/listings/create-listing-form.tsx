@@ -49,20 +49,24 @@ const CATEGORIES = [
 
 const PRICING_FREQUENCIES = {
   rental: [
-    { value: 'hourly', label: 'Per Hour' },
     { value: 'daily', label: 'Per Day' },
     { value: 'weekly', label: 'Per Week' },
     { value: 'monthly', label: 'Per Month' },
-   
+    { value: 'yearly', label: 'Per Year' },
+    { value: 'negotiable', label: 'Negotiable' }
   ],
   sale: [
-    { value: 'fixed', label: 'Fixed Price' }
+    { value: 'fixed', label: 'Fixed Price' },
+    { value: 'negotiable', label: 'Negotiable' },
+    { value: 'free', label: 'Free' }
   ],
   service: [
     { value: 'hourly', label: 'Per Hour' },
     { value: 'daily', label: 'Per Day' },
     { value: 'fixed', label: 'Fixed Rate' },
-    { value: 'per_project', label: 'Per Project' }
+    { value: 'negotiable', label: 'Negotiable' },
+    { value: 'free', label: 'Free' },
+    { value: 'yearly', label: 'Per Year' }
   ]
 };
 

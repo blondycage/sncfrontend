@@ -62,7 +62,8 @@ interface UserData {
 }
 
 interface Listing {
-  _id: string;
+  _id?: string;
+  id?: string;
   title: string;
   description: string;
   category: 'rental' | 'sale' | 'service';
@@ -70,15 +71,19 @@ interface Listing {
   pricing_frequency: string;
   image_urls: string[];
   views: number;
-  createdAt: string;
+  createdAt?: string;
+  created_at?: string;
+  updated_at?: string;
   status: string;
   moderationStatus: string;
   expiresAt: string;
+  isReported?: boolean;
+  favorited_at?: string;
 }
 
 interface DashboardStats {
   totalListings: number;
-  activeListings: number;
+  activeListings: number; // Lists with moderationStatus === 'approved'
   totalViews: number;
   expiringSoon: number;
 }
@@ -257,19 +262,20 @@ export default function DashboardPage() {
         listingsArray = data.data || data.listings || [];
       }
       
+      // Normalize the listing IDs and dates
+      listingsArray = listingsArray.map((listing: any) => ({
+        ...listing,
+        _id: listing._id || listing.id,
+        createdAt: listing.createdAt || listing.created_at,
+        updatedAt: listing.updatedAt || listing.updated_at
+      }));
+      
       setListings(listingsArray);
       
       // Calculate stats
       const totalListings = listingsArray.length || 0;
-      const activeListings = listingsArray.filter((l: Listing) => l.status === 'active').length || 0;
+      const activeListings = listingsArray.filter((l: Listing) => l.moderationStatus === 'approved').length || 0;
       const totalViews = listingsArray.reduce((sum: number, l: Listing) => sum + (l.views || 0), 0) || 0;
-      const expiringSoon = listingsArray.filter((l: Listing) => {
-        if (!l.expiresAt) return false;
-        const expiresAt = new Date(l.expiresAt);
-        const now = new Date();
-        const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        return daysUntilExpiry <= 7 && daysUntilExpiry > 0;
-      }).length || 0;
 
       // Admin-specific stats
       if (userToUse?.role === 'admin') {
@@ -280,7 +286,7 @@ export default function DashboardPage() {
         totalListings,
         activeListings,
         totalViews,
-          expiringSoon,
+          expiringSoon: 0,
           totalUsers: 0, // Will be updated by fetchUserStats
           pendingListings,
           reportedListings
@@ -290,7 +296,7 @@ export default function DashboardPage() {
           totalListings,
           activeListings,
           totalViews,
-          expiringSoon,
+          expiringSoon: 0,
           totalUsers: 0,
           pendingListings: 0,
           reportedListings: 0
@@ -402,7 +408,7 @@ export default function DashboardPage() {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to fetch users",
-        variant: "destructive"
+        variant: "error"
       });
       setUsers([]);
     } finally {
@@ -516,7 +522,7 @@ export default function DashboardPage() {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : `Failed to ${action} user`,
-        variant: "destructive"
+        variant: "error"
       });
     } finally {
       setActionLoading(null);
@@ -572,7 +578,7 @@ export default function DashboardPage() {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to fetch favorites",
-        variant: "destructive"
+        variant: "error"
       });
       setFavorites([]);
     } finally {
@@ -619,7 +625,7 @@ export default function DashboardPage() {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : 'Failed to update favorite',
-        variant: "destructive"
+        variant: "error"
       });
     }
   };
@@ -656,7 +662,7 @@ export default function DashboardPage() {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : 'Failed to delete listing',
-        variant: "destructive"
+        variant: "error"
       });
     }
   };
@@ -737,7 +743,7 @@ export default function DashboardPage() {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : `Failed to ${action} listing`,
-        variant: "destructive"
+        variant: "error"
       });
     }
   };
@@ -952,21 +958,21 @@ export default function DashboardPage() {
               onClick={() => router.push('/admin')}
               className="flex items-center gap-2"
             >
-              <Settings className="h-4 w-4" />
+             
               Full Admin Panel
             </Button>
           </div>
         </div>
 
         {/* User Statistics Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
           <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-blue-500">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Total Users</CardTitle>
               <UsersIcon className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{userStats.totalUsers || 0}</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold">{userStats.totalUsers || 0}</div>
               <p className="text-xs text-muted-foreground">
                 {userStats.activeUsers || 0} active
               </p>
@@ -975,11 +981,11 @@ export default function DashboardPage() {
 
           <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-green-500">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Verified Users</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Verified Users</CardTitle>
               <CheckCircle className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{userStats.verifiedUsers || 0}</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold">{userStats.verifiedUsers || 0}</div>
               <p className="text-xs text-muted-foreground">
                 {((userStats.verifiedUsers || 0) / (userStats.totalUsers || 1) * 100).toFixed(1)}% verified
               </p>
@@ -988,11 +994,11 @@ export default function DashboardPage() {
 
           <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-orange-500">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Locked Accounts</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Locked Accounts</CardTitle>
               <Lock className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{userStats.lockedUsers || 0}</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold">{userStats.lockedUsers || 0}</div>
               <p className="text-xs text-muted-foreground">
                 Require attention
               </p>
@@ -1001,11 +1007,11 @@ export default function DashboardPage() {
 
           <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-purple-500">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Admin Users</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Admin Users</CardTitle>
               <Shield className="h-4 w-4 text-purple-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{userStats.adminUsers || 0}</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold">{userStats.adminUsers || 0}</div>
               <p className="text-xs text-muted-foreground">
                 Platform administrators
               </p>
@@ -1027,8 +1033,8 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               {/* Filters */}
-              <div className="flex flex-wrap gap-4 mb-6">
-                <div className="flex-1 min-w-[200px]">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6">
+                <div className="flex-1 min-w-0">
                   <Input
                     placeholder="Search users..."
                     value={userFilters.search}
@@ -1036,35 +1042,37 @@ export default function DashboardPage() {
                     className="w-full"
                   />
                 </div>
-                <select
-                  value={userFilters.role}
-                  onChange={(e) => setUserFilters({...userFilters, role: e.target.value, page: 1})}
-                  className="px-3 py-2 border rounded-md"
-                >
-                  <option value="">All Roles</option>
-                  <option value="user">User</option>
-                  <option value="advertiser">Advertiser</option>
-                  <option value="admin">Admin</option>
-                </select>
-                <select
-                  value={userFilters.status}
-                  onChange={(e) => setUserFilters({...userFilters, status: e.target.value, page: 1})}
-                  className="px-3 py-2 border rounded-md"
-                >
-                  <option value="">All Status</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="locked">Locked</option>
-                </select>
-                <select
-                  value={userFilters.limit}
-                  onChange={(e) => setUserFilters({...userFilters, limit: parseInt(e.target.value), page: 1})}
-                  className="px-3 py-2 border rounded-md"
-                >
-                  <option value="10">10 per page</option>
-                  <option value="25">25 per page</option>
-                  <option value="50">50 per page</option>
-                </select>
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                  <select
+                    value={userFilters.role}
+                    onChange={(e) => setUserFilters({...userFilters, role: e.target.value, page: 1})}
+                    className="px-3 py-2 border rounded-md text-sm"
+                  >
+                    <option value="">All Roles</option>
+                    <option value="user">User</option>
+                    <option value="advertiser">Advertiser</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                  <select
+                    value={userFilters.status}
+                    onChange={(e) => setUserFilters({...userFilters, status: e.target.value, page: 1})}
+                    className="px-3 py-2 border rounded-md text-sm"
+                  >
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="locked">Locked</option>
+                  </select>
+                  <select
+                    value={userFilters.limit}
+                    onChange={(e) => setUserFilters({...userFilters, limit: parseInt(e.target.value), page: 1})}
+                    className="px-3 py-2 border rounded-md text-sm"
+                  >
+                    <option value="10">10 per page</option>
+                    <option value="25">25 per page</option>
+                    <option value="50">50 per page</option>
+                  </select>
+                </div>
               </div>
 
               {/* Users Table */}
@@ -1076,40 +1084,40 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                   <>
-                    <table className="w-full border-collapse">
+                    <table className="w-full border-collapse min-w-[600px]">
                       <thead>
                         <tr className="border-b bg-gray-50">
-                          <th className="text-left p-3 font-medium">User</th>
-                          <th className="text-left p-3 font-medium">Role</th>
-                          <th className="text-left p-3 font-medium">Status</th>
-                          <th className="text-left p-3 font-medium">Joined</th>
-                          <th className="text-left p-3 font-medium">Actions</th>
+                          <th className="text-left p-2 sm:p-3 font-medium text-sm">User</th>
+                          <th className="text-left p-2 sm:p-3 font-medium text-sm">Role</th>
+                          <th className="text-left p-2 sm:p-3 font-medium text-sm">Status</th>
+                          <th className="text-left p-2 sm:p-3 font-medium text-sm hidden sm:table-cell">Joined</th>
+                          <th className="text-left p-2 sm:p-3 font-medium text-sm">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {users.map((userData) => (
                           <tr key={userData._id} className="border-b hover:bg-gray-50 transition-colors">
-                            <td className="p-3">
-                              <div className="flex items-center gap-3">
-                                <Avatar className="h-10 w-10">
-                                  <AvatarFallback className="text-sm bg-blue-100 text-blue-600">
+                            <td className="p-2 sm:p-3">
+                              <div className="flex items-center gap-2 sm:gap-3">
+                                <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
+                                  <AvatarFallback className="text-xs sm:text-sm bg-blue-100 text-blue-600">
                                     {userData.username?.[0]?.toUpperCase() || 'U'}
                                   </AvatarFallback>
                                 </Avatar>
-                                <div>
-                                  <div className="font-medium">{userData.displayName || userData.username}</div>
-                                  <div className="text-sm text-gray-500">{userData.email}</div>
+                                <div className="min-w-0">
+                                  <div className="font-medium text-sm sm:text-base truncate">{userData.displayName || userData.username}</div>
+                                  <div className="text-xs sm:text-sm text-gray-500 truncate">{userData.email}</div>
                                 </div>
                               </div>
                             </td>
-                            <td className="p-3">
-                              <Badge variant={userData.role === 'admin' ? 'destructive' : 'secondary'}>
+                            <td className="p-2 sm:p-3">
+                              <Badge variant={userData.role === 'admin' ? 'destructive' : 'secondary'} className="text-xs">
                                 {userData.role}
                               </Badge>
                             </td>
-                            <td className="p-3">
+                            <td className="p-2 sm:p-3">
                               <div className="flex flex-col gap-1">
-                                <Badge variant={userData.isActive ? 'default' : 'secondary'}>
+                                <Badge variant={userData.isActive ? 'default' : 'secondary'} className="text-xs">
                                   {userData.isActive ? 'Active' : 'Inactive'}
                                 </Badge>
                                 {userData.isLocked && (
@@ -1124,18 +1132,18 @@ export default function DashboardPage() {
                                 )}
                               </div>
                             </td>
-                            <td className="p-3 text-sm">
+                            <td className="p-2 sm:p-3 text-xs sm:text-sm hidden sm:table-cell">
                               {new Date(userData.createdAt).toLocaleDateString()}
                             </td>
-                            <td className="p-3">
-                              <div className="flex gap-1">
+                            <td className="p-2 sm:p-3">
+                              <div className="flex gap-1 flex-wrap">
                                 {userData.isLocked ? (
                                   <Button
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleUserAction(userData._id, 'unlock')}
                                     disabled={actionLoading === `unlock-${userData._id}`}
-                                    className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                    className="text-green-600 hover:text-green-700 hover:bg-green-50 text-xs"
                                     title="Unlock account"
                                   >
                                     {actionLoading === `unlock-${userData._id}` ? (
@@ -1150,7 +1158,7 @@ export default function DashboardPage() {
                                     variant="outline"
                                     onClick={() => handleUserAction(userData._id, 'lock')}
                                     disabled={actionLoading === `lock-${userData._id}`}
-                                    className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                                    className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 text-xs"
                                     title="Lock account"
                                   >
                                     {actionLoading === `lock-${userData._id}` ? (
@@ -1166,7 +1174,7 @@ export default function DashboardPage() {
                                   variant="outline"
                                   onClick={() => handleUserAction(userData._id, 'send-verification')}
                                   disabled={actionLoading === `send-verification-${userData._id}`}
-                                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-xs"
                                   title="Send verification email"
                                 >
                                   {actionLoading === `send-verification-${userData._id}` ? (
@@ -1181,7 +1189,7 @@ export default function DashboardPage() {
                                   variant="outline"
                                   onClick={() => handleUserAction(userData._id, 'reset-quota', { freeUploadsLimit: 10 })}
                                   disabled={actionLoading === `reset-quota-${userData._id}`}
-                                  className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                                  className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 text-xs"
                                   title="Reset upload quota"
                                 >
                                   {actionLoading === `reset-quota-${userData._id}` ? (
@@ -1198,7 +1206,7 @@ export default function DashboardPage() {
                                     setSelectedUser(userData);
                                     setShowUserModal(true);
                                   }}
-                                  className="text-gray-600 hover:text-gray-700 hover:bg-gray-50"
+                                  className="text-gray-600 hover:text-gray-700 hover:bg-gray-50 text-xs"
                                   title="View details"
                                 >
                                   <Eye className="h-3 w-3" />
@@ -1305,10 +1313,10 @@ export default function DashboardPage() {
       
       {/* Header */}
       <header className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center h-auto sm:h-16 py-3 sm:py-0">
-            <div className="flex items-center space-x-2 sm:space-x-4 mb-3 sm:mb-0">
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center h-auto sm:h-16 py-3 sm:py-0 gap-3 sm:gap-0">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">
                 {user?.role === 'admin' ? 'Admin Dashboard' : 'Dashboard'}
               </h1>
               <Badge variant="secondary" className={`text-xs sm:text-sm whitespace-nowrap ${user?.role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
@@ -1316,46 +1324,53 @@ export default function DashboardPage() {
               </Badge>
             </div>
             
-            <div className="flex items-center space-x-2 sm:space-x-4 overflow-x-auto">
+            <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4 overflow-x-auto">
               {user?.role === 'admin' && (
                 <Button variant="outline" size="sm" onClick={() => router.push('/admin')} className="whitespace-nowrap">
                   <Shield className="h-4 w-4 mr-1 sm:mr-2" />
-                  <span className="hidden xs:inline">Admin Panel</span>
-                  <span className="xs:hidden">Admin</span>
+                  <span className="hidden sm:inline">Admin Panel</span>
+                  <span className="sm:hidden">Admin</span>
                 </Button>
               )}
              
-              <Button variant="ghost" size="sm" className="flex-shrink-0">
-                <Settings className="h-4 w-4" />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => router.push('/profile')} 
+                className="whitespace-nowrap"
+              >
+                <User className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Profile</span>
+                <span className="sm:hidden">Profile</span>
               </Button>
               <Button variant="outline" size="sm" onClick={handleLogout} className="whitespace-nowrap">
                 <LogOut className="h-4 w-4 mr-1 sm:mr-2" />
-                <span className="hidden xs:inline">Logout</span>
-                <span className="xs:hidden">Exit</span>
+                <span className="hidden sm:inline">Logout</span>
+                <span className="sm:hidden">Exit</span>
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-        <div className="space-y-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
+        <div className="space-y-4 sm:space-y-6">
           {/* Main Content */}
             {/* Welcome Message */}
             <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
               <CardContent className="p-4 sm:p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-center sm:text-left">
-                  <div className="mb-4 sm:mb-0">
-                    <h2 className="text-xl sm:text-2xl font-bold mb-2">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-center sm:text-left gap-4">
+                  <div className="flex-1">
+                    <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-2">
                       Welcome back, {user.firstName || user.username || 'User'}! 👋
                     </h2>
                     <p className="text-blue-100 text-sm sm:text-base">
                       Ready to manage your listings? Create new ones or update existing ones.
                     </p>
                   </div>
-                  <div className="hidden md:block flex-shrink-0">
+                  <div className="hidden sm:block flex-shrink-0">
                     <div className="bg-white/20 rounded-full p-3">
-                      <Building className="h-8 w-8 mx-auto" />
+                      <Building className="h-6 w-6 sm:h-8 sm:w-8 mx-auto" />
                     </div>
                   </div>
                 </div>
@@ -1374,44 +1389,44 @@ export default function DashboardPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 lg:gap-4">
                   <Button 
-                    className="h-16 sm:h-20 flex-col space-y-1 sm:space-y-2 p-2 sm:p-4" 
+                    className="h-14 sm:h-16 lg:h-20 flex-col space-y-1 sm:space-y-2 p-2 sm:p-3 lg:p-4" 
                     variant="outline"
                     onClick={() => router.push('/listings')}
                   >
-                    <Search className="h-4 w-4 sm:h-6 sm:w-6" />
+                    <Search className="h-3 w-3 sm:h-4 sm:w-4 lg:h-6 lg:w-6" />
                     <span className="text-xs sm:text-sm">Browse Listings</span>
                   </Button>
                   <Button 
-                    className="h-16 sm:h-20 flex-col space-y-1 sm:space-y-2 p-2 sm:p-4" 
+                    className="h-14 sm:h-16 lg:h-20 flex-col space-y-1 sm:space-y-2 p-2 sm:p-3 lg:p-4" 
                     variant="outline"
                     onClick={() => router.push('/create-listing')}
                   >
-                    <PlusCircle className="h-4 w-4 sm:h-6 sm:w-6" />
+                    <PlusCircle className="h-3 w-3 sm:h-4 sm:w-4 lg:h-6 lg:w-6" />
                     <span className="text-xs sm:text-sm">Create Listing</span>
                   </Button>
                   <Button 
-                    className="h-16 sm:h-20 flex-col space-y-1 sm:space-y-2 p-2 sm:p-4" 
+                    className="h-14 sm:h-16 lg:h-20 flex-col space-y-1 sm:space-y-2 p-2 sm:p-3 lg:p-4" 
                     variant="outline"
                     onClick={() => router.push('/jobs')}
                   >
-                    <Briefcase className="h-4 w-4 sm:h-6 sm:w-6" />
+                    <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 lg:h-6 lg:w-6" />
                     <span className="text-xs sm:text-sm">Browse Jobs</span>
                   </Button>
                   {user && (
                     <Button 
-                      className="h-16 sm:h-20 flex-col space-y-1 sm:space-y-2 p-2 sm:p-4" 
+                      className="h-14 sm:h-16 lg:h-20 flex-col space-y-1 sm:space-y-2 p-2 sm:p-3 lg:p-4" 
                       variant="outline"
                       onClick={() => router.push('/jobs/create')}
                     >
-                      <Building className="h-4 w-4 sm:h-6 sm:w-6" />
+                      <Building className="h-3 w-3 sm:h-4 sm:w-4 lg:h-6 lg:w-6" />
                       <span className="text-xs sm:text-sm">Post Job</span>
                     </Button>
                   )}
                  
                   <Button 
-                    className="h-16 sm:h-20 flex-col space-y-1 sm:space-y-2 p-2 sm:p-4" 
+                    className="h-14 sm:h-16 lg:h-20 flex-col space-y-1 sm:space-y-2 p-2 sm:p-3 lg:p-4" 
                     variant="outline"
                     onClick={() => {
                       setShowFavorites(!showFavorites);
@@ -1420,7 +1435,7 @@ export default function DashboardPage() {
                       }
                     }}
                   >
-                    <Star className="h-4 w-4 sm:h-6 sm:w-6" />
+                    <Star className="h-3 w-3 sm:h-4 sm:w-4 lg:h-6 lg:w-6" />
                     <span className="text-xs sm:text-sm">Favorites</span>
                   </Button>
                 </div>
@@ -1428,15 +1443,15 @@ export default function DashboardPage() {
             </Card>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
               <Card>
                 <CardContent className="p-3 sm:p-4 lg:p-6">
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-1">
                       <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total Listings</p>
-                      <p className="text-lg sm:text-xl lg:text-2xl font-bold">{stats.totalListings}</p>
+                      <p className="text-base sm:text-lg lg:text-xl xl:text-2xl font-bold">{stats.totalListings}</p>
                     </div>
-                    <Building className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500 flex-shrink-0" />
+                    <Building className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8 text-blue-500 flex-shrink-0" />
                   </div>
                 </CardContent>
               </Card>
@@ -1446,9 +1461,9 @@ export default function DashboardPage() {
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-1">
                       <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Active Listings</p>
-                      <p className="text-lg sm:text-xl lg:text-2xl font-bold">{stats.activeListings}</p>
+                      <p className="text-base sm:text-lg lg:text-xl xl:text-2xl font-bold">{stats.activeListings}</p>
                     </div>
-                    <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 flex-shrink-0" />
+                    <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8 text-green-500 flex-shrink-0" />
                   </div>
                 </CardContent>
               </Card>
@@ -1458,47 +1473,36 @@ export default function DashboardPage() {
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-1">
                       <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total Views</p>
-                      <p className="text-lg sm:text-xl lg:text-2xl font-bold">{stats.totalViews}</p>
+                      <p className="text-base sm:text-lg lg:text-xl xl:text-2xl font-bold">{stats.totalViews}</p>
                     </div>
-                    <Eye className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500 flex-shrink-0" />
+                    <Eye className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8 text-purple-500 flex-shrink-0" />
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardContent className="p-3 sm:p-4 lg:p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Expiring Soon</p>
-                      <p className="text-lg sm:text-xl lg:text-2xl font-bold">{stats.expiringSoon}</p>
-                    </div>
-                    <AlertCircle className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500 flex-shrink-0" />
-                  </div>
-                </CardContent>
-              </Card>
 
               {user?.role === 'admin' && (
                 <>
                   <Card>
-                    <CardContent className="p-6">
+                    <CardContent className="p-3 sm:p-4 lg:p-6">
                       <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-gray-600">Total Users</p>
-                          <p className="text-2xl font-bold">{stats.totalUsers}</p>
-            </div>
-                        <UsersIcon className="h-8 w-8 text-indigo-500" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total Users</p>
+                          <p className="text-base sm:text-lg lg:text-xl xl:text-2xl font-bold">{stats.totalUsers}</p>
+                        </div>
+                        <UsersIcon className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8 text-indigo-500 flex-shrink-0" />
                       </div>
                     </CardContent>
                   </Card>
 
-          <Card>
-                    <CardContent className="p-6">
+                  <Card>
+                    <CardContent className="p-3 sm:p-4 lg:p-6">
                       <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-gray-600">Pending Review</p>
-                          <p className="text-2xl font-bold">{stats.pendingListings}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Pending Review</p>
+                          <p className="text-base sm:text-lg lg:text-xl xl:text-2xl font-bold">{stats.pendingListings}</p>
                         </div>
-                        <AlertCircle className="h-8 w-8 text-yellow-500" />
+                        <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8 text-yellow-500 flex-shrink-0" />
                       </div>
                     </CardContent>
                   </Card>
@@ -1545,7 +1549,7 @@ export default function DashboardPage() {
                       {favorites.map((listing) => {
                         const CategoryIcon = getCategoryIcon(listing.category);
                         return (
-                          <div key={listing._id} className="border rounded-lg p-4 hover:bg-gray-50">
+                          <div key={listingId} className="border rounded-lg p-4 hover:bg-gray-50">
                             <div className="flex items-start justify-between">
                               <div className="flex items-start space-x-3">
                                 <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -1591,14 +1595,14 @@ export default function DashboardPage() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => router.push(`/listings/${listing._id}`)}
+                                  onClick={() => router.push(`/listings/${listingId}`)}
                                   title="View Details"
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
                                 
                                 <FavoriteButton
-                                  listingId={listing._id}
+                                  listingId={listingId}
                                   isFavorited={true}
                                   variant="icon"
                                   size="sm"
@@ -1664,51 +1668,58 @@ export default function DashboardPage() {
             )}
 
             {/* My Listings */}
-          <Card className="mt-6">
-            <CardHeader>
-                <div className="flex items-center justify-between">
-                <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Building className="h-5 w-5" />
-                      {user?.role === 'admin' ? 'All Listings' : 'My Listings'}
+          <Card className="mt-4 sm:mt-6">
+            <CardHeader className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                      <Building className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <span className="truncate">{user?.role === 'admin' ? 'All Listings' : 'My Listings'}</span>
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-sm sm:text-base mt-1">
                       {user?.role === 'admin' 
                         ? 'Manage and moderate all listings' 
                         : 'Manage your active listings'}
                     </CardDescription>
                   </div>
-                  <Button onClick={() => router.push('/create-listing')}>
+                  <Button 
+                    onClick={() => router.push('/create-listing')}
+                    className="w-full sm:w-auto flex-shrink-0"
+                    size="sm"
+                  >
                     <PlusCircle className="h-4 w-4 mr-2" />
-                    Create New
+                    <span className="hidden sm:inline">Create New</span>
+                    <span className="sm:hidden">Create</span>
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6">
                 {error && (
                   <Alert variant="destructive" className="mb-4">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{error}</AlertDescription>
+                    <AlertDescription className="text-sm">{error}</AlertDescription>
                   </Alert>
                 )}
 
                 {loadingListings ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {Array.from({ length: 3 }).map((_, i) => (
                       <div key={i} className="animate-pulse">
-                        <div className="h-24 bg-gray-200 rounded-lg"></div>
+                        <div className="h-20 sm:h-24 bg-gray-200 rounded-lg"></div>
                       </div>
                     ))}
                   </div>
                 ) : listings.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {listings.map((listing) => {
                       const CategoryIcon = getCategoryIcon(listing.category);
+                      const listingId = (listing._id || listing.id) as string;
+                      const createdDate = listing.createdAt || listing.created_at;
                       return (
-                        <div key={listing._id} className="border rounded-lg p-4 hover:bg-gray-50">
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-start space-x-3">
-                              <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <div key={listingId} className="border rounded-lg p-3 sm:p-4 hover:bg-gray-50">
+                          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-3 sm:gap-4">
+                            <div className="flex items-start space-x-3 flex-1 min-w-0">
+                              <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                 {listing.image_urls.length > 0 ? (
                                   <img
                                     src={listing.image_urls[0]}
@@ -1719,92 +1730,99 @@ export default function DashboardPage() {
                                     }}
                                   />
                                 ) : (
-                                  <CategoryIcon className="h-8 w-8 text-gray-400" />
+                                  <CategoryIcon className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8 text-gray-400" />
                                 )}
                               </div>
                               
-                              <div className="flex-1">
-                                <h3 className="font-semibold text-lg">{listing.title}</h3>
-                                <p className="text-gray-600 text-sm line-clamp-2">{listing.description}</p>
-                                <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-                                  <span className="flex items-center">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-semibold text-sm sm:text-base lg:text-lg break-words">{listing.title}</h3>
+                                <p className="text-gray-600 text-xs sm:text-sm line-clamp-2 break-words">{listing.description}</p>
+                                <div className="flex flex-wrap items-center gap-1 sm:gap-2 lg:gap-4 mt-2 text-xs sm:text-sm text-gray-500">
+                                  <span className="flex items-center whitespace-nowrap">
                                     <DollarSign className="h-3 w-3 mr-1" />
                                     {formatPrice(listing.price, listing.pricing_frequency)}
                                   </span>
-                                  <span className="flex items-center">
+                                  <span className="flex items-center whitespace-nowrap">
                                     <Eye className="h-3 w-3 mr-1" />
                                     {listing.views} views
                                   </span>
-                                  <span className="flex items-center">
+                                  <span className="flex items-center whitespace-nowrap">
                                     <Calendar className="h-3 w-3 mr-1" />
-                                    {new Date(listing.createdAt).toLocaleDateString()}
+                                    {createdDate ? new Date(createdDate).toLocaleDateString() : 'N/A'}
                                   </span>
                                 </div>
                               </div>
                             </div>
                             
-                            <div className="flex items-center space-x-2">
-                              <Badge className={getStatusColor(listing.status, listing.moderationStatus)}>
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 flex-shrink-0">
+                              <Badge className={`${getStatusColor(listing.status, listing.moderationStatus)} text-xs`}>
                                 {getStatusText(listing.status, listing.moderationStatus)}
                               </Badge>
                               
-                              {user?.role === 'admin' && listing.moderationStatus === 'pending' && (
-                                <>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                    onClick={() => handleModeration(listing._id, 'approve')}
-                                    className="bg-green-50 hover:bg-green-100 text-green-600"
-                                  >
-                                    Approve
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleModeration(listing._id, 'reject')}
-                                    className="bg-red-50 hover:bg-red-100 text-red-600"
-                                  >
-                                    Reject
-                                  </Button>
-                                </>
-                              )}
-                              
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  if (user?.role === 'admin') {
-                                    router.push(`/admin/listings/${listing._id}`);
-                                  } else {
-                                    router.push(`/listings/${listing._id}`);
-                                  }
-                                }}
-                                title="View Details"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  if (user?.role === 'admin') {
-                                    router.push(`/admin/listings/${listing._id}`);
-                                  } else {
-                                    router.push(`/listings/${listing._id}/edit`);
-                                  }
-                                }}
-                                title={user?.role === 'admin' ? 'View/Edit Details' : 'Edit Listing'}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeleteListing(listing._id)}
-                                title="Delete Listing"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+                                {user?.role === 'admin' && listing.moderationStatus === 'pending' && (
+                                  <>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleModeration(listingId, 'approve')}
+                                      className="bg-green-50 hover:bg-green-100 text-green-600 text-xs"
+                                    >
+                                      <span className="hidden sm:inline">Approve</span>
+                                      <span className="sm:hidden">✓</span>
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleModeration(listingId, 'reject')}
+                                      className="bg-red-50 hover:bg-red-100 text-red-600 text-xs"
+                                    >
+                                      <span className="hidden sm:inline">Reject</span>
+                                      <span className="sm:hidden">✗</span>
+                                    </Button>
+                                  </>
+                                )}
+                                
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    if (user?.role === 'admin') {
+                                      router.push(`/admin/listings/${listingId}`);
+                                    } else {
+                                      router.push(`/listings/${listingId}`);
+                                    }
+                                  }}
+                                  title="View Details"
+                                  className="text-xs"
+                                >
+                                  <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    if (user?.role === 'admin') {
+                                      router.push(`/admin/listings/${listingId}`);
+                                    } else {
+                                      router.push(`/listings/${listingId}/edit`);
+                                    }
+                                  }}
+                                  title={user?.role === 'admin' ? 'View/Edit Details' : 'Edit Listing'}
+                                  className="text-xs"
+                                >
+                                  <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDeleteListing(listingId)}
+                                  title="Delete Listing"
+                                  className="text-xs"
+                                >
+                                  <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -1812,23 +1830,32 @@ export default function DashboardPage() {
                     })}
                     
                     {listings.length > 5 && (
-                      <div className="text-center pt-4">
-                        <Button variant="outline" onClick={() => router.push('/dashboard/listings')}>
-                          View All Listings ({listings.length})
+                      <div className="text-center pt-3 sm:pt-4">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => router.push('/dashboard/listings')}
+                          className="w-full sm:w-auto text-sm"
+                        >
+                          <span className="hidden sm:inline">View All Listings ({listings.length})</span>
+                          <span className="sm:hidden">View All ({listings.length})</span>
                         </Button>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <Building className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No listings yet</h3>
-                    <p className="text-gray-600 mb-4">
+                  <div className="text-center py-6 sm:py-8">
+                    <Building className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">No listings yet</h3>
+                    <p className="text-sm sm:text-base text-gray-600 mb-4 px-4">
                       Create your first listing to get started
                     </p>
-                    <Button onClick={() => router.push('/create-listing')}>
+                    <Button 
+                      onClick={() => router.push('/create-listing')}
+                      className="w-full sm:w-auto text-sm"
+                    >
                       <PlusCircle className="h-4 w-4 mr-2" />
-                      Create Your First Listing
+                      <span className="hidden sm:inline">Create Your First Listing</span>
+                      <span className="sm:hidden">Create Listing</span>
                     </Button>
               </div>
                 )}

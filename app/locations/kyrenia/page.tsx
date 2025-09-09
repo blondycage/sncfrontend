@@ -114,22 +114,22 @@ export default function KyreniaPage() {
 
         <div className="px-4">
           <Tabs defaultValue="properties">
-            <TabsList className="mb-8 grid w-full grid-cols-4">
-            <TabsTrigger value="properties">
-              <BedDouble className="mr-2 h-4 w-4" />
-              Properties
+            <TabsList className="mb-8 grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+            <TabsTrigger value="properties" className="flex-col gap-1 py-2 px-2 sm:flex-row sm:gap-2 sm:py-3 sm:px-4">
+              <BedDouble className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-[10px] sm:text-sm">Properties</span>
             </TabsTrigger>
-            <TabsTrigger value="jobs">
-              <Briefcase className="mr-2 h-4 w-4" />
-              Jobs
+            <TabsTrigger value="jobs" className="flex-col gap-1 py-2 px-2 sm:flex-row sm:gap-2 sm:py-3 sm:px-4">
+              <Briefcase className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-[10px] sm:text-sm">Jobs</span>
             </TabsTrigger>
-            <TabsTrigger value="education">
-              <GraduationCap className="mr-2 h-4 w-4" />
-              Education
+            <TabsTrigger value="education" className="flex-col gap-1 py-2 px-2 sm:flex-row sm:gap-2 sm:py-3 sm:px-4">
+              <GraduationCap className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-[10px] sm:text-sm">Education</span>
             </TabsTrigger>
-            <TabsTrigger value="services">
-              <ShoppingBag className="mr-2 h-4 w-4" />
-              Services
+            <TabsTrigger value="services" className="flex-col gap-1 py-2 px-2 sm:flex-row sm:gap-2 sm:py-3 sm:px-4">
+              <ShoppingBag className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-[10px] sm:text-sm">Services</span>
             </TabsTrigger>
           </TabsList>
 

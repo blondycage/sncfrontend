@@ -67,15 +67,22 @@ const PRICING_FREQUENCIES = {
   rental: [
     { value: 'daily', label: 'Daily' },
     { value: 'weekly', label: 'Weekly' },
-    { value: 'monthly', label: 'Monthly' }
+    { value: 'monthly', label: 'Monthly' },
+    { value: 'yearly', label: 'Yearly' },
+    { value: 'negotiable', label: 'Negotiable' }
   ],
   sale: [
-    { value: 'fixed', label: 'Fixed Price' }
+    { value: 'fixed', label: 'Fixed Price' },
+    { value: 'negotiable', label: 'Negotiable' },
+    { value: 'free', label: 'Free' }
   ],
   service: [
     { value: 'hourly', label: 'Hourly' },
     { value: 'daily', label: 'Daily' },
-    { value: 'fixed', label: 'Fixed Price' }
+    { value: 'fixed', label: 'Fixed Price' },
+    { value: 'negotiable', label: 'Negotiable' },
+    { value: 'free', label: 'Free' },
+    { value: 'yearly', label: 'Yearly' }
   ]
 };
 

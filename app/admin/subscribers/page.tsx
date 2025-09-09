@@ -282,7 +282,7 @@ export default function AdminSubscribersPage() {
         <div>
           <h1 className="text-2xl font-bold">Newsletter Subscribers</h1>
           <p className="text-muted-foreground">
-            Manage your newsletter subscribers and view analytics
+            Manage your newsletter subscribers
           </p>
         </div>
         <div className="flex gap-2">

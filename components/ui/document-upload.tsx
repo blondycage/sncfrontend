@@ -23,7 +23,7 @@ export function DocumentUpload({
   maxSize = 10,
   className = "",
   currentDocument,
-  acceptedTypes = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png'],
+  acceptedTypes = ['.jpg', '.jpeg', '.png', '.webp'],
   label = "Upload Document",
   required = false
 }: DocumentUploadProps) {
@@ -138,10 +138,10 @@ export function DocumentUpload({
                 {uploading ? 'Uploading...' : 'Upload Document'}
               </p>
               <p className="text-sm text-gray-500">
-                Click to select a document
+                Click to select an image of your document
               </p>
               <p className="text-xs text-gray-400 mt-2">
-                Accepted formats: {acceptedTypes.join(', ')} • Max {maxSize}MB
+                Accepted formats: {acceptedTypes.join(', ')} • Max {maxSize}MB • Please scan or photograph your documents
               </p>
             </label>
           </div>

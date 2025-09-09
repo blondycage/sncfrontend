@@ -9,8 +9,14 @@ declare global {
   }
 }
 
-const GTranslateWidget = () => {
+// Global state to ensure GTranslate script is loaded only once
+let scriptLoaded = false;
+
+const GTranslateWidget = ({ id }: { id?: string } = {}) => {
   useEffect(() => {
+    // Only load script once globally
+    if (scriptLoaded) return;
+    
     // Create the GTranslate configuration for mobile-friendly dropdown
     window.gtranslateSettings = {
       "default_language": "en",
@@ -38,9 +44,12 @@ const GTranslateWidget = () => {
 
     // Load GTranslate script
     const loadScript = () => {
-      // Remove any existing GTranslate scripts
-      const existingScripts = document.querySelectorAll('script[src*="gtranslate.net"]');
-      existingScripts.forEach(script => script.remove());
+      // Check if script already exists to avoid duplicates
+      const existingScript = document.querySelector('script[src*="gtranslate.net"]');
+      if (existingScript) {
+        scriptLoaded = true;
+        return;
+      }
 
       // Create new script element
       const script = document.createElement('script');
@@ -50,6 +59,7 @@ const GTranslateWidget = () => {
       
       script.onload = () => {
         console.log('GTranslate script loaded');
+        scriptLoaded = true;
       };
       
       script.onerror = () => {
@@ -70,7 +80,7 @@ const GTranslateWidget = () => {
   return (
     <div className="flex items-center space-x-2">
       <Languages className="h-4 w-4 text-muted-foreground" />
-      <div className="gtranslate_wrapper relative"></div>
+      <div className="gtranslate_wrapper relative" data-gtranslate-id={id}></div>
     </div>
   );
 };

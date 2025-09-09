@@ -1,14 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MapPin, Calendar, DollarSign, GraduationCap, BookOpen, Users, ChevronLeft, ChevronRight, Search, Filter, Star, Clock, Building, Globe } from "lucide-react"
+import { MapPin, DollarSign, GraduationCap, BookOpen, Users, ChevronLeft, ChevronRight, Search, Filter, Star, Clock, Building, Globe } from "lucide-react"
 import Link from 'next/link'
-import Image from 'next/image'
 
 // TypeScript interfaces
 interface EducationalProgram {
@@ -59,34 +59,6 @@ interface Filters {
   sortBy: string
 }
 
-// Hero slideshow data
-const heroSlides = [
-  {
-    id: 1,
-    title: "Study in Northern Cyprus",
-    subtitle: "World-class education in the heart of the Mediterranean",
-    description: "Discover quality education with affordable tuition fees in beautiful Northern Cyprus",
-    image: "/images/education-1.jpg",
-    cta: "Explore Programs"
-  },
-  {
-    id: 2,
-    title: "Cyprus International University",
-    subtitle: "Leading institution in Nicosia",
-    description: "Modern facilities and international programs await you",
-    image: "/images/education-2.jpg",
-    cta: "View Programs"
-  },
-  {
-    id: 3,
-    title: "Eastern Mediterranean University",
-    subtitle: "Excellence in Famagusta",
-    description: "Join thousands of international students in a diverse academic environment",
-    image: "/images/education-3.jpg",
-    cta: "Apply Now"
-  }
-]
-
 // Constants
 const PROGRAM_LEVELS = [
   { value: 'undergraduate', label: 'Undergraduate', icon: GraduationCap },
@@ -107,7 +79,7 @@ const FIELDS_OF_STUDY = [
 ]
 
 const NORTHERN_CYPRUS_CITIES = [
-  'Nicosia', 'Famagusta', 'Kyrenia', 'Morphou', 'Iskele'
+  'Nicosia', 'Famagusta', 'Kyrenia', 'Morphou', 'Iskele', 'Karpaz'
 ]
 
 const SORT_OPTIONS = [
@@ -119,49 +91,25 @@ const SORT_OPTIONS = [
 ]
 
 export default function EducationPage() {
+  const searchParams = useSearchParams()
+  const cityFromUrl = searchParams.get('city') || ''
+  
   // State management
   const [programs, setPrograms] = useState<EducationalProgram[]>([])
-  const [featuredPrograms, setFeaturedPrograms] = useState<EducationalProgram[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [showFilters, setShowFilters] = useState(false)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [filters, setFilters] = useState<Filters>({
     search: '',
     level: '',
     field: '',
-    city: '',
+    city: cityFromUrl,
     minTuition: '',
     maxTuition: '',
     tags: '',
     sortBy: 'newest'
   })
-
-  // Hero slideshow auto-advance
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
-    }, 5000)
-    return () => clearInterval(timer)
-  }, [])
-
-  // Fetch featured programs
-  useEffect(() => {
-    const fetchFeaturedPrograms = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/education/featured`)
-        if (response.ok) {
-          const data = await response.json()
-          setFeaturedPrograms(data.data || [])
-        }
-      } catch (error) {
-        console.error('Error fetching featured programs:', error)
-      }
-    }
-    fetchFeaturedPrograms()
-  }, [])
 
   // Fetch programs with filters
   useEffect(() => {
@@ -196,6 +144,13 @@ export default function EducationPage() {
 
     fetchPrograms()
   }, [filters, page])
+
+  // Update city filter when URL parameter changes
+  useEffect(() => {
+    if (cityFromUrl && cityFromUrl !== filters.city) {
+      setFilters(prev => ({ ...prev, city: cityFromUrl }))
+    }
+  }, [cityFromUrl])
 
   const handleFilterChange = (key: keyof Filters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }))
@@ -240,124 +195,34 @@ export default function EducationPage() {
     return levelData?.label || level
   }
 
+  const cityDisplayName = cityFromUrl || 'All Cities'
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section with Slideshow */}
-      <section className="relative h-[70vh] overflow-hidden">
-        {heroSlides.map((slide, index) => (
-          <div
-            key={slide.id}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentSlide ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            <div className="absolute inset-0 bg-black/40 z-10" />
-            <Image
-              src={slide.image}
-              alt={slide.title}
-              fill
-              className="object-cover"
-              priority={index === 0}
-            />
-            <div className="absolute inset-0 z-20 flex items-center justify-center">
-              <div className="text-center text-white max-w-4xl px-6">
-                <h1 className="text-5xl md:text-7xl font-bold mb-6">{slide.title}</h1>
-                <h2 className="text-2xl md:text-3xl font-semibold mb-4">{slide.subtitle}</h2>
-                <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto">{slide.description}</p>
-                <Button size="lg" className="text-lg px-8 py-3">
-                  {slide.cta}
-                </Button>
-              </div>
-            </div>
+      {/* Hero Section */}
+      <section className="relative h-[40vh] overflow-hidden bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800">
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center text-white max-w-4xl px-6">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4">
+              Education Programs
+              {cityFromUrl && (
+                <span className="block text-2xl md:text-3xl font-semibold mt-2 text-blue-200">
+                  in {cityFromUrl}
+                </span>
+              )}
+            </h1>
+            <p className="text-lg md:text-xl max-w-2xl mx-auto">
+              {cityFromUrl 
+                ? `Discover quality education programs available in ${cityFromUrl}, Northern Cyprus`
+                : 'Discover world-class education programs across Northern Cyprus'
+              }
+            </p>
           </div>
-        ))}
-        
-        {/* Slideshow Controls */}
-        <button
-          onClick={() => setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </button>
-        <button
-          onClick={() => setCurrentSlide((prev) => (prev + 1) % heroSlides.length)}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors"
-        >
-          <ChevronRight className="h-6 w-6" />
-        </button>
-        
-        {/* Slide Indicators */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex space-x-2">
-          {heroSlides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-colors ${
-                index === currentSlide ? 'bg-white' : 'bg-white/50'
-              }`}
-            />
-          ))}
         </div>
       </section>
 
       <div className="container py-12 px-4 sm:px-6 lg:px-8">
-        {/* Featured Programs Section */}
-        {featuredPrograms.length > 0 && (
-          <section className="mb-20">
-            <div className="flex items-center mb-10">
-              <Star className="h-6 w-6 text-amber-500 mr-3" />
-              <h2 className="text-3xl md:text-4xl font-bold">Featured Programs</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 items-stretch">
-              {featuredPrograms.slice(0, 3).map((program) => (
-                <Card key={program._id} className="overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full min-h-[420px]">
-                  <CardHeader className="p-6 pb-4">
-                    <div className="flex justify-between items-start mb-4">
-                      <Badge className="bg-amber-500 text-white px-3 py-1">
-                        Featured
-                      </Badge>
-                      <Badge className="bg-primary px-3 py-1">
-                        {getLevelLabel(program.level)}
-                      </Badge>
-                    </div>
-                    <CardTitle className="line-clamp-2 text-xl leading-tight">{program.title}</CardTitle>
-                    <div className="text-sm font-medium text-primary mt-2">{program.institution.name}</div>
-                    <div className="flex items-center text-sm text-muted-foreground mt-1">
-                      <MapPin className="mr-2 h-4 w-4" />
-                      {program.location.city}
-                    </div>
-                    <CardDescription className="line-clamp-3 mt-3 leading-relaxed">{program.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-6 pt-2 flex-1">
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center">
-                          <DollarSign className="mr-2 h-4 w-4 text-green-600" />
-                          <span className="text-sm font-medium">{formatTuition(program.tuition)}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <Clock className="mr-2 h-4 w-4 text-blue-600" />
-                          <span className="text-sm">{formatDuration(program.duration)}</span>
-                        </div>
-                      </div>
-                      {program.tuition.scholarshipAvailable && (
-                        <Badge variant="outline" className="text-green-600 border-green-600">
-                          Scholarship Available
-                        </Badge>
-                      )}
-                    </div>
-                  </CardContent>
-                  <CardFooter className="p-6 pt-2 mt-auto">
-                    <Link href={`/categories/education/${program._id}`} className="w-full">
-                      <Button className="w-full h-11">Learn More & Apply</Button>
-                    </Link>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          </section>
-        )}
-
         {/* Main Content */}
         <div className="flex flex-col xl:flex-row gap-12">
           {/* Filters Sidebar */}
@@ -386,6 +251,24 @@ export default function EducationPage() {
                       className="pl-10 h-11"
                     />
                   </div>
+                </div>
+
+                {/* City */}
+                <div>
+                  <label className="text-sm font-medium mb-3 block">City</label>
+                  <Select value={filters.city || "all"} onValueChange={(value) => handleFilterChange('city', value === "all" ? "" : value)}>
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Select city" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Cities</SelectItem>
+                      {NORTHERN_CYPRUS_CITIES.map((city) => (
+                        <SelectItem key={city} value={city}>
+                          {city}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Level */}
@@ -424,24 +307,6 @@ export default function EducationPage() {
                       {FIELDS_OF_STUDY.map((field) => (
                         <SelectItem key={field} value={field}>
                           {formatFieldOfStudy(field)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* City */}
-                <div>
-                  <label className="text-sm font-medium mb-3 block">City</label>
-                  <Select value={filters.city || "all"} onValueChange={(value) => handleFilterChange('city', value === "all" ? "" : value)}>
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Select city" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Cities</SelectItem>
-                      {NORTHERN_CYPRUS_CITIES.map((city) => (
-                        <SelectItem key={city} value={city}>
-                          {city}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -492,7 +357,9 @@ export default function EducationPage() {
           {/* Programs Grid */}
           <div className="flex-1">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
-              <h2 className="text-2xl md:text-3xl font-bold">All Programs</h2>
+              <h2 className="text-2xl md:text-3xl font-bold">
+                {cityFromUrl ? `Education Programs in ${cityFromUrl}` : 'All Education Programs'}
+              </h2>
               <div className="text-sm text-muted-foreground bg-muted px-3 py-2 rounded-lg">
                 {loading ? 'Loading...' : `${programs.length} programs found`}
               </div>
@@ -506,16 +373,15 @@ export default function EducationPage() {
             )}
 
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 items-stretch">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                 {[...Array(6)].map((_, i) => (
-                  <Card key={i} className="overflow-hidden flex flex-col h-full min-h-[420px]">
-                    <div className="aspect-video w-full bg-muted animate-pulse" />
+                  <Card key={i} className="overflow-hidden">
                     <CardHeader className="p-6">
                       <div className="h-6 bg-muted rounded animate-pulse mb-3" />
                       <div className="h-4 bg-muted rounded animate-pulse mb-2 w-3/4" />
                       <div className="h-4 bg-muted rounded animate-pulse w-1/2" />
                     </CardHeader>
-                    <CardContent className="p-6 pt-0 flex-1">
+                    <CardContent className="p-6 pt-0">
                       <div className="h-4 bg-muted rounded animate-pulse mb-2" />
                       <div className="h-4 bg-muted rounded animate-pulse w-2/3" />
                     </CardContent>
@@ -527,17 +393,20 @@ export default function EducationPage() {
                 <GraduationCap className="h-20 w-20 text-muted-foreground mx-auto mb-6" />
                 <h3 className="text-xl font-semibold mb-3">No Programs Found</h3>
                 <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                  Try adjusting your filters to find more programs that match your criteria.
+                  {cityFromUrl 
+                    ? `No education programs found in ${cityFromUrl}. Try browsing all cities.`
+                    : 'Try adjusting your filters to find more programs that match your criteria.'
+                  }
                 </p>
                 <Button onClick={clearFilters} size="lg">Clear Filters</Button>
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-12 items-stretch">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-12">
                   {programs.map((program) => {
                     const IconComponent = getLevelIcon(program.level)
                     return (
-                      <Card key={program._id} className="overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full min-h-[420px]">
+                      <Card key={program._id} className="overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                         <CardHeader className="p-6 pb-4">
                           <div className="flex justify-between items-start mb-4">
                             {program.featured && (
@@ -560,7 +429,7 @@ export default function EducationPage() {
                           </div>
                           <CardDescription className="line-clamp-3 mt-3 leading-relaxed">{program.description}</CardDescription>
                         </CardHeader>
-                        <CardContent className="p-6 pt-2 flex-1">
+                        <CardContent className="p-6 pt-2">
                           <div className="space-y-3">
                             <div className="flex justify-between items-center">
                               <div className="flex items-center">
@@ -584,7 +453,7 @@ export default function EducationPage() {
                             </div>
                           </div>
                         </CardContent>
-                        <CardFooter className="p-6 pt-2 mt-auto">
+                        <CardFooter className="p-6 pt-2">
                           <Link href={`/categories/education/${program._id}`} className="w-full">
                             <Button className="w-full h-11">Learn More & Apply</Button>
                           </Link>
@@ -630,17 +499,18 @@ export default function EducationPage() {
         </div>
 
         {/* CTA Section */}
-        <section className="mt-24 text-center bg-gradient-to-r from-primary/10 to-blue-500/10 rounded-2xl p-12 md:p-16">
+        <section className="mt-24 text-center bg-gradient-to-r from-primary/10 to-blue-500/10 rounded-2xl p-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Start Your Educational Journey?</h2>
           <p className="text-lg text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
             Join thousands of international students who have chosen Northern Cyprus for their education. 
             Quality education, affordable tuition, and a vibrant student life await you.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-           
-            <Button size="lg" variant="outline" className="px-8 h-12">
-              Contact Admissions at <a href="mailto:admissions@searchnorthcyprus.org">admissions@searchnorthcyprus.org</a>
-            </Button>
+            <Link href="/categories/education">
+              <Button size="lg" className="px-8 h-12">
+                Browse All Programs
+              </Button>
+            </Link>
           </div>
         </section>
       </div>

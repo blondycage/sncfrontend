@@ -51,12 +51,13 @@ export default function SearchPage() {
   const { toast } = useToast()
   
   const [results, setResults] = useState<SearchResult[]>([])
+  const [unsortedResults, setUnsortedResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(true)
   const [totalResults, setTotalResults] = useState(0)
   
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '')
   const [category, setCategory] = useState(searchParams.get('category') || 'all')
-  const [location, setLocation] = useState(searchParams.get('location') || 'all')
+  const [location, setLocation] = useState(searchParams.get('city') || searchParams.get('location') || 'all')
   const [sortBy, setSortBy] = useState('relevance')
   
   const [pagination, setPagination] = useState({
@@ -68,31 +69,118 @@ export default function SearchPage() {
 
   useEffect(() => {
     performSearch()
-  }, [searchParams, pagination.page, sortBy])
+  }, [searchParams, pagination.page])
+
+  // Separate useEffect for sorting - doesn't trigger new API calls
+  useEffect(() => {
+    if (unsortedResults.length > 0) {
+      const sortedResults = sortResults(unsortedResults, sortBy)
+      setResults(sortedResults)
+    }
+  }, [unsortedResults, sortBy])
+
+  // Real-time search - trigger search when search parameters change
+  useEffect(() => {
+    // Debounce search input to avoid excessive API calls
+    const searchTimeout = setTimeout(() => {
+      if (searchQuery !== (searchParams.get('search') || '')) {
+        const params = new URLSearchParams()
+        if (searchQuery.trim()) params.set('search', searchQuery.trim())
+        if (category !== 'all') params.set('category', category)
+        if (location !== 'all') params.set('city', location)
+
+        const newUrl = `/search${params.toString() ? `?${params.toString()}` : ''}`
+        router.replace(newUrl) // Use replace instead of push to avoid history buildup
+      }
+    }, 500) // 500ms debounce
+
+    return () => clearTimeout(searchTimeout)
+  }, [searchQuery])
+
+  // Real-time category and location changes
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (searchQuery.trim()) params.set('search', searchQuery.trim())
+    if (category !== 'all') params.set('category', category)
+    if (location !== 'all') params.set('city', location)
+
+    const newUrl = `/search${params.toString() ? `?${params.toString()}` : ''}`
+    const currentUrl = `/search${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+    
+    if (newUrl !== currentUrl) {
+      router.replace(newUrl)
+    }
+  }, [category, location])
 
   const performSearch = async () => {
     setLoading(true)
     try {
-      const params = new URLSearchParams({
+      // Build parameters for different endpoints
+      const baseParams = {
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
         ...(searchQuery && { search: searchQuery }),
-        ...(category !== 'all' && { category }),
-        ...(location !== 'all' && { location }),
         ...(sortBy !== 'relevance' && { sortBy })
+      }
+
+      // For listings endpoint - use city filters (listings have their own categories)
+      const listingParams = new URLSearchParams({
+        ...baseParams,
+        ...(location !== 'all' && { city: location }),
+        limit: '8'
       })
 
-      console.log('🔍 Performing search with params:', Object.fromEntries(params.entries()))
+      // For jobs endpoint - use city filter
+      const jobParams = new URLSearchParams({
+        ...baseParams,
+        ...(location !== 'all' && { city: location }),
+        limit: '6'
+      })
 
-      // Search across multiple endpoints
-      const [listingsRes, jobsRes, educationRes] = await Promise.all([
-        // Search listings
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/listings?${params}&limit=8`).catch(() => ({ ok: false })),
-        // Search jobs
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs?${params}&limit=6`).catch(() => ({ ok: false })),
-        // Search education programs  
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/education?${params}&limit=6`).catch(() => ({ ok: false }))
-      ])
+      // For education endpoint - use city filter  
+      const educationParams = new URLSearchParams({
+        ...baseParams,
+        ...(location !== 'all' && { city: location }),
+        limit: '6'
+      })
+
+      console.log('🔍 Performing search with params:', {
+        listings: Object.fromEntries(listingParams.entries()),
+        jobs: Object.fromEntries(jobParams.entries()),
+        education: Object.fromEntries(educationParams.entries())
+      })
+
+      // Build promises array based on category filter
+      const promises = []
+      
+      // Search listings (if category is 'all' or 'listings')
+      if (category === 'all' || category === 'listings') {
+        promises.push(
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/listings?${listingParams}`).catch(() => ({ ok: false }))
+        )
+      } else {
+        promises.push(Promise.resolve({ ok: false }))
+      }
+      
+      // Search jobs (if category is 'all' or 'jobs')
+      if (category === 'all' || category === 'jobs') {
+        promises.push(
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs?${jobParams}`).catch(() => ({ ok: false }))
+        )
+      } else {
+        promises.push(Promise.resolve({ ok: false }))
+      }
+      
+      // Search education programs (if category is 'all' or 'education')
+      if (category === 'all' || category === 'education') {
+        promises.push(
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/education/programs?${educationParams}`).catch(() => ({ ok: false }))
+        )
+      } else {
+        promises.push(Promise.resolve({ ok: false }))
+      }
+
+      const [listingsRes, jobsRes, educationRes] = await Promise.all(promises)
 
       const searchResults: SearchResult[] = []
 
@@ -103,7 +191,7 @@ export default function SearchPage() {
           const listings = Array.isArray(listingsData.data) ? listingsData.data : [listingsData.data]
           listings.forEach((listing: any) => {
             searchResults.push({
-              _id: listing._id,
+              _id: listing.id || listing._id, // Backend returns 'id', not '_id'
               title: listing.title,
               description: listing.description,
               category: listing.category,
@@ -111,9 +199,9 @@ export default function SearchPage() {
               price: listing.price,
               currency: listing.currency,
               location: listing.location,
-              images: listing.images,
+              images: listing.image_urls || listing.images, // Backend returns 'image_urls'
               featured: listing.featured,
-              createdAt: listing.createdAt,
+              createdAt: listing.created_at || listing.createdAt, // Backend returns 'created_at'
               owner: listing.owner,
               views: listing.views
             })
@@ -128,15 +216,15 @@ export default function SearchPage() {
           const jobs = Array.isArray(jobsData.data) ? jobsData.data : [jobsData.data]
           jobs.forEach((job: any) => {
             searchResults.push({
-              _id: job._id,
+              _id: job.id || job._id, // Backend returns 'id', not '_id'
               title: job.title,
               description: job.description,
               category: 'jobs',
               type: 'job',
               location: job.location,
-              images: job.images,
+              images: job.images || [],
               featured: job.featured || false,
-              createdAt: job.createdAt,
+              createdAt: job.createdAt || job.created_at, // Handle both formats
               company: job.company,
               views: job.views
             })
@@ -151,31 +239,30 @@ export default function SearchPage() {
           const programs = Array.isArray(educationData.data) ? educationData.data : [educationData.data]
           programs.forEach((program: any) => {
             searchResults.push({
-              _id: program._id,
+              _id: program._id || program.id, // Handle both formats
               title: program.title,
               description: program.description,
               category: 'education',
               type: 'education',
               location: program.location,
-              images: program.images,
-              featured: false,
-              createdAt: program.createdAt,
+              images: program.images || [],
+              featured: program.featured || false,
+              createdAt: program.createdAt || program.created_at, // Handle both formats
               institution: program.institution,
-              rating: program.rating
+              rating: program.rating,
+              views: program.views
             })
           })
         }
       }
 
-      // Sort results by relevance, date, or other criteria
-      const sortedResults = sortResults(searchResults, sortBy)
-      
-      setResults(sortedResults)
-      setTotalResults(sortedResults.length)
+      // Store unsorted results and let the useEffect handle sorting
+      setUnsortedResults(searchResults)
+      setTotalResults(searchResults.length)
       
       console.log('✅ Search completed:', {
-        totalResults: sortedResults.length,
-        categories: sortedResults.reduce((acc: any, result) => {
+        totalResults: searchResults.length,
+        categories: searchResults.reduce((acc: any, result) => {
           acc[result.category] = (acc[result.category] || 0) + 1
           return acc
         }, {})
@@ -194,26 +281,110 @@ export default function SearchPage() {
   }
 
   const sortResults = (results: SearchResult[], sortBy: string) => {
+    // Helper function to safely parse dates
+    const getValidDate = (dateStr: string) => {
+      if (!dateStr) return new Date(0)
+      const date = new Date(dateStr)
+      return isNaN(date.getTime()) ? new Date(0) : date
+    }
+
+    // Helper function to get numeric price value
+    const getPrice = (item: SearchResult) => {
+      if (typeof item.price === 'number') return item.price
+      if (typeof item.price === 'string') {
+        const parsed = parseFloat(item.price)
+        return isNaN(parsed) ? 0 : parsed
+      }
+      return 0
+    }
+
+    // Helper function to check if item is featured
+    const isFeatured = (item: SearchResult) => {
+      return Boolean(item.featured)
+    }
+
+    // Helper function to get views count
+    const getViews = (item: SearchResult) => {
+      return typeof item.views === 'number' ? item.views : 0
+    }
+
     switch (sortBy) {
       case 'date_new':
-        return results.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        return [...results].sort((a, b) => {
+          const dateA = getValidDate(a.createdAt)
+          const dateB = getValidDate(b.createdAt)
+          return dateB.getTime() - dateA.getTime()
+        })
+      
       case 'date_old':
-        return results.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+        return [...results].sort((a, b) => {
+          const dateA = getValidDate(a.createdAt)
+          const dateB = getValidDate(b.createdAt)
+          return dateA.getTime() - dateB.getTime()
+        })
+      
       case 'price_low':
-        return results.sort((a, b) => (a.price || 0) - (b.price || 0))
+        return [...results].sort((a, b) => {
+          // Items with prices come first, then by price ascending
+          const priceA = getPrice(a)
+          const priceB = getPrice(b)
+          
+          if (priceA === 0 && priceB === 0) {
+            // Both have no price, sort by date
+            return getValidDate(b.createdAt).getTime() - getValidDate(a.createdAt).getTime()
+          }
+          if (priceA === 0) return 1  // A has no price, put it last
+          if (priceB === 0) return -1 // B has no price, put it last
+          
+          return priceA - priceB
+        })
+      
       case 'price_high':
-        return results.sort((a, b) => (b.price || 0) - (a.price || 0))
+        return [...results].sort((a, b) => {
+          // Items with prices come first, then by price descending
+          const priceA = getPrice(a)
+          const priceB = getPrice(b)
+          
+          if (priceA === 0 && priceB === 0) {
+            // Both have no price, sort by date
+            return getValidDate(b.createdAt).getTime() - getValidDate(a.createdAt).getTime()
+          }
+          if (priceA === 0) return 1  // A has no price, put it last
+          if (priceB === 0) return -1 // B has no price, put it last
+          
+          return priceB - priceA
+        })
+      
       case 'featured':
-        return results.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0))
-      default: // relevance
-        return results.sort((a, b) => {
+        return [...results].sort((a, b) => {
+          const featuredA = isFeatured(a)
+          const featuredB = isFeatured(b)
+          
           // Featured items first
-          if (a.featured && !b.featured) return -1
-          if (!a.featured && b.featured) return 1
-          // Then by views if available
-          if (a.views && b.views) return b.views - a.views
-          // Then by creation date
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          if (featuredA && !featuredB) return -1
+          if (!featuredA && featuredB) return 1
+          
+          // If both are featured or both are not featured, sort by date
+          return getValidDate(b.createdAt).getTime() - getValidDate(a.createdAt).getTime()
+        })
+      
+      default: // relevance
+        return [...results].sort((a, b) => {
+          // Priority order: Featured > Views > Date
+          
+          // 1. Featured items first
+          const featuredA = isFeatured(a)
+          const featuredB = isFeatured(b)
+          if (featuredA && !featuredB) return -1
+          if (!featuredA && featuredB) return 1
+          
+          // 2. Then by views (higher first)
+          const viewsA = getViews(a)
+          const viewsB = getViews(b)
+          if (viewsA !== viewsB) return viewsB - viewsA
+          
+          // 3. Finally by creation date (newer first)
+          return getValidDate(b.createdAt).getTime() - getValidDate(a.createdAt).getTime()
         })
     }
   }
@@ -224,7 +395,7 @@ export default function SearchPage() {
     const params = new URLSearchParams()
     if (searchQuery.trim()) params.set('search', searchQuery.trim())
     if (category !== 'all') params.set('category', category)
-    if (location !== 'all') params.set('location', location)
+    if (location !== 'all') params.set('city', location)  // Use 'city' parameter
 
     const newUrl = `/search${params.toString() ? `?${params.toString()}` : ''}`
     router.push(newUrl)
@@ -297,9 +468,8 @@ export default function SearchPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
-                    <SelectItem value="properties">Properties</SelectItem>
+                    <SelectItem value="listings">Listings</SelectItem>
                     <SelectItem value="jobs">Jobs</SelectItem>
-                    <SelectItem value="services">Services</SelectItem>
                     <SelectItem value="education">Education</SelectItem>
                   </SelectContent>
                 </Select>
@@ -313,10 +483,25 @@ export default function SearchPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Locations</SelectItem>
-                    <SelectItem value="kyrenia">Kyrenia</SelectItem>
-                    <SelectItem value="famagusta">Famagusta</SelectItem>
-                    <SelectItem value="nicosia">Nicosia</SelectItem>
+                    <SelectItem value="nicosia">Nicosia (Lefkoşa)</SelectItem>
+                    <SelectItem value="kyrenia">Kyrenia (Girne)</SelectItem>
+                    <SelectItem value="famagusta">Famagusta (Gazimağusa)</SelectItem>
+                    <SelectItem value="morphou">Morphou (Güzelyurt)</SelectItem>
+                    <SelectItem value="iskele">İskele</SelectItem>
+                    <SelectItem value="lefke">Lefke</SelectItem>
                     <SelectItem value="karpaz">Karpaz Peninsula</SelectItem>
+                    <SelectItem value="dipkarpaz">Dipkarpaz</SelectItem>
+                    <SelectItem value="alsancak">Alsancak</SelectItem>
+                    <SelectItem value="lapta">Lapta</SelectItem>
+                    <SelectItem value="catalkoy">Çatalköy</SelectItem>
+                    <SelectItem value="esentepe">Esentepe</SelectItem>
+                    <SelectItem value="bogaz">Boğaz</SelectItem>
+                    <SelectItem value="bellapais">Bellapais</SelectItem>
+                    <SelectItem value="karaoglanoglu">Karaoğlanoğlu</SelectItem>
+                    <SelectItem value="ozankoy">Özanköy</SelectItem>
+                    <SelectItem value="tatlisu">Tatlısu</SelectItem>
+                    <SelectItem value="yenibogazici">Yeniboğaziçi</SelectItem>
+                    <SelectItem value="zeytinlik">Zeytinlik</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

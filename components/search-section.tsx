@@ -28,7 +28,31 @@ export default function SearchSection() {
     }
     
     if (location && location !== 'all') {
-      params.set('location', location)
+      // Map frontend location values to backend city parameters
+      const cityMapping: { [key: string]: string } = {
+        'nicosia': 'nicosia',
+        'kyrenia': 'kyrenia',
+        'famagusta': 'famagusta', 
+        'morphou': 'morphou',
+        'iskele': 'iskele',
+        'lefke': 'lefke',
+        'karpaz': 'karpaz',
+        'dipkarpaz': 'dipkarpaz',
+        'alsancak': 'alsancak',
+        'lapta': 'lapta',
+        'catalkoy': 'catalkoy',
+        'esentepe': 'esentepe',
+        'bogaz': 'bogaz',
+        'bellapais': 'bellapais',
+        'karaoglanoglu': 'karaoglanoglu',
+        'ozankoy': 'ozankoy',
+        'tatlisu': 'tatlisu',
+        'yenibogazici': 'yenibogazici',
+        'zeytinlik': 'zeytinlik'
+      }
+      
+      const cityValue = cityMapping[location] || location
+      params.set('city', cityValue)  // Use 'city' parameter instead of 'location'
     }
 
     // Navigate to search results page
@@ -65,9 +89,8 @@ export default function SearchSection() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Categories</SelectItem>
-                      <SelectItem value="properties">Properties</SelectItem>
+                      <SelectItem value="listings">Listings</SelectItem>
                       <SelectItem value="jobs">Jobs</SelectItem>
-                      <SelectItem value="services">Services</SelectItem>
                       <SelectItem value="education">Education</SelectItem>
                     </SelectContent>
                   </Select>
@@ -86,14 +109,20 @@ export default function SearchSection() {
                       <SelectItem value="famagusta">Famagusta (Gazimağusa)</SelectItem>
                       <SelectItem value="morphou">Morphou (Güzelyurt)</SelectItem>
                       <SelectItem value="iskele">İskele</SelectItem>
+                      <SelectItem value="lefke">Lefke</SelectItem>
                       <SelectItem value="karpaz">Karpaz Peninsula</SelectItem>
+                      <SelectItem value="dipkarpaz">Dipkarpaz</SelectItem>
                       <SelectItem value="alsancak">Alsancak</SelectItem>
                       <SelectItem value="lapta">Lapta</SelectItem>
                       <SelectItem value="catalkoy">Çatalköy</SelectItem>
                       <SelectItem value="esentepe">Esentepe</SelectItem>
                       <SelectItem value="bogaz">Boğaz</SelectItem>
-                      <SelectItem value="dipkarpaz">Dipkarpaz</SelectItem>
-                      <SelectItem value="lefke">Lefke</SelectItem>
+                      <SelectItem value="bellapais">Bellapais</SelectItem>
+                      <SelectItem value="karaoglanoglu">Karaoğlanoğlu</SelectItem>
+                      <SelectItem value="ozankoy">Özanköy</SelectItem>
+                      <SelectItem value="tatlisu">Tatlısu</SelectItem>
+                      <SelectItem value="yenibogazici">Yeniboğaziçi</SelectItem>
+                      <SelectItem value="zeytinlik">Zeytinlik</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -133,9 +162,8 @@ export default function SearchSection() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
-                    <SelectItem value="properties">Properties</SelectItem>
+                    <SelectItem value="listings">Listings</SelectItem>
                     <SelectItem value="jobs">Jobs</SelectItem>
-                    <SelectItem value="services">Services</SelectItem>
                     <SelectItem value="education">Education</SelectItem>
                   </SelectContent>
                 </Select>
@@ -155,14 +183,20 @@ export default function SearchSection() {
                     <SelectItem value="famagusta">Famagusta (Gazimağusa)</SelectItem>
                     <SelectItem value="morphou">Morphou (Güzelyurt)</SelectItem>
                     <SelectItem value="iskele">İskele</SelectItem>
+                    <SelectItem value="lefke">Lefke</SelectItem>
                     <SelectItem value="karpaz">Karpaz Peninsula</SelectItem>
+                    <SelectItem value="dipkarpaz">Dipkarpaz</SelectItem>
                     <SelectItem value="alsancak">Alsancak</SelectItem>
                     <SelectItem value="lapta">Lapta</SelectItem>
                     <SelectItem value="catalkoy">Çatalköy</SelectItem>
                     <SelectItem value="esentepe">Esentepe</SelectItem>
                     <SelectItem value="bogaz">Boğaz</SelectItem>
-                    <SelectItem value="dipkarpaz">Dipkarpaz</SelectItem>
-                    <SelectItem value="lefke">Lefke</SelectItem>
+                    <SelectItem value="bellapais">Bellapais</SelectItem>
+                    <SelectItem value="karaoglanoglu">Karaoğlanoğlu</SelectItem>
+                    <SelectItem value="ozankoy">Özanköy</SelectItem>
+                    <SelectItem value="tatlisu">Tatlısu</SelectItem>
+                    <SelectItem value="yenibogazici">Yeniboğaziçi</SelectItem>
+                    <SelectItem value="zeytinlik">Zeytinlik</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -90,7 +90,7 @@ export default function PromoteModal({ open, onOpenChange, listingId, listingCat
       toast({
         title: "Error",
         description: "Failed to copy to clipboard",
-        variant: "destructive",
+        variant: "error",
         duration: 3000
       });
     }
@@ -134,6 +134,17 @@ export default function PromoteModal({ open, onOpenChange, listingId, listingCat
     return chains.find(c => c.name === chain);
   }, [chains, chain]);
 
+  // Generate QR code when chain is selected or when promotion is created
+  useEffect(() => {
+    if (selectedChain?.walletAddress && selectedPrice) {
+      generateQRCode(
+        selectedChain.walletAddress,
+        selectedPrice.amount?.toString(),
+        selectedChain.symbol
+      );
+    }
+  }, [selectedChain?.walletAddress, selectedPrice?.amount, selectedChain?.symbol]);
+
   const handleCreate = async () => {
     if (!placement || !durationDays || !chain) {
       setError('Please select placement, duration and chain');
@@ -143,10 +154,25 @@ export default function PromoteModal({ open, onOpenChange, listingId, listingCat
       setCreating(true);
       const res = await promotionsApi.createPromotion({ listingId, placement, durationDays, chain });
       if (!res.success) throw new Error(res.message || 'Failed to create promotion');
+      
       setPromotion(res.data.promotion);
       
-      // Generate QR code for the wallet address
-      if (selectedChain?.walletAddress && selectedPrice) {
+      // Handle existing promotion case
+      if (res.existingPromotion) {
+        toast({
+          title: "Existing Promotion Found",
+          description: res.message || "Continue with your existing promotion process",
+          duration: 5000
+        });
+        
+        // Show additional guidance for existing promotion
+        setError('You have an existing promotion for this placement. Continue with the payment process below, or visit your payments page to manage all promotion payments.');
+      }
+      
+      // Generate QR code from the API response (handles both new and existing promotions)
+      if (res.data.payment?.qrDataUrl) {
+        setQrDataUrl(res.data.payment.qrDataUrl);
+      } else if (selectedChain?.walletAddress && selectedPrice) {
         await generateQRCode(
           selectedChain.walletAddress, 
           selectedPrice.amount?.toString(), 
@@ -248,7 +274,7 @@ export default function PromoteModal({ open, onOpenChange, listingId, listingCat
                 <div>
                   <Label className="text-base font-medium">Payment Method</Label>
                   <p className="text-sm text-muted-foreground mb-2">Choose cryptocurrency for payment</p>
-                  <Select value={chain} onValueChange={(v) =>{if(v==='ethereum') setChain('eth'); else if(v==='bitcoin') setChain('btc'); else if(v==='usdt_erc20') setChain('usdt_erc20'); else if(v==='usdt_trc20') setChain('usdt_trc20'); else setChain(v)}}>
+                  <Select value={chain} onValueChange={setChain}>
                     <SelectTrigger className="h-12">
                       <SelectValue placeholder="Select payment method" />
                     </SelectTrigger>
@@ -470,7 +496,17 @@ export default function PromoteModal({ open, onOpenChange, listingId, listingCat
             </div>
             
             <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4">
-              <Button variant="outline" onClick={() => setStep(1)}>Back to Configuration</Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setStep(1)}>Back to Configuration</Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    window.open('/promotions/my-payments', '_blank');
+                  }}
+                >
+                  Manage All Payments
+                </Button>
+              </div>
               <Button 
                 onClick={handleSubmitProof} 
                 disabled={creating || uploading || !screenshotUrl || !txHash}

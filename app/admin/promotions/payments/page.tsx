@@ -33,39 +33,48 @@ import { adminPromotionsApi } from '@/lib/api';
 
 interface PromotionPayment {
   _id: string;
-  listingId: {
+  listing: {
     _id: string;
     title: string;
     category: string;
-    location: {
-      city: string;
-      area: string;
-    };
-    owner: {
-      _id: string;
-      firstName: string;
-      lastName: string;
-      email: string;
-    };
+    isExpired: boolean;
+    primaryImage: string | null;
+    id: string;
+  };
+  owner: {
+    _id: string;
+    username: string;
+    email: string;
+    fullName: string;
+    displayName: string;
+    canUpload: boolean;
+    id: string;
+  };
+  pricing: {
+    placement: 'homepage' | 'category_top';
+    durationDays: number;
+    amount: number;
+    currency: string;
+    chain: string;
+  };
+  payment: {
+    walletAddress: string;
+    screenshotUrl?: string;
+    txHash?: string;
+    verifiedAt?: string;
+    reviewer?: string;
+  };
+  schedule?: {
+    startAt: string;
+    endAt: string;
+  };
+  metrics: {
+    clicks: number;
+    lastClickAt?: string;
   };
   placement: 'homepage' | 'category_top';
-  durationDays: number;
-  chain: string;
-  priceUSD: number;
-  walletAddress: string;
-  txHash?: string;
-  screenshotUrl?: string;
-  status: 'draft' | 'payment_pending' | 'payment_submitted' | 'approved' | 'rejected' | 'active' | 'expired';
-  submittedAt?: string;
-  reviewedAt?: string;
-  reviewedBy?: {
-    _id: string;
-    firstName: string;
-    lastName: string;
-  };
-  activatedAt?: string;
-  expiresAt?: string;
-  rejectionReason?: string;
+  listingCategory: string;
+  status: 'awaiting_payment' | 'submitted' | 'active' | 'rejected' | 'expired';
   createdAt: string;
   updatedAt: string;
 }
@@ -287,7 +296,7 @@ export default function PaymentReviewPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Pending Review</p>
                 <p className="text-2xl font-bold text-yellow-600">
-                  {payments.filter(p => p.status === 'payment_submitted').length}
+                  {payments.filter(p => p.status === 'submitted').length}
                 </p>
               </div>
             </div>
@@ -300,7 +309,7 @@ export default function PaymentReviewPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Approved</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {payments.filter(p => p.status === 'approved' || p.status === 'active').length}
+                  {payments.filter(p => p.status === 'active').length}
                 </p>
               </div>
             </div>
@@ -326,7 +335,7 @@ export default function PaymentReviewPage() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Value</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  {formatPrice(payments.reduce((sum, p) => sum + (p.priceUSD || 0), 0))}
+                  {formatPrice(payments.reduce((sum, p) => sum + (p.pricing?.amount || 0), 0))}
                 </p>
               </div>
             </div>
@@ -364,8 +373,8 @@ export default function PaymentReviewPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="payment_submitted">Payment Submitted</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="awaiting_payment">Awaiting Payment</SelectItem>
+                  <SelectItem value="submitted">Submitted</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
                   <SelectItem value="expired">Expired</SelectItem>
@@ -393,10 +402,11 @@ export default function PaymentReviewPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Chains</SelectItem>
-                  <SelectItem value="ethereum">Ethereum</SelectItem>
+                  <SelectItem value="eth">Ethereum</SelectItem>
+                  <SelectItem value="usdt_trc20">USDT (TRC20)</SelectItem>
+                  <SelectItem value="btc">Bitcoin</SelectItem>
                   <SelectItem value="polygon">Polygon</SelectItem>
                   <SelectItem value="bsc">BSC</SelectItem>
-                  <SelectItem value="tron">Tron</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -417,11 +427,11 @@ export default function PaymentReviewPage() {
               <DollarSign className="h-5 w-5" />
               Payment Submissions ({pagination.total})
             </CardTitle>
-            {payments.filter(p => p.status === 'payment_submitted').length > 0 && (
+            {payments.filter(p => p.status === 'submitted').length > 0 && (
               <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-full">
                 <Clock className="h-4 w-4 text-yellow-600" />
                 <span className="text-sm font-medium text-yellow-700">
-                  {payments.filter(p => p.status === 'payment_submitted').length} pending review
+                  {payments.filter(p => p.status === 'submitted').length} pending review
                 </span>
               </div>
             )}
@@ -459,15 +469,15 @@ export default function PaymentReviewPage() {
                           <div className="flex items-start gap-2">
                             <div className="flex-1">
                               <h4 className="font-medium text-gray-900 line-clamp-2 text-sm">
-                                {payment.listingId?.title || (
+                                {payment.listing?.title || (
                                   <span className="text-gray-400 italic">Deleted Listing</span>
                                 )}
                               </h4>
                               <div className="flex items-center text-xs text-gray-500 mt-1">
                                 <User className="h-3 w-3 mr-1 flex-shrink-0" />
                                 <span className="truncate">
-                                  {payment.listingId?.owner ? 
-                                    `${payment.listingId.owner.firstName} ${payment.listingId.owner.lastName}` : 
+                                  {payment.owner ? 
+                                    payment.owner.fullName || payment.owner.displayName || payment.owner.username : 
                                     'Unknown User'
                                   }
                                 </span>
@@ -475,9 +485,9 @@ export default function PaymentReviewPage() {
                               <div className="flex items-center text-xs text-gray-500 mt-1">
                                 <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
                                 <span className="truncate">
-                                  {payment.listingId?.location ? 
-                                    `${payment.listingId.location.city}, ${payment.listingId.location.area}` : 
-                                    'Location not specified'
+                                  {payment.listingCategory ? 
+                                    `Category: ${payment.listingCategory}` : 
+                                    'Category not specified'
                                   }
                                 </span>
                               </div>
@@ -494,7 +504,7 @@ export default function PaymentReviewPage() {
                           <div className="text-xs text-gray-600">
                             <div className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              <span>{payment.durationDays} days</span>
+                              <span>{payment.pricing?.durationDays || 0} days</span>
                             </div>
                           </div>
                         </div>
@@ -503,22 +513,24 @@ export default function PaymentReviewPage() {
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
                             <DollarSign className="h-4 w-4 text-green-600" />
-                            <span className="font-semibold text-green-700">{formatPrice(payment.priceUSD)}</span>
+                            <span className="font-semibold text-green-700">{formatPrice(payment.pricing?.amount || 0)}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <div className={`w-2 h-2 rounded-full ${
-                              payment.chain === 'ethereum' ? 'bg-blue-500' :
-                              payment.chain === 'polygon' ? 'bg-purple-500' :
-                              payment.chain === 'bsc' ? 'bg-yellow-500' :
-                              payment.chain === 'tron' ? 'bg-red-500' : 'bg-gray-500'
+                              payment.pricing?.chain === 'eth' ? 'bg-blue-500' :
+                              payment.pricing?.chain === 'usdt_trc20' ? 'bg-green-500' :
+                              payment.pricing?.chain === 'btc' ? 'bg-orange-500' :
+                              payment.pricing?.chain === 'polygon' ? 'bg-purple-500' :
+                              payment.pricing?.chain === 'bsc' ? 'bg-yellow-500' :
+                              payment.pricing?.chain === 'tron' ? 'bg-red-500' : 'bg-gray-500'
                             }`} />
-                            <span className="text-xs text-gray-600 capitalize font-medium">{payment.chain}</span>
+                            <span className="text-xs text-gray-600 capitalize font-medium">{payment.pricing?.chain?.replace('_', ' ') || 'N/A'}</span>
                           </div>
-                          {payment.txHash && (
+                          {payment.payment?.txHash && (
                             <div className="text-xs">
                               <span className="text-gray-500">TX: </span>
                               <span className="font-mono text-gray-700 bg-gray-100 px-1 rounded">
-                                {payment.txHash.slice(0, 6)}...{payment.txHash.slice(-4)}
+                                {payment.payment.txHash.slice(0, 6)}...{payment.payment.txHash.slice(-4)}
                               </span>
                             </div>
                           )}
@@ -529,41 +541,42 @@ export default function PaymentReviewPage() {
                           <Badge 
                             variant={getStatusBadgeVariant(payment.status)}
                             className={`text-xs ${
-                              payment.status === 'payment_submitted' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' :
-                              payment.status === 'approved' || payment.status === 'active' ? 'bg-green-100 text-green-800 border-green-300' :
+                              payment.status === 'submitted' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' :
+                              payment.status === 'active' ? 'bg-green-100 text-green-800 border-green-300' :
                               payment.status === 'rejected' ? 'bg-red-100 text-red-800 border-red-300' :
+                              payment.status === 'awaiting_payment' ? 'bg-blue-100 text-blue-800 border-blue-300' :
                               'bg-gray-100 text-gray-800 border-gray-300'
                             }`}
                           >
-                            {payment.status === 'payment_submitted' && <Clock className="h-3 w-3 mr-1" />}
-                            {(payment.status === 'approved' || payment.status === 'active') && <Check className="h-3 w-3 mr-1" />}
+                            {payment.status === 'submitted' && <Clock className="h-3 w-3 mr-1" />}
+                            {payment.status === 'active' && <Check className="h-3 w-3 mr-1" />}
                             {payment.status === 'rejected' && <X className="h-3 w-3 mr-1" />}
+                            {payment.status === 'awaiting_payment' && <AlertTriangle className="h-3 w-3 mr-1" />}
                             {payment.status.replace('_', ' ').toUpperCase()}
                           </Badge>
-                          {payment.status === 'active' && payment.expiresAt && (
+                          {payment.status === 'active' && payment.schedule?.endAt && (
                             <div className="text-xs text-gray-500">
-                              Expires: {formatDate(payment.expiresAt)}
+                              Expires: {formatDate(payment.schedule.endAt)}
                             </div>
                           )}
                         </div>
                       </TableCell>
                       <TableCell className="py-4">
                         <div className="space-y-1">
-                          {payment.submittedAt && (
+                          <div className="text-xs">
+                            <span className="text-gray-500">Created:</span>
+                            <div className="font-medium text-gray-900">{formatDate(payment.createdAt)}</div>
+                          </div>
+                          {payment.payment?.verifiedAt && (
                             <div className="text-xs">
-                              <span className="text-gray-500">Submitted:</span>
-                              <div className="font-medium text-gray-900">{formatDate(payment.submittedAt)}</div>
+                              <span className="text-gray-500">Verified:</span>
+                              <div className="text-gray-700">{formatDate(payment.payment.verifiedAt)}</div>
                             </div>
                           )}
-                          {payment.reviewedAt && (
+                          {payment.schedule?.startAt && (
                             <div className="text-xs">
-                              <span className="text-gray-500">Reviewed:</span>
-                              <div className="text-gray-700">{formatDate(payment.reviewedAt)}</div>
-                              {payment.reviewedBy && (
-                                <div className="text-gray-500">
-                                  by {payment.reviewedBy.firstName} {payment.reviewedBy.lastName}
-                                </div>
-                              )}
+                              <span className="text-gray-500">Started:</span>
+                              <div className="text-gray-700">{formatDate(payment.schedule.startAt)}</div>
                             </div>
                           )}
                         </div>
@@ -582,11 +595,11 @@ export default function PaymentReviewPage() {
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          {payment.status === 'payment_submitted' && (
+                          {payment.status === 'submitted' && (
                             <>
                               <Button
                                 size="sm"
-                                onClick={() => handleApprove(payment._id, payment.durationDays)}
+                                onClick={() => handleApprove(payment._id, payment.pricing?.durationDays)}
                                 disabled={processing === payment._id}
                                 className="h-8 w-8 p-0 bg-green-600 hover:bg-green-700"
                                 title="Approve Payment"
@@ -670,25 +683,27 @@ export default function PaymentReviewPage() {
                   <Badge 
                     variant={getStatusBadgeVariant(selectedPayment.status)}
                     className={`text-sm px-3 py-1 ${
-                      selectedPayment.status === 'payment_submitted' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' :
-                      selectedPayment.status === 'approved' || selectedPayment.status === 'active' ? 'bg-green-100 text-green-800 border-green-300' :
+                      selectedPayment.status === 'submitted' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' :
+                      selectedPayment.status === 'active' ? 'bg-green-100 text-green-800 border-green-300' :
                       selectedPayment.status === 'rejected' ? 'bg-red-100 text-red-800 border-red-300' :
+                      selectedPayment.status === 'awaiting_payment' ? 'bg-blue-100 text-blue-800 border-blue-300' :
                       'bg-gray-100 text-gray-800 border-gray-300'
                     }`}
                   >
-                    {selectedPayment.status === 'payment_submitted' && <Clock className="h-4 w-4 mr-1" />}
-                    {(selectedPayment.status === 'approved' || selectedPayment.status === 'active') && <Check className="h-4 w-4 mr-1" />}
+                    {selectedPayment.status === 'submitted' && <Clock className="h-4 w-4 mr-1" />}
+                    {selectedPayment.status === 'active' && <Check className="h-4 w-4 mr-1" />}
                     {selectedPayment.status === 'rejected' && <X className="h-4 w-4 mr-1" />}
+                    {selectedPayment.status === 'awaiting_payment' && <AlertTriangle className="h-4 w-4 mr-1" />}
                     {selectedPayment.status.replace('_', ' ').toUpperCase()}
                   </Badge>
                   <span className="text-sm text-gray-600">
                     Payment ID: <span className="font-mono text-xs">{selectedPayment._id}</span>
                   </span>
                 </div>
-                {selectedPayment.status === 'active' && selectedPayment.expiresAt && (
+                {selectedPayment.status === 'active' && selectedPayment.schedule?.endAt && (
                   <div className="text-sm">
                     <span className="text-gray-500">Expires: </span>
-                    <span className="font-medium">{formatDate(selectedPayment.expiresAt)}</span>
+                    <span className="font-medium">{formatDate(selectedPayment.schedule.endAt)}</span>
                   </div>
                 )}
               </div>
@@ -708,7 +723,7 @@ export default function PaymentReviewPage() {
                       <div>
                         <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Title</Label>
                         <p className="text-sm font-medium text-gray-900 mt-1">
-                          {selectedPayment.listingId?.title || (
+                          {selectedPayment.listing?.title || (
                             <span className="text-gray-400 italic">Deleted Listing</span>
                           )}
                         </p>
@@ -719,14 +734,14 @@ export default function PaymentReviewPage() {
                         <div className="flex items-center gap-2 mt-1">
                           <User className="h-4 w-4 text-gray-400" />
                           <span className="text-sm">
-                            {selectedPayment.listingId?.owner ? 
-                              `${selectedPayment.listingId.owner.firstName} ${selectedPayment.listingId.owner.lastName}` : 
+                            {selectedPayment.owner ? 
+                              selectedPayment.owner.fullName || selectedPayment.owner.displayName || selectedPayment.owner.username : 
                               'Unknown User'
                             }
                           </span>
                         </div>
-                        {selectedPayment.listingId?.owner?.email && (
-                          <p className="text-xs text-gray-500 ml-6">{selectedPayment.listingId.owner.email}</p>
+                        {selectedPayment.owner?.email && (
+                          <p className="text-xs text-gray-500 ml-6">{selectedPayment.owner.email}</p>
                         )}
                       </div>
                       
@@ -735,9 +750,9 @@ export default function PaymentReviewPage() {
                         <div className="flex items-center gap-2 mt-1">
                           <MapPin className="h-4 w-4 text-gray-400" />
                           <span className="text-sm">
-                            {selectedPayment.listingId?.location ? 
-                              `${selectedPayment.listingId.location.city}, ${selectedPayment.listingId.location.area}` : 
-                              'Location not specified'
+                            {selectedPayment.listingCategory ? 
+                              `Category: ${selectedPayment.listingCategory}` : 
+                              'Category not specified'
                             }
                           </span>
                         </div>
@@ -745,7 +760,7 @@ export default function PaymentReviewPage() {
 
                       <div>
                         <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Category</Label>
-                        <p className="text-sm capitalize mt-1">{selectedPayment.listingId?.category || 'N/A'}</p>
+                        <p className="text-sm capitalize mt-1">{selectedPayment.listing?.category || 'N/A'}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -771,7 +786,7 @@ export default function PaymentReviewPage() {
                           <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Duration</Label>
                           <div className="flex items-center gap-1 mt-1">
                             <Calendar className="h-4 w-4 text-gray-400" />
-                            <span className="text-sm font-medium">{selectedPayment.durationDays} days</span>
+                            <span className="text-sm font-medium">{selectedPayment.pricing?.durationDays || 0} days</span>
                           </div>
                         </div>
                       </div>
@@ -794,7 +809,7 @@ export default function PaymentReviewPage() {
                         <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Amount</Label>
                         <div className="flex items-center gap-2 mt-1">
                           <DollarSign className="h-5 w-5 text-green-600" />
-                          <span className="text-lg font-bold text-green-700">{formatPrice(selectedPayment.priceUSD)}</span>
+                          <span className="text-lg font-bold text-green-700">{formatPrice(selectedPayment.pricing?.amount || 0)}</span>
                         </div>
                       </div>
                       
@@ -802,41 +817,45 @@ export default function PaymentReviewPage() {
                         <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Blockchain</Label>
                         <div className="flex items-center gap-2 mt-1">
                           <div className={`w-3 h-3 rounded-full ${
-                            selectedPayment.chain === 'ethereum' ? 'bg-blue-500' :
-                            selectedPayment.chain === 'polygon' ? 'bg-purple-500' :
-                            selectedPayment.chain === 'bsc' ? 'bg-yellow-500' :
-                            selectedPayment.chain === 'tron' ? 'bg-red-500' : 'bg-gray-500'
+                            selectedPayment.pricing?.chain === 'eth' ? 'bg-blue-500' :
+                            selectedPayment.pricing?.chain === 'usdt_trc20' ? 'bg-green-500' :
+                            selectedPayment.pricing?.chain === 'btc' ? 'bg-orange-500' :
+                            selectedPayment.pricing?.chain === 'polygon' ? 'bg-purple-500' :
+                            selectedPayment.pricing?.chain === 'bsc' ? 'bg-yellow-500' :
+                            selectedPayment.pricing?.chain === 'tron' ? 'bg-red-500' : 'bg-gray-500'
                           }`} />
-                          <span className="text-sm font-medium capitalize">{selectedPayment.chain}</span>
+                          <span className="text-sm font-medium capitalize">{selectedPayment.pricing?.chain?.replace('_', ' ') || 'N/A'}</span>
                         </div>
                       </div>
 
                       <div>
                         <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Wallet Address</Label>
                         <p className="text-sm font-mono bg-gray-100 p-2 rounded text-gray-700 break-all mt-1">
-                          {selectedPayment.walletAddress}
+                          {selectedPayment.payment?.walletAddress || 'N/A'}
                         </p>
                       </div>
 
-                      {selectedPayment.txHash && (
+                      {selectedPayment.payment?.txHash && (
                         <div>
                           <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Transaction Hash</Label>
                           <div className="flex items-center gap-2 mt-1">
                             <p className="text-sm font-mono bg-gray-100 p-2 rounded text-gray-700 break-all flex-1">
-                              {selectedPayment.txHash}
+                              {selectedPayment.payment.txHash}
                             </p>
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => {
-                                const blockExplorerUrl = selectedPayment.chain === 'ethereum' ? 
-                                  `https://etherscan.io/tx/${selectedPayment.txHash}` :
-                                  selectedPayment.chain === 'polygon' ?
-                                  `https://polygonscan.com/tx/${selectedPayment.txHash}` :
-                                  selectedPayment.chain === 'bsc' ?
-                                  `https://bscscan.com/tx/${selectedPayment.txHash}` :
-                                  selectedPayment.chain === 'tron' ?
-                                  `https://tronscan.org/#/transaction/${selectedPayment.txHash}` :
+                                const blockExplorerUrl = selectedPayment.pricing?.chain === 'eth' ? 
+                                  `https://etherscan.io/tx/${selectedPayment.payment?.txHash}` :
+                                  selectedPayment.pricing?.chain === 'usdt_trc20' ?
+                                  `https://tronscan.org/#/transaction/${selectedPayment.payment?.txHash}` :
+                                  selectedPayment.pricing?.chain === 'btc' ?
+                                  `https://blockstream.info/tx/${selectedPayment.payment?.txHash}` :
+                                  selectedPayment.pricing?.chain === 'polygon' ?
+                                  `https://polygonscan.com/tx/${selectedPayment.payment?.txHash}` :
+                                  selectedPayment.pricing?.chain === 'bsc' ?
+                                  `https://bscscan.com/tx/${selectedPayment.payment?.txHash}` :
                                   '#';
                                 window.open(blockExplorerUrl, '_blank');
                               }}
@@ -868,41 +887,22 @@ export default function PaymentReviewPage() {
                           </div>
                         </div>
                         
-                        {selectedPayment.submittedAt && (
+                        {selectedPayment.payment?.verifiedAt && (
                           <div className="flex items-start gap-3">
                             <div className="w-2 h-2 rounded-full bg-yellow-500 mt-2"></div>
                             <div>
-                              <p className="text-sm font-medium">Payment Submitted</p>
-                              <p className="text-xs text-gray-500">{formatDate(selectedPayment.submittedAt)}</p>
+                              <p className="text-sm font-medium">Payment Verified</p>
+                              <p className="text-xs text-gray-500">{formatDate(selectedPayment.payment.verifiedAt)}</p>
                             </div>
                           </div>
                         )}
                         
-                        {selectedPayment.reviewedAt && (
+                        {selectedPayment.schedule?.startAt && (
                           <div className="flex items-start gap-3">
-                            <div className={`w-2 h-2 rounded-full mt-2 ${
-                              selectedPayment.status === 'approved' || selectedPayment.status === 'active' ? 'bg-green-500' : 'bg-red-500'
-                            }`}></div>
-                            <div>
-                              <p className="text-sm font-medium">
-                                {selectedPayment.status === 'approved' || selectedPayment.status === 'active' ? 'Approved' : 'Rejected'}
-                              </p>
-                              <p className="text-xs text-gray-500">{formatDate(selectedPayment.reviewedAt)}</p>
-                              {selectedPayment.reviewedBy && (
-                                <p className="text-xs text-gray-500">
-                                  by {selectedPayment.reviewedBy.firstName} {selectedPayment.reviewedBy.lastName}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {selectedPayment.activatedAt && (
-                          <div className="flex items-start gap-3">
-                            <div className="w-2 h-2 rounded-full bg-green-600 mt-2"></div>
+                            <div className="w-2 h-2 rounded-full bg-green-500 mt-2"></div>
                             <div>
                               <p className="text-sm font-medium">Activated</p>
-                              <p className="text-xs text-gray-500">{formatDate(selectedPayment.activatedAt)}</p>
+                              <p className="text-xs text-gray-500">{formatDate(selectedPayment.schedule.startAt)}</p>
                             </div>
                           </div>
                         )}
@@ -913,7 +913,7 @@ export default function PaymentReviewPage() {
               </div>
 
               {/* Payment Screenshot */}
-              {selectedPayment.screenshotUrl && (
+              {selectedPayment.payment?.screenshotUrl && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -924,14 +924,14 @@ export default function PaymentReviewPage() {
                   <CardContent>
                     <div className="space-y-4">
                       <img 
-                        src={selectedPayment.screenshotUrl} 
+                        src={selectedPayment.payment.screenshotUrl} 
                         alt="Payment screenshot"
                         className="max-w-full h-auto rounded-lg border shadow-sm"
                       />
                       <div className="flex justify-between items-center">
                         <p className="text-sm text-gray-600">Click image to view full size</p>
                         <Link 
-                          href={selectedPayment.screenshotUrl} 
+                          href={selectedPayment.payment.screenshotUrl} 
                           target="_blank"
                           className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm"
                         >
@@ -960,7 +960,7 @@ export default function PaymentReviewPage() {
               )}
 
               {/* Action Buttons */}
-              {selectedPayment.status === 'payment_submitted' && (
+              {selectedPayment.status === 'submitted' && (
                 <div className="flex justify-end space-x-3 pt-6 border-t bg-gray-50 -mx-6 -mb-6 px-6 pb-6 rounded-b-lg">
                   <Button
                     variant="outline"
@@ -974,7 +974,7 @@ export default function PaymentReviewPage() {
                     Reject Payment
                   </Button>
                   <Button
-                    onClick={() => handleApprove(selectedPayment._id, selectedPayment.durationDays)}
+                    onClick={() => handleApprove(selectedPayment._id, selectedPayment.pricing?.durationDays)}
                     disabled={processing === selectedPayment._id}
                     className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
                   >

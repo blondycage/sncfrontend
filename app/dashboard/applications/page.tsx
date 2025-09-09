@@ -169,17 +169,17 @@ export default function ApplicationsPage() {
   }
 
   return (
-    <div className="container py-8">
+    <div className="container py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold">My Applications</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold">My Applications</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Track your educational program applications
           </p>
         </div>
         <Link href="/categories/education">
-          <Button>
+          <Button className="w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             New Application
           </Button>
@@ -187,26 +187,26 @@ export default function ApplicationsPage() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center space-x-2">
-              <FileText className="h-5 w-5 text-blue-500" />
+              <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Total Applications</p>
-                <p className="text-2xl font-bold">{applications.length}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Total Applications</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold">{applications.length}</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-yellow-500" />
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Under Review</p>
-                <p className="text-2xl font-bold">
+                <p className="text-xs sm:text-sm text-muted-foreground">Under Review</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold">
                   {applications.filter(app => app.status === 'under_review').length}
                 </p>
               </div>
@@ -215,12 +215,12 @@ export default function ApplicationsPage() {
         </Card>
         
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center space-x-2">
-              <CheckCircle className="h-5 w-5 text-green-500" />
+              <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Approved</p>
-                <p className="text-2xl font-bold">
+                <p className="text-xs sm:text-sm text-muted-foreground">Approved</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold">
                   {applications.filter(app => app.status === 'approved').length}
                 </p>
               </div>
@@ -229,12 +229,12 @@ export default function ApplicationsPage() {
         </Card>
         
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center space-x-2">
-              <Edit className="h-5 w-5 text-gray-500" />
+              <Edit className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Drafts</p>
-                <p className="text-2xl font-bold">
+                <p className="text-xs sm:text-sm text-muted-foreground">Drafts</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold">
                   {applications.filter(app => app.status === 'draft').length}
                 </p>
               </div>
@@ -244,9 +244,9 @@ export default function ApplicationsPage() {
       </div>
 
       {/* Filters and Search */}
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
+      <Card className="mb-4 sm:mb-6">
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -254,40 +254,42 @@ export default function ApplicationsPage() {
                   placeholder="Search by program or institution..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 text-sm"
                 />
               </div>
             </div>
             
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
-                {Object.entries(STATUS_CONFIG).map(([status, config]) => (
-                  <SelectItem key={status} value={status}>
-                    {config.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Newest First</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
-                <SelectItem value="status">By Status</SelectItem>
-                <SelectItem value="program">By Program</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Button variant="outline" onClick={fetchApplications}>
-              <RefreshCw className="h-4 w-4" />
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full sm:w-48 text-sm">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Statuses</SelectItem>
+                  {Object.entries(STATUS_CONFIG).map(([status, config]) => (
+                    <SelectItem key={status} value={status}>
+                      {config.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-full sm:w-48 text-sm">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest First</SelectItem>
+                  <SelectItem value="oldest">Oldest First</SelectItem>
+                  <SelectItem value="status">By Status</SelectItem>
+                  <SelectItem value="program">By Program</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Button variant="outline" onClick={fetchApplications} className="text-sm">
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -315,7 +317,7 @@ export default function ApplicationsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredApplications.map((application) => {
             const statusInfo = getStatusInfo(application.status)
             const StatusIcon = statusInfo.icon
@@ -324,36 +326,37 @@ export default function ApplicationsPage() {
             return (
               <Card key={application._id} className="hover:shadow-lg transition-shadow">
                 <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="line-clamp-2 text-lg">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="line-clamp-2 text-base sm:text-lg">
                         {application.programId.title}
                       </CardTitle>
-                      <CardDescription className="flex items-center mt-1">
-                        <Building className="h-4 w-4 mr-1" />
-                        {application.programId.institution.name}
+                      <CardDescription className="flex items-center mt-1 text-sm">
+                        <Building className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
+                        <span className="truncate">{application.programId.institution.name}</span>
                       </CardDescription>
-                      <div className="flex items-center text-sm text-muted-foreground mt-1">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        {application.programId.location.city}
+                      <div className="flex items-center text-xs sm:text-sm text-muted-foreground mt-1">
+                        <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
+                        <span className="truncate">{application.programId.location.city}</span>
                       </div>
                     </div>
-                    <Badge className={`${statusInfo.color} text-white`}>
+                    <Badge className={`${statusInfo.color} text-white text-xs flex-shrink-0`}>
                       <StatusIcon className="h-3 w-3 mr-1" />
-                      {statusInfo.label}
+                      <span className="hidden sm:inline">{statusInfo.label}</span>
+                      <span className="sm:hidden">{statusInfo.label.charAt(0)}</span>
                     </Badge>
                   </div>
                 </CardHeader>
                 
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3 sm:space-y-4">
                   {/* Application Details */}
                   <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-xs sm:text-sm">
                       <span className="text-muted-foreground">Application ID:</span>
-                      <span className="font-mono">{application.applicationId}</span>
+                      <span className="font-mono text-xs">{application.applicationId}</span>
                     </div>
                     
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-xs sm:text-sm">
                       <span className="text-muted-foreground">Submitted:</span>
                       <span>
                         {application.submittedAt 
@@ -363,7 +366,7 @@ export default function ApplicationsPage() {
                       </span>
                     </div>
                     
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-xs sm:text-sm">
                       <span className="text-muted-foreground">Documents:</span>
                       <span className={docStats.uploaded === docStats.total ? 'text-green-600' : 'text-amber-600'}>
                         {docStats.uploaded}/{docStats.total} uploaded
@@ -372,34 +375,36 @@ export default function ApplicationsPage() {
                   </div>
 
                   {/* Status Description */}
-                  <div className="p-3 bg-muted/50 rounded-lg">
-                    <p className="text-sm">{statusInfo.description}</p>
+                  <div className="p-2 sm:p-3 bg-muted/50 rounded-lg">
+                    <p className="text-xs sm:text-sm">{statusInfo.description}</p>
                   </div>
 
                   {/* Fee Status */}
                   {application.applicationFee && (
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center justify-between text-xs sm:text-sm">
                       <span className="text-muted-foreground">Application Fee:</span>
-                      <Badge variant={application.applicationFee.paid ? "default" : "destructive"}>
+                      <Badge variant={application.applicationFee.paid ? "default" : "destructive"} className="text-xs">
                         {application.applicationFee.paid ? 'Paid' : 'Pending'}
                       </Badge>
                     </div>
                   )}
 
                   {/* Action Buttons */}
-                  <div className="flex space-x-2 pt-2">
+                  <div className="flex flex-col sm:flex-row gap-2 pt-2">
                     <Link href={`/dashboard/applications/${application._id}`} className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full">
-                        <Eye className="h-4 w-4 mr-2" />
-                        View Details
+                      <Button variant="outline" size="sm" className="w-full text-xs sm:text-sm">
+                        <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">View Details</span>
+                        <span className="sm:hidden">View</span>
                       </Button>
                     </Link>
                     
                     {application.status === 'draft' && (
                       <Link href={`/categories/education/${application.programId._id}/apply?edit=${application._id}`} className="flex-1">
-                        <Button size="sm" className="w-full">
-                          <Edit className="h-4 w-4 mr-2" />
-                          Continue
+                        <Button size="sm" className="w-full text-xs sm:text-sm">
+                          <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                          <span className="hidden sm:inline">Continue</span>
+                          <span className="sm:hidden">Edit</span>
                         </Button>
                       </Link>
                     )}

@@ -26,10 +26,10 @@ export default function LocationsSection() {
   ]
 
   return (
-    <div className="py-12">
+    <div className="py-8 sm:py-12">
       <div className="container px-4">
-        <h2 className="mb-8 text-2xl font-bold">Popular Locations in North Cyprus</h2>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <h2 className="mb-6 sm:mb-8 text-xl sm:text-2xl lg:text-3xl font-bold text-center sm:text-left">Popular Locations in North Cyprus</h2>
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {locations.map((location, index) => (
             <Link key={index} href={location.href}>
               <Card className="overflow-hidden transition-all hover:shadow-md">

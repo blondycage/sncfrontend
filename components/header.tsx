@@ -102,7 +102,13 @@ export default function Header() {
             href="/blog" 
             className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
           >
-            <span>Blog</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+              <path d="M4 4h16v16H4z"/>
+              <path d="M8 9h8"/>
+              <path d="M8 13h8"/>
+              <path d="M8 17h5"/>
+            </svg>
+            <span>News</span>
           </Link>
 
          
@@ -171,9 +177,7 @@ export default function Header() {
         {/* Desktop Auth Section */}
         <div className="hidden md:flex items-center space-x-4">
           {/* Google Translate Widget */}
-          <div className="flex items-center space-x-1">
-            <GTranslateWidget />
-          </div>
+          <GTranslateWidget id="desktop" />
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -233,25 +237,23 @@ export default function Header() {
           )}
         </div>
 
-        {/* Mobile menu button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="md:hidden"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </Button>
+        {/* Mobile Translation and Menu */}
+        <div className="md:hidden flex items-center space-x-2">
+          <GTranslateWidget id="mobile" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </div>
       </div>
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t bg-white">
           <div className="container px-4 py-4 space-y-4">
-            {/* Mobile Language Selector */}
-            <div className="flex items-center space-x-2 py-2 border-b border-gray-200">
-              <GTranslateWidget />
-            </div>
             <Link 
               href="/listings" 
               className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
@@ -266,7 +268,13 @@ export default function Header() {
               className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <span>Blog</span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                <path d="M4 4h16v16H4z"/>
+                <path d="M8 9h8"/>
+                <path d="M8 13h8"/>
+                <path d="M8 17h5"/>
+              </svg>
+              <span>News</span>
             </Link>
 
             <Link 

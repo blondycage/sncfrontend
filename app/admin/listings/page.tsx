@@ -99,7 +99,7 @@ export default function AdminListingsPage() {
     sortBy: 'createdAt',
     sortOrder: 'desc',
     page: 1,
-    limit: 20
+    limit: 10
   });
 
   const router = useRouter();
@@ -290,7 +290,7 @@ export default function AdminListingsPage() {
     { label: 'Pending Review', key: 'pending', value: 'pending' },
     { label: 'Approved', key: 'approved', value: 'approved' },
     { label: 'Rejected', key: 'rejected', value: 'rejected' },
-    { label: 'Reported', key: 'reported', value: 'reported' }
+    
   ];
 
   return (
@@ -439,7 +439,7 @@ export default function AdminListingsPage() {
                   sortBy: 'createdAt',
                   sortOrder: 'desc',
                   page: 1,
-                  limit: 20
+                  limit: 10
                 })}
                 className="col-span-1 sm:col-span-2 md:col-span-1"
               >
@@ -544,12 +544,17 @@ export default function AdminListingsPage() {
                             <User className="h-4 w-4 text-gray-400" />
                             <div>
                               <p className="text-sm font-medium text-gray-900">
-                                {listing.owner.firstName && listing.owner.lastName 
-                                  ? `${listing.owner.firstName} ${listing.owner.lastName}`
-                                  : listing.owner.username
-                                }
+                                {(() => {
+                                  const owner = listing.owner as any;
+                                  if (!owner) return 'Unknown';
+                                  const firstName = owner.firstName || '';
+                                  const lastName = owner.lastName || '';
+                                  const username = owner.username || '';
+                                  const full = `${firstName} ${lastName}`.trim();
+                                  return full || username || owner.email || 'Unknown';
+                                })()}
                               </p>
-                              <p className="text-xs text-gray-500">{listing.owner.email}</p>
+                              <p className="text-xs text-gray-500">{listing.owner?.email || ''}</p>
                             </div>
                           </div>
                         </div>

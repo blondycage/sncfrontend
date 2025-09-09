@@ -9,6 +9,7 @@ export interface ApiResponse<T = any> {
   user?: T
   message?: string
   error?: string
+  existingPromotion?: boolean
 }
 
 export interface AuthResponse {
@@ -392,7 +393,7 @@ export const listingsApi = {
 export const userApi = {
   // Get current user's complete profile with all data
   getUserProfile: async (token: string): Promise<ApiResponse> => {
-    return apiRequest('/users/me/complete', {
+    return apiRequest('/auth/me', {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -405,6 +406,61 @@ export const userApi = {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+    });
+  },
+
+  // Update user profile (legacy profile fields)
+  updateProfile: async (token: string, profileData: {
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    bio?: string;
+    location?: {
+      address?: string;
+      city?: string;
+      country?: string;
+    };
+    preferences?: {
+      language?: string;
+      timezone?: string;
+      notifications?: {
+        email?: boolean;
+        telegram?: boolean;
+      };
+    };
+  }): Promise<ApiResponse> => {
+    console.log('🔍 updateProfile - Raw profileData received:', profileData);
+    console.log('🔍 updateProfile - JSON.stringify result:', JSON.stringify(profileData));
+    console.log('🔍 updateProfile - profileData keys:', Object.keys(profileData || {}));
+    
+    return apiRequest('/auth/profile', {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(profileData),
+    });
+  },
+
+  // Update user details (new endpoint supports username/email + profile fields)
+  updateDetails: async (
+    token: string,
+    data: {
+      username?: string;
+      email?: string;
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      bio?: string;
+      avatar?: string;
+      location?: { address?: string; city?: string; region?: string; country?: string };
+      preferences?: { language?: string; timezone?: string; notifications?: { email?: boolean; telegram?: boolean } };
+    }
+  ): Promise<ApiResponse> => {
+    return apiRequest('/users/me', {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
     });
   },
 };
@@ -518,7 +574,7 @@ export const uploadApi = {
       const formData = new FormData();
       formData.append('document', file);
 
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/upload/document`, {
         method: 'POST',
         headers: {
