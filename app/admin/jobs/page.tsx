@@ -279,160 +279,182 @@ export default function AdminJobsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Job Management</h1>
-          <p className="text-muted-foreground">Loading...</p>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-red-50/30 p-3 sm:p-4 lg:p-6">
+        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Job Management</h1>
+            <p className="text-gray-600">Loading...</p>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Job Management</h1>
-        <p className="text-muted-foreground">Manage and moderate job listings</p>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Jobs</CardTitle>
-            <Building className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Review</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Approved Jobs</CardTitle>
-            <Check className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Rejected</CardTitle>
-            <X className="h-4 w-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expired</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-600">{stats.expired}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search jobs..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
-                />
-              </div>
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-                <SelectItem value="expired">Expired</SelectItem>
-              </SelectContent>
-            </Select>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-red-50/30 p-3 sm:p-4 lg:p-6">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <Building className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+              Job Management
+            </h1>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">Manage and moderate job listings</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Jobs Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Jobs ({filteredJobs.length})</CardTitle>
-          <CardDescription>
-            {statusFilter === 'all' ? 'All jobs' : `Jobs with status: ${statusFilter}`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Job</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Salary</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Stats</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-blue-700">Total Jobs</CardTitle>
+              <Building className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-900">{stats.total}</div>
+            </CardContent>
+          </Card>
+        
+          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-yellow-700">Pending Review</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-yellow-800">{stats.pending}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-green-700">Approved Jobs</CardTitle>
+              <Check className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-800">{stats.approved}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-red-700">Rejected</CardTitle>
+              <X className="h-4 w-4 text-red-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-800">{stats.rejected}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-700">Expired</CardTitle>
+              <Calendar className="h-4 w-4 text-gray-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-800">{stats.expired}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Filters</CardTitle>
+          </CardHeader>
+          <CardContent className="p-3 sm:p-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="md:col-span-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search jobs..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="expired">Expired</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchTerm('')
+                  setStatusFilter('all')
+                }}
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Clear
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Jobs Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Jobs ({filteredJobs.length})</CardTitle>
+            <CardDescription>
+              {statusFilter === 'all' ? 'All jobs' : `Jobs with status: ${statusFilter}`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[200px]">Job</TableHead>
+                  <TableHead className="hidden sm:table-cell">Company</TableHead>
+                  <TableHead className="hidden md:table-cell">Location</TableHead>
+                  <TableHead className="hidden lg:table-cell">Salary</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="hidden sm:table-cell">Created</TableHead>
+                  <TableHead className="hidden md:table-cell">Stats</TableHead>
+                  <TableHead className="w-[120px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
             <TableBody>
               {filteredJobs.map((job) => (
                 <TableRow key={job.id}>
                   <TableCell>
-                    <div>
-                      <div className="font-medium">{job.title}</div>
-                      <div className="text-sm text-muted-foreground">{job.role}</div>
-                      <div className="text-xs text-muted-foreground">
-                        Posted by: {job.postedBy ? 
-                          `${job.postedBy.firstName || ''} ${job.postedBy.lastName || ''}`.trim() || 
-                          job.postedBy.username || 
-                          job.postedBy.email || 
+                    <div className="min-w-0">
+                      <div className="font-medium truncate">{job.title}</div>
+                      <div className="text-sm text-gray-600 truncate">{job.role}</div>
+                      <div className="text-xs text-gray-500 truncate sm:hidden">
+                        {job.company?.name || 'Unknown Company'}
+                      </div>
+                      <div className="text-xs text-gray-500 truncate">
+                        Posted by: {job.postedBy ?
+                          `${job.postedBy.firstName || ''} ${job.postedBy.lastName || ''}`.trim() ||
+                          job.postedBy.username ||
+                          job.postedBy.email ||
                           'Unknown User'
                           : 'Unknown User'}
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Building className="h-4 w-4 text-muted-foreground" />
-                      {job.company?.name || 'Unknown Company'}
+                  <TableCell className="hidden sm:table-cell">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Building className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                      <span className="truncate">{job.company?.name || 'Unknown Company'}</span>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <div>{job.location?.city || 'Unknown'}, {job.location?.country || 'Unknown'}</div>
-                        <div className="text-xs text-muted-foreground">
+                  <TableCell className="hidden md:table-cell">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <div className="truncate">{job.location?.city || 'Unknown'}, {job.location?.country || 'Unknown'}</div>
+                        <div className="text-xs text-gray-500 truncate">
                           {job.workLocation || 'Not specified'}
                           {job.location?.remote && ' • Remote'}
                           {job.location?.hybrid && ' • Hybrid'}
@@ -440,20 +462,20 @@ export default function AdminJobsPage() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-muted-foreground" />
-                      <div className="text-sm">{formatSalary(job)}</div>
+                  <TableCell className="hidden lg:table-cell">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <DollarSign className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                      <div className="text-sm truncate">{formatSalary(job)}</div>
                     </div>
                   </TableCell>
                   <TableCell>
                     {getStatusBadge(job.moderationStatus)}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     <div className="text-sm">{formatDate(job.createdAt)}</div>
                   </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
+                  <TableCell className="hidden md:table-cell">
+                    <div className="text-sm space-y-1">
                       <div className="flex items-center gap-1">
                         <Eye className="h-3 w-3" />
                         {job.views}
@@ -465,7 +487,7 @@ export default function AdminJobsPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 flex-wrap">
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button
@@ -473,10 +495,10 @@ export default function AdminJobsPage() {
                             size="sm"
                             onClick={() => setSelectedJob(job)}
                           >
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
+                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                           <DialogHeader>
                             <DialogTitle>Job Details</DialogTitle>
                             <DialogDescription>
@@ -561,7 +583,7 @@ export default function AdminJobsPage() {
                             disabled={submitting}
                             className="text-green-600 border-green-200 hover:bg-green-50"
                           >
-                            <Check className="h-4 w-4" />
+                            <Check className="h-3 w-3 sm:h-4 sm:w-4" />
                           </Button>
                           <Button
                             variant="outline"
@@ -570,7 +592,7 @@ export default function AdminJobsPage() {
                             disabled={submitting}
                             className="text-red-600 border-red-200 hover:bg-red-50"
                           >
-                            <X className="h-4 w-4" />
+                            <X className="h-3 w-3 sm:h-4 sm:w-4" />
                           </Button>
                         </>
                       )}
@@ -581,22 +603,24 @@ export default function AdminJobsPage() {
                         onClick={() => handleDeleteJob(job.id)}
                         className="text-red-600 border-red-200 hover:bg-red-50"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                     </div>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
-          
-          {filteredJobs.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              No jobs found matching your filters.
+              </Table>
             </div>
-          )}
-        </CardContent>
-      </Card>
+
+            {filteredJobs.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                No jobs found matching your filters.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 } 

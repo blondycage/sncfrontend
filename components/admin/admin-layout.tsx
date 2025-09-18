@@ -39,7 +39,8 @@ import {
   Wallet,
   FileText,
   MessageSquare,
-  Activity
+  Activity,
+  Hotel
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 
@@ -76,6 +77,11 @@ const sidebarItems = [
     title: 'Education',
     icon: GraduationCap,
     href: '/admin/education'
+  },
+  {
+    title: 'Dormitories',
+    icon: Hotel,
+    href: '/admin/dormitories'
   },
   {
     title: 'Blog',
@@ -143,7 +149,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Logo */}
       <div className="p-4 sm:p-6 border-b border-gray-200">
         <div className="flex items-center space-x-3">
-          <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-lg">
+          <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-red-500 to-blue-600 rounded-lg shadow-lg">
             <Shield className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
           </div>
           <div className="min-w-0">
@@ -164,7 +170,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   variant="ghost"
                   className={cn(
                     "w-full justify-between font-normal text-sm py-2 h-auto",
-                    item.items.some(subItem => isActive(subItem.href)) && "bg-blue-50 text-blue-700"
+                    item.items.some(subItem => isActive(subItem.href)) && "bg-gradient-to-r from-red-50 to-blue-50 text-red-700 border-r-2 border-red-500"
                   )}
                   onClick={() => toggleExpanded(item.title)}
                 >
@@ -188,7 +194,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         size="sm"
                         className={cn(
                           "w-full justify-start font-normal text-xs sm:text-sm py-1.5 h-auto",
-                          isActive(subItem.href) && "bg-blue-100 text-blue-700"
+                          isActive(subItem.href) && "bg-gradient-to-r from-red-100 to-blue-100 text-red-700"
                         )}
                         onClick={() => {
                           router.push(subItem.href);
@@ -207,7 +213,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 variant="ghost"
                 className={cn(
                   "w-full justify-start font-normal text-sm py-2 h-auto",
-                  isActive(item.href!, item.exact) && "bg-blue-50 text-blue-700"
+                  isActive(item.href!, item.exact) && "bg-gradient-to-r from-red-50 to-blue-50 text-red-700 border-r-2 border-red-500"
                 )}
                 onClick={() => {
                   router.push(item.href!);
@@ -229,7 +235,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="flex items-center space-x-2 sm:space-x-3">
           <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
             <AvatarImage src={user?.photoUrl} alt={getDisplayName()} />
-            <AvatarFallback className="bg-blue-100 text-blue-600 text-xs sm:text-sm">
+            <AvatarFallback className="bg-gradient-to-br from-red-100 to-blue-100 text-red-600 text-xs sm:text-sm">
               {getInitials(user?.firstName, user?.lastName, user?.username)}
             </AvatarFallback>
           </Avatar>
@@ -247,7 +253,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50">
       {/* Desktop Sidebar */}
       <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:bg-white lg:border-r lg:border-gray-200">
         <SidebarContent />
@@ -263,7 +269,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main Content */}
       <div className="lg:pl-64">
         {/* Top Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        <header className="bg-gradient-to-r from-white via-blue-50 to-red-50 shadow-lg border-b-2 border-gradient-to-r from-blue-200 to-red-200 sticky top-0 z-40">
           <div className="px-3 sm:px-4 lg:px-6 xl:px-8">
             <div className="flex justify-between items-center h-14 sm:h-16">
               {/* Mobile menu button */}
@@ -306,7 +312,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     <Button variant="ghost" className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full">
                       <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
                         <AvatarImage src={user?.photoUrl} alt={getDisplayName()} />
-                        <AvatarFallback className="bg-blue-100 text-blue-600 text-xs sm:text-sm">
+                        <AvatarFallback className="bg-gradient-to-br from-red-100 to-blue-100 text-red-600 text-xs sm:text-sm">
                           {getInitials(user?.firstName, user?.lastName, user?.username)}
                         </AvatarFallback>
                       </Avatar>
@@ -340,9 +346,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 min-h-screen bg-gray-50">
-          <div className="px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
-            {children}
+        <main className="flex-1 min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-red-50/30 overflow-x-hidden">
+          <div className="px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8 max-w-full">
+            <div className="max-w-7xl mx-auto">
+              {children}
+            </div>
           </div>
         </main>
       </div>

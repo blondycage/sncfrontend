@@ -232,13 +232,14 @@ export default function ListingsPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50">
+      <div className="container mx-auto px-4 py-8">
       {/* Sponsored listings */}
       {/* Sponsored listings removed from listings page as requested */}
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Browse All Listings</h1>
-        <p className="text-gray-600">Discover amazing listings from our community</p>
+        <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-red-600 to-blue-600 bg-clip-text text-transparent">Browse All Listings</h1>
+        <p className="text-gray-700">Discover amazing listings from our community</p>
       </div>
 
       {/* Filters */}
@@ -623,6 +624,7 @@ export default function ListingsPage() {
           </Button>
         </div>
       )}
+      </div>
     </div>
   );
 } 

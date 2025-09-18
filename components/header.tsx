@@ -12,17 +12,18 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
-import { 
-  Search, 
-  PlusCircle, 
-  User, 
-  Settings, 
-  LogOut, 
+import {
+  Search,
+  PlusCircle,
+  User,
+  Settings,
+  LogOut,
   Building,
   Menu,
   X,
   MapPin,
-  ChevronDown
+  ChevronDown,
+  Hotel
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { useState } from "react"
@@ -145,12 +146,20 @@ export default function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
           
-          <Link 
-            href="/jobs" 
+          <Link
+            href="/jobs"
             className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
           >
             <Building className="h-4 w-4" />
             <span>Jobs</span>
+          </Link>
+
+          <Link
+            href="/dormitories"
+            className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+          >
+            <Hotel className="h-4 w-4" />
+            <span>Dormitories</span>
           </Link>
           
           {user && (
@@ -308,13 +317,22 @@ export default function Header() {
               </div>
             </div>
             
-            <Link 
-              href="/jobs" 
+            <Link
+              href="/jobs"
               className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               <Building className="h-4 w-4" />
               <span>Jobs</span>
+            </Link>
+
+            <Link
+              href="/dormitories"
+              className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Hotel className="h-4 w-4" />
+              <span>Dormitories</span>
             </Link>
             
             {user && (

@@ -217,14 +217,14 @@ export default function JobsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50">
       {/* Header */}
-      <div className="bg-white border-b">
+      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 border-b shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Jobs</h1>
-              <p className="mt-2 text-gray-600">
+              <h1 className="text-3xl font-bold text-white drop-shadow-lg">Jobs</h1>
+              <p className="mt-2 text-blue-100">
                 Find your next career opportunity in North Cyprus
               </p>
             </div>
@@ -386,7 +386,7 @@ export default function JobsPage() {
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <CardTitle className="text-lg group-hover:text-blue-600 transition-colors">
+                        <CardTitle className="text-lg group-hover:text-red-600 transition-colors">
                           {job.title}
                         </CardTitle>
                         <p className="text-sm text-gray-600 mt-1">{job.role}</p>

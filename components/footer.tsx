@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Facebook, Instagram, Send, Search, Building, PlusCircle, MapPin } from "lucide-react"
+import { Facebook, Instagram, Send, Search, Building, PlusCircle, MapPin, Hotel } from "lucide-react"
 import Image from "next/image"
 
 export default function Footer() {
@@ -70,12 +70,21 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link 
-                  href="/jobs" 
+                <Link
+                  href="/jobs"
                   className="flex items-center space-x-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
                 >
                   <Building className="h-4 w-4" />
                   <span>Jobs</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/dormitories"
+                  className="flex items-center space-x-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                >
+                  <Hotel className="h-4 w-4" />
+                  <span>Dormitories</span>
                 </Link>
               </li>
               <li>

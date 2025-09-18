@@ -283,13 +283,17 @@ export default function AdminBlogPage() {
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Blog Management</h1>
-          <p className="text-gray-600 mt-1">Manage blog posts, comments, and content</p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-red-50/30 p-3 sm:p-4 lg:p-6">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+              Blog Management
+            </h1>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">Manage blog posts, comments, and content</p>
+          </div>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
             <Button className="w-full sm:w-auto">
@@ -381,102 +385,102 @@ export default function AdminBlogPage() {
         </Dialog>
       </div>
 
-      {/* Statistics */}
-      {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <FileText className="h-4 w-4 text-blue-600" />
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Posts</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalBlogs}</p>
+        {/* Statistics */}
+        {stats && (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <FileText className="h-4 w-4 text-blue-600" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-700">Total Posts</p>
+                    <p className="text-2xl font-bold text-blue-900">{stats.totalBlogs}</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="h-4 w-4 text-green-600" />
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Published</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.publishedBlogs}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="h-4 w-4 text-green-600" />
+                  <div>
+                    <p className="text-sm font-medium text-green-700">Published</p>
+                    <p className="text-2xl font-bold text-green-800">{stats.publishedBlogs}</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Edit className="h-4 w-4 text-yellow-600" />
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Drafts</p>
-                  <p className="text-2xl font-bold text-yellow-600">{stats.draftBlogs}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <Edit className="h-4 w-4 text-yellow-600" />
+                  <div>
+                    <p className="text-sm font-medium text-yellow-700">Drafts</p>
+                    <p className="text-2xl font-bold text-yellow-800">{stats.draftBlogs}</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Star className="h-4 w-4 text-purple-600" />
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Featured</p>
-                  <p className="text-2xl font-bold text-purple-600">{blogs.filter(b => b.featured).length}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <Star className="h-4 w-4 text-purple-600" />
+                  <div>
+                    <p className="text-sm font-medium text-purple-700">Featured</p>
+                    <p className="text-2xl font-bold text-purple-800">{blogs.filter(b => b.featured).length}</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Eye className="h-4 w-4 text-indigo-600" />
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Views</p>
-                  <p className="text-2xl font-bold text-indigo-600">{stats.totalViews.toLocaleString()}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 border-indigo-200">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <Eye className="h-4 w-4 text-indigo-600" />
+                  <div>
+                    <p className="text-sm font-medium text-indigo-700">Total Views</p>
+                    <p className="text-2xl font-bold text-indigo-800">{stats.totalViews.toLocaleString()}</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Heart className="h-4 w-4 text-red-600" />
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Likes</p>
-                  <p className="text-2xl font-bold text-red-600">{stats.totalLikes}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <Heart className="h-4 w-4 text-red-600" />
+                  <div>
+                    <p className="text-sm font-medium text-red-700">Total Likes</p>
+                    <p className="text-2xl font-bold text-red-800">{stats.totalLikes}</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <MessageSquare className="h-4 w-4 text-orange-600" />
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Comments</p>
-                  <p className="text-2xl font-bold text-orange-600">{stats.totalComments}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <MessageSquare className="h-4 w-4 text-orange-600" />
+                  <div>
+                    <p className="text-sm font-medium text-orange-700">Comments</p>
+                    <p className="text-2xl font-bold text-orange-800">{stats.totalComments}</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <Calendar className="h-4 w-4 text-teal-600" />
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Recent</p>
-                  <p className="text-2xl font-bold text-teal-600">{stats.recentBlogs}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-teal-50 to-teal-100 border-teal-200">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="h-4 w-4 text-teal-600" />
+                  <div>
+                    <p className="text-sm font-medium text-teal-700">Recent</p>
+                    <p className="text-2xl font-bold text-teal-800">{stats.recentBlogs}</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-      {/* Filters */}
-      <Card>
+        {/* Filters */}
+        <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="h-5 w-5" />
@@ -535,8 +539,8 @@ export default function AdminBlogPage() {
         </CardContent>
       </Card>
 
-      {/* Blog Posts Table */}
-      <Card>
+        {/* Blog Posts Table */}
+        <Card>
         <CardHeader>
           <CardTitle>Blog Posts ({pagination.total})</CardTitle>
         </CardHeader>
@@ -545,12 +549,12 @@ export default function AdminBlogPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Title</TableHead>
+                  <TableHead className="min-w-[250px]">Title</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Author</TableHead>
-                  <TableHead>Stats</TableHead>
-                  <TableHead>Dates</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="hidden sm:table-cell">Author</TableHead>
+                  <TableHead className="hidden md:table-cell">Stats</TableHead>
+                  <TableHead className="hidden lg:table-cell">Dates</TableHead>
+                  <TableHead className="w-[120px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -580,7 +584,7 @@ export default function AdminBlogPage() {
                         {blog.status}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">
                       <div>
                         <p className="font-medium">
                           {blog.author.firstName} {blog.author.lastName}
@@ -588,7 +592,7 @@ export default function AdminBlogPage() {
                         <p className="text-sm text-gray-500">@{blog.author.username}</p>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       <div className="space-y-1 text-sm">
                         <div className="flex items-center gap-1">
                           <Eye className="h-3 w-3" />
@@ -604,7 +608,7 @@ export default function AdminBlogPage() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden lg:table-cell">
                       <div className="space-y-1 text-sm">
                         <p>Created: {formatDate(blog.createdAt)}</p>
                         {blog.publishedAt && (
@@ -614,7 +618,7 @@ export default function AdminBlogPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center gap-1 flex-wrap">
                         <Button
                           size="sm"
                           variant="outline"
@@ -746,6 +750,7 @@ export default function AdminBlogPage() {
           )}
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }

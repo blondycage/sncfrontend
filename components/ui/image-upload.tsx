@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -11,18 +11,25 @@ interface ImageUploadProps {
   maxSize?: number; // in MB
   className?: string;
   useUploadApi?: boolean; // Option to use the simplified uploadApi
+  initialImages?: string[]; // Initial images for editing
 }
 
-export function ImageUpload({ 
-  onImagesChange, 
-  maxImages = 5, 
+export function ImageUpload({
+  onImagesChange,
+  maxImages = 5,
   maxSize = 10,
   className = "",
-  useUploadApi = true // Default to using the new uploadApi
+  useUploadApi = true, // Default to using the new uploadApi
+  initialImages = []
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>(initialImages);
+
+  // Update imageUrls when initialImages change
+  useEffect(() => {
+    setImageUrls(initialImages);
+  }, [initialImages]);
 
   // Direct Cloudinary upload function
   const uploadToCloudinary = async (file: File): Promise<string> => {

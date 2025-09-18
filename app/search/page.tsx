@@ -445,14 +445,14 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50">
       {/* Search Header */}
-      <div className="bg-white border-b">
+      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 border-b shadow-lg">
         <div className="container px-4 py-6">
           <form onSubmit={handleNewSearch}>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Search Query</label>
+                <label className="text-sm font-medium text-white mb-2 block">Search Query</label>
                 <Input
                   placeholder="What are you looking for?"
                   value={searchQuery}
@@ -461,7 +461,7 @@ export default function SearchPage() {
               </div>
               
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Category</label>
+                <label className="text-sm font-medium text-white mb-2 block">Category</label>
                 <Select value={category} onValueChange={setCategory}>
                   <SelectTrigger>
                     <SelectValue />
@@ -476,7 +476,7 @@ export default function SearchPage() {
               </div>
               
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Location</label>
+                <label className="text-sm font-medium text-white mb-2 block">Location</label>
                 <Select value={location} onValueChange={setLocation}>
                   <SelectTrigger>
                     <SelectValue />
