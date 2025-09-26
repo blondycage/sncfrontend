@@ -19,7 +19,7 @@ export default function LocationsSection() {
       href: "/locations/nicosia",
     },
     {
-      name: "Karpaz Peninsula",
+      name: "Iskele",
       image: "/karpaz.jpeg",
       href: "/locations/karpaz",
     },

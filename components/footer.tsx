@@ -1,6 +1,17 @@
+"use client";
+
 import Link from "next/link"
-import { Facebook, Instagram, Send, Search, Building, PlusCircle, MapPin, Hotel } from "lucide-react"
+import { Facebook, Instagram, Send, Search, Building, PlusCircle, MapPin, Hotel, ChevronDown, Settings } from "lucide-react"
 import Image from "next/image"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -61,13 +72,73 @@ export default function Footer() {
             <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link 
-                  href="/listings" 
-                  className="flex items-center space-x-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
-                >
-                  <Search className="h-4 w-4" />
-                  <span>Browse Listings</span>
-                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="flex items-center space-x-2 text-sm text-gray-600 hover:text-blue-600 transition-colors h-auto p-0 justify-start"
+                    >
+                      <Search className="h-4 w-4" />
+                      <span>Search North Cypruss</span>
+                      <ChevronDown className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-56">
+                    <DropdownMenuLabel>Browse by Category</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/search"
+                        className="flex items-center space-x-2 cursor-pointer w-full"
+                      >
+                        <Search className="h-4 w-4" />
+                        <span>Search All</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/categories/vehicles"
+                        className="flex items-center space-x-2 cursor-pointer w-full"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0M15 17a2 2 0 104 0" />
+                        </svg>
+                        <span>DriveYourType</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/categories/properties"
+                        className="flex items-center space-x-2 cursor-pointer w-full"
+                      >
+                        <Building className="h-4 w-4" />
+                        <span>Real Estate</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/categories/services"
+                        className="flex items-center space-x-2 cursor-pointer w-full"
+                      >
+                        <Settings className="h-4 w-4" />
+                        <span>Services</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/categories/education"
+                        className="flex items-center space-x-2 cursor-pointer w-full"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                        </svg>
+                        <span>SNCStudy</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </li>
               <li>
                 <Link

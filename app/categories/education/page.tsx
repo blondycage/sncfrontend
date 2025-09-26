@@ -21,7 +21,7 @@ interface EducationalProgram {
   }
   description: string
   level: 'undergraduate' | 'undergraduate_transfer' | 'postgraduate_masters' | 'postgraduate_phd' | 'certificate' | 'diploma' | 'language_course'
-  field: string
+  field?: string
   duration: {
     value: number
     unit: 'months' | 'years' | 'semesters'
@@ -224,8 +224,9 @@ export default function EducationPage() {
     return `${duration.value} ${duration.unit}`
   }
 
-  const formatFieldOfStudy = (field: string) => {
-    return field.split('_').map(word => 
+  const formatFieldOfStudy = (field?: string) => {
+    if (!field) return 'N/A'
+    return field.split('_').map(word =>
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ')
   }

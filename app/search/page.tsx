@@ -26,6 +26,8 @@ interface SearchResult {
   location?: {
     city: string
     area?: string
+    region?: string
+    address?: string
   }
   images?: string[]
   featured: boolean
@@ -43,6 +45,28 @@ interface SearchResult {
   }
   views?: number
   rating?: number
+  // Job-specific fields
+  jobType?: string
+  workLocation?: string
+  salary?: {
+    min: number
+    max: number
+    currency: string
+    frequency: string
+  }
+  applicationDeadline?: string
+  // Education-specific fields
+  level?: string
+  fieldOfStudy?: string
+  tuition?: {
+    amount: number
+    currency: string
+    period: string
+  }
+  duration?: {
+    value: number
+    unit: string
+  }
 }
 
 export default function SearchPage() {
@@ -115,33 +139,58 @@ export default function SearchPage() {
   const performSearch = async () => {
     setLoading(true)
     try {
-      // Build parameters for different endpoints
-      const baseParams = {
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
-        ...(searchQuery && { search: searchQuery }),
-        ...(sortBy !== 'relevance' && { sortBy })
+      // Map frontend sort values to backend sort values
+      const getSortByValue = (sortValue: string) => {
+        switch (sortValue) {
+          case 'date_new': return 'newest'
+          case 'date_old': return 'oldest'
+          case 'price_low': return 'price-low'
+          case 'price_high': return 'price-high'
+          case 'featured': return 'featured'
+          case 'relevance': return 'newest' // Default to newest for relevance
+          default: return 'newest'
+        }
       }
 
-      // For listings endpoint - use city filters (listings have their own categories)
+      // Build base parameters
+      const baseParams = {
+        page: '1', // Always search from page 1 for unified results
+        ...(searchQuery && { search: searchQuery.trim() }),
+        ...(location !== 'all' && { city: location }),
+        sortBy: getSortByValue(sortBy)
+      }
+
+      // Calculate limits based on category selection
+      let listingLimit = 0, jobLimit = 0, educationLimit = 0
+      const totalLimit = pagination.limit
+
+      if (category === 'all') {
+        // Distribute results evenly when showing all categories
+        listingLimit = Math.ceil(totalLimit / 3)
+        jobLimit = Math.ceil(totalLimit / 3)
+        educationLimit = Math.ceil(totalLimit / 3)
+      } else if (category === 'listings') {
+        listingLimit = totalLimit
+      } else if (category === 'jobs') {
+        jobLimit = totalLimit
+      } else if (category === 'education') {
+        educationLimit = totalLimit
+      }
+
+      // Build endpoint-specific parameters
       const listingParams = new URLSearchParams({
         ...baseParams,
-        ...(location !== 'all' && { city: location }),
-        limit: '8'
+        limit: listingLimit.toString()
       })
 
-      // For jobs endpoint - use city filter
       const jobParams = new URLSearchParams({
         ...baseParams,
-        ...(location !== 'all' && { city: location }),
-        limit: '6'
+        limit: jobLimit.toString()
       })
 
-      // For education endpoint - use city filter  
       const educationParams = new URLSearchParams({
         ...baseParams,
-        ...(location !== 'all' && { city: location }),
-        limit: '6'
+        limit: educationLimit.toString()
       })
 
       console.log('🔍 Performing search with params:', {
@@ -150,29 +199,29 @@ export default function SearchPage() {
         education: Object.fromEntries(educationParams.entries())
       })
 
-      // Build promises array based on category filter
+      // Build promises array based on category filter and limits
       const promises = []
-      
-      // Search listings (if category is 'all' or 'listings')
-      if (category === 'all' || category === 'listings') {
+
+      // Search listings (only if we need listing results)
+      if (listingLimit > 0) {
         promises.push(
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/listings?${listingParams}`).catch(() => ({ ok: false }))
         )
       } else {
         promises.push(Promise.resolve({ ok: false }))
       }
-      
-      // Search jobs (if category is 'all' or 'jobs')
-      if (category === 'all' || category === 'jobs') {
+
+      // Search jobs (only if we need job results)
+      if (jobLimit > 0) {
         promises.push(
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs?${jobParams}`).catch(() => ({ ok: false }))
         )
       } else {
         promises.push(Promise.resolve({ ok: false }))
       }
-      
-      // Search education programs (if category is 'all' or 'education')
-      if (category === 'all' || category === 'education') {
+
+      // Search education programs (only if we need education results)
+      if (educationLimit > 0) {
         promises.push(
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/education/programs?${educationParams}`).catch(() => ({ ok: false }))
         )
@@ -185,8 +234,8 @@ export default function SearchPage() {
       const searchResults: SearchResult[] = []
 
       // Process listings results
-      if (listingsRes.ok) {
-        const listingsData = await listingsRes.json()
+      if (listingsRes.ok && 'json' in listingsRes) {
+        const listingsData = await (listingsRes as Response).json()
         if (listingsData.success && listingsData.data) {
           const listings = Array.isArray(listingsData.data) ? listingsData.data : [listingsData.data]
           listings.forEach((listing: any) => {
@@ -210,47 +259,56 @@ export default function SearchPage() {
       }
 
       // Process jobs results
-      if (jobsRes.ok) {
-        const jobsData = await jobsRes.json()
+      if (jobsRes.ok && 'json' in jobsRes) {
+        const jobsData = await (jobsRes as Response).json()
         if (jobsData.success && jobsData.data) {
           const jobs = Array.isArray(jobsData.data) ? jobsData.data : [jobsData.data]
           jobs.forEach((job: any) => {
             searchResults.push({
-              _id: job.id || job._id, // Backend returns 'id', not '_id'
+              _id: job._id || job.id,
               title: job.title,
               description: job.description,
               category: 'jobs',
               type: 'job',
               location: job.location,
-              images: job.images || [],
+              images: [], // Jobs should not display images in search results
               featured: job.featured || false,
-              createdAt: job.createdAt || job.created_at, // Handle both formats
+              createdAt: job.createdAt || job.created_at,
               company: job.company,
-              views: job.views
+              views: job.views,
+              // Job-specific fields
+              jobType: job.jobType,
+              workLocation: job.workLocation,
+              salary: job.salary,
+              applicationDeadline: job.applicationDeadline
             })
           })
         }
       }
 
       // Process education results
-      if (educationRes.ok) {
-        const educationData = await educationRes.json()
+      if (educationRes.ok && 'json' in educationRes) {
+        const educationData = await (educationRes as Response).json()
         if (educationData.success && educationData.data) {
           const programs = Array.isArray(educationData.data) ? educationData.data : [educationData.data]
           programs.forEach((program: any) => {
             searchResults.push({
-              _id: program._id || program.id, // Handle both formats
+              _id: program._id || program.id,
               title: program.title,
               description: program.description,
               category: 'education',
               type: 'education',
               location: program.location,
-              images: program.images || [],
+              images: [], // Education programs should not display images in search results
               featured: program.featured || false,
-              createdAt: program.createdAt || program.created_at, // Handle both formats
+              createdAt: program.createdAt || program.created_at,
               institution: program.institution,
-              rating: program.rating,
-              views: program.views
+              views: program.views,
+              // Education-specific fields
+              level: program.level,
+              fieldOfStudy: program.fieldOfStudy,
+              tuition: program.tuition,
+              duration: program.duration
             })
           })
         }
@@ -444,11 +502,26 @@ export default function SearchPage() {
     })
   }
 
+  // Function to highlight search terms in text
+  const highlightSearchTerm = (text: string, searchTerm: string) => {
+    if (!searchTerm.trim()) return text
+
+    const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+    const parts = text.split(regex)
+
+    return parts.map((part, index) =>
+      regex.test(part) ?
+        <mark key={index} className="bg-yellow-200 dark:bg-yellow-800 px-0.5 rounded">
+          {part}
+        </mark> : part
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-purple-50/20">
       {/* Search Header */}
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 border-b shadow-lg">
-        <div className="container px-4 py-6">
+      <section className="bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 shadow-xl">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <form onSubmit={handleNewSearch}>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
               <div>
@@ -513,11 +586,13 @@ export default function SearchPage() {
             </div>
           </form>
         </div>
-      </div>
+      </section>
 
-      <div className="container px-4 py-8">
+      {/* Main Content */}
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Results Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+        <div className="bg-white/70 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200/50 p-6 mb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold mb-2">
               Search Results
@@ -526,7 +601,14 @@ export default function SearchPage() {
               )}
             </h1>
             <p className="text-muted-foreground">
-              {loading ? 'Searching...' : `Found ${totalResults} results`}
+              {loading ? 'Searching...' : (
+                <>
+                  Found {totalResults} results
+                  {searchQuery && ` for "${searchQuery}"`}
+                  {category !== 'all' && ` in ${category}`}
+                  {location !== 'all' && ` in ${location}`}
+                </>
+              )}
             </p>
           </div>
           
@@ -546,73 +628,115 @@ export default function SearchPage() {
             </Select>
           </div>
         </div>
+        </div>
 
         {/* Loading State */}
         {loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i} className="animate-pulse">
-                <div className="h-48 bg-muted rounded-t-lg" />
-                <CardContent className="p-4">
-                  <div className="h-4 bg-muted rounded mb-2" />
-                  <div className="h-3 bg-muted rounded mb-4 w-3/4" />
-                  <div className="flex justify-between items-center">
-                    <div className="h-3 bg-muted rounded w-20" />
-                    <div className="h-6 bg-muted rounded w-16" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="bg-white/50 backdrop-blur-sm rounded-xl p-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} className="animate-pulse border-gray-200/50 shadow-sm">
+                  <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-lg" />
+                  <CardContent className="p-4">
+                    <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded mb-2" />
+                    <div className="h-3 bg-gradient-to-r from-gray-100 to-gray-200 rounded mb-4 w-3/4" />
+                    <div className="flex justify-between items-center">
+                      <div className="h-3 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-20" />
+                      <div className="h-6 bg-gradient-to-r from-gray-100 to-gray-200 rounded w-16" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         )}
 
         {/* Results Grid */}
         {!loading && results.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bg-white/30 backdrop-blur-sm rounded-xl p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {results.map((result) => (
               <Card key={result._id} className="hover:shadow-lg transition-shadow overflow-hidden">
                 <Link href={getResultUrl(result)}>
-                  {/* Image */}
-                  <div className="relative h-48 bg-gray-200">
-                    {result.images && result.images.length > 0 ? (
-                      <img
-                        src={result.images[0]}
-                        alt={result.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-muted">
-                        {getTypeIcon(result.type)}
-                      </div>
-                    )}
-                    
-                    {result.featured && (
-                      <Badge className="absolute top-2 left-2 bg-yellow-500 text-white">
-                        <Star className="h-3 w-3 mr-1" />
-                        Featured
+                  {/* Image - Only show for listings */}
+                  {result.type === 'listing' ? (
+                    <div className="relative h-48 bg-gray-200">
+                      {result.images && result.images.length > 0 ? (
+                        <img
+                          src={result.images[0]}
+                          alt={result.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-muted">
+                          {getTypeIcon(result.type)}
+                        </div>
+                      )}
+
+                      {result.featured && (
+                        <Badge className="absolute top-2 left-2 bg-yellow-500 text-white">
+                          <Star className="h-3 w-3 mr-1" />
+                          Featured
+                        </Badge>
+                      )}
+
+                      <Badge className="absolute top-2 right-2 bg-black/70 text-white">
+                        {result.category}
                       </Badge>
-                    )}
-                    
-                    <Badge className="absolute top-2 right-2 bg-black/70 text-white">
-                      {result.category}
-                    </Badge>
-                  </div>
+                    </div>
+                  ) : (
+                    // Header section for jobs and education (no image)
+                    <div className="relative p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          {getTypeIcon(result.type)}
+                          <Badge variant="secondary">
+                            {result.type === 'job' ? 'Job Opportunity' : 'Education Program'}
+                          </Badge>
+                        </div>
+
+                        {result.featured && (
+                          <Badge className="bg-yellow-500 text-white">
+                            <Star className="h-3 w-3 mr-1" />
+                            Featured
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Additional type-specific info */}
+                      {result.type === 'job' && result.jobType && (
+                        <div className="mt-2 flex items-center space-x-2 text-xs text-muted-foreground">
+                          <Badge variant="outline">{result.jobType}</Badge>
+                          {result.workLocation && <Badge variant="outline">{result.workLocation}</Badge>}
+                        </div>
+                      )}
+
+                      {result.type === 'education' && result.level && (
+                        <div className="mt-2 flex items-center space-x-2 text-xs text-muted-foreground">
+                          <Badge variant="outline">{result.level}</Badge>
+                          {result.fieldOfStudy && <Badge variant="outline">{result.fieldOfStudy}</Badge>}
+                        </div>
+                      )}
+                    </div>
+                  )}
                   
                   <CardContent className="p-4">
                     <div className="flex items-center space-x-2 mb-2">
                       {getTypeIcon(result.type)}
-                      <h3 className="font-semibold line-clamp-1">{result.title}</h3>
+                      <h3 className="font-semibold line-clamp-1">
+                        {highlightSearchTerm(result.title, searchQuery)}
+                      </h3>
                     </div>
-                    
+
                     <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                      {result.description}
+                      {highlightSearchTerm(result.description, searchQuery)}
                     </p>
                     
                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
                       {result.location && (
                         <div className="flex items-center">
                           <MapPin className="h-3 w-3 mr-1" />
-                          {result.location.city}
+                          {highlightSearchTerm(result.location.city || '', searchQuery)}
                         </div>
                       )}
                       
@@ -625,39 +749,81 @@ export default function SearchPage() {
                     <div className="flex items-center justify-between">
                       <div className="text-sm">
                         {result.owner && (
-                          <p>{result.owner.firstName} {result.owner.lastName}</p>
+                          <p>
+                            {highlightSearchTerm(`${result.owner.firstName} ${result.owner.lastName}`, searchQuery)}
+                          </p>
                         )}
                         {result.company && (
-                          <p>{result.company.name}</p>
+                          <p>{highlightSearchTerm(result.company.name, searchQuery)}</p>
                         )}
                         {result.institution && (
-                          <p>{result.institution.name}</p>
+                          <p>{highlightSearchTerm(result.institution.name, searchQuery)}</p>
                         )}
                       </div>
-                      
-                      {result.price && (
-                        <div className="font-semibold text-lg">
-                          {formatPrice(result.price, result.currency)}
-                        </div>
-                      )}
-                      
-                      {result.views && (
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Eye className="h-3 w-3 mr-1" />
-                          {result.views}
-                        </div>
-                      )}
+
+                      <div className="flex items-center space-x-2">
+                        {/* Price/Salary/Tuition display */}
+                        {result.type === 'listing' && result.price && (
+                          <div className="font-semibold text-lg">
+                            {formatPrice(result.price, result.currency)}
+                          </div>
+                        )}
+
+                        {result.type === 'job' && result.salary && (
+                          <div className="text-sm font-semibold">
+                            {new Intl.NumberFormat('en-US', {
+                              style: 'currency',
+                              currency: result.salary.currency,
+                              minimumFractionDigits: 0
+                            }).format(result.salary.min)}
+                            {result.salary.max !== result.salary.min && (
+                              <>
+                                {' - '}
+                                {new Intl.NumberFormat('en-US', {
+                                  style: 'currency',
+                                  currency: result.salary.currency,
+                                  minimumFractionDigits: 0
+                                }).format(result.salary.max)}
+                              </>
+                            )}
+                            <span className="text-xs text-muted-foreground">
+                              /{result.salary.frequency}
+                            </span>
+                          </div>
+                        )}
+
+                        {result.type === 'education' && result.tuition && (
+                          <div className="text-sm font-semibold">
+                            {new Intl.NumberFormat('en-US', {
+                              style: 'currency',
+                              currency: result.tuition.currency,
+                              minimumFractionDigits: 0
+                            }).format(result.tuition.amount)}
+                            <span className="text-xs text-muted-foreground">
+                              /{result.tuition.period.replace('per_', '')}
+                            </span>
+                          </div>
+                        )}
+
+                        {result.views && (
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Eye className="h-3 w-3 mr-1" />
+                            {result.views}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Link>
               </Card>
             ))}
+            </div>
           </div>
         )}
 
         {/* No Results */}
         {!loading && results.length === 0 && (
-          <div className="text-center py-12">
+          <div className="bg-white/50 backdrop-blur-sm rounded-xl p-12 text-center">
             <Search className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">No Results Found</h3>
             <p className="text-muted-foreground mb-6">
@@ -668,17 +834,17 @@ export default function SearchPage() {
               setCategory('all')
               setLocation('all')
               router.push('/search')
-            }}>
+            }} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
               Clear Search
             </Button>
           </div>
         )}
-      </div>
+      </main>
 
       {/* Newsletter Section */}
-      <div data-newsletter>
+      <section className="bg-gradient-to-b from-gray-50/30 to-gray-100/50 py-12 border-t border-gray-200/30" data-newsletter>
         <NotificationSection source="search_page" />
-      </div>
+      </section>
     </div>
   )
 }

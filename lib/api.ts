@@ -633,10 +633,11 @@ export const categoriesApi = {
     return apiRequest(`/education/programs${qs}`)
   },
 
-  getServices: async (params: { limit?: number; city?: string; sortBy?: string } = {}) => {
+  getServices: async (params: { limit?: number; city?: string; category?: string; sortBy?: string } = {}) => {
     const query = new URLSearchParams()
     if (params.limit) query.append('limit', params.limit.toString())
     if (params.city) query.append('city', params.city)
+    if (params.category) query.append('category', params.category)
     if (params.sortBy) query.append('sortBy', params.sortBy)
     const qs = query.toString() ? `?${query.toString()}` : ''
     return apiRequest(`/listings${qs}`)

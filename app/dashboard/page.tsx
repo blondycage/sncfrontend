@@ -1396,7 +1396,7 @@ export default function DashboardPage() {
                     onClick={() => router.push('/listings')}
                   >
                     <Search className="h-3 w-3 sm:h-4 sm:w-4 lg:h-6 lg:w-6" />
-                    <span className="text-xs sm:text-sm">Browse Listings</span>
+                    <span className="text-xs sm:text-sm">Search North Cyprus</span>
                   </Button>
                   <Button 
                     className="h-14 sm:h-16 lg:h-20 flex-col space-y-1 sm:space-y-2 p-2 sm:p-3 lg:p-4" 
@@ -1659,7 +1659,7 @@ export default function DashboardPage() {
                       </p>
                       <Button onClick={() => router.push('/listings')}>
                         <Search className="h-4 w-4 mr-2" />
-                        Browse Listings
+                        Search North Cyprus
                       </Button>
                     </div>
                   )}

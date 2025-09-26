@@ -98,7 +98,7 @@ export default function KarpazPage() {
         <img src="/karpaz.jpeg" alt="Karpaz Peninsula" className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-0 left-0 p-8">
-          <h1 className="text-4xl font-bold text-white">Karpaz Peninsula</h1>
+          <h1 className="text-4xl font-bold text-white">Iskele</h1>
           <p className="text-xl text-white/90">Untouched natural beauty</p>
         </div>
       </div>
@@ -106,7 +106,7 @@ export default function KarpazPage() {
       <div className="container px-6 py-12 mx-auto max-w-7xl">
         <div className="mb-12 px-4">
           <p className="text-lg leading-relaxed">
-            The Karpaz Peninsula is the most unspoiled part of North Cyprus, known for its pristine beaches, wild
+            ISKELE is the most unspoiled part of North Cyprus, known for its pristine beaches, wild
             donkeys, and natural beauty. It's perfect for those seeking tranquility and connection with nature.
           </p>
         </div>

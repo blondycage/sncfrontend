@@ -6,18 +6,18 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MapPin, Star, Search, Loader2, Eye, Calendar } from "lucide-react"
-import { categoriesApi } from "@/lib/api"
+import { MapPin, Star, Search, Loader2, Eye, Calendar, Car } from "lucide-react"
+import { listingsApi } from "@/lib/api"
 import { useToast } from '@/components/ui/toast'
 import Link from 'next/link'
 
-interface ServiceListing {
+interface VehicleListing {
   id: string
   _id: string
   title: string
   description: string
+  listingType: string
   category: string
-  subcategory?: string
   price?: number
   currency?: string
   pricing_frequency?: string
@@ -38,9 +38,9 @@ interface ServiceListing {
   views?: number
 }
 
-export default function ServicesPage() {
+export default function VehiclesPage() {
   const { toast } = useToast()
-  const [services, setServices] = useState<ServiceListing[]>([])
+  const [vehicles, setVehicles] = useState<VehicleListing[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
@@ -53,18 +53,15 @@ export default function ServicesPage() {
     pages: 0
   })
 
-  const availableCategories = [
+  const vehicleCategories = [
     'all',
-    'transportation',
-    'legal',
-    'cleaning',
-    'it-services',
-    'events',
-    'real-estate',
-    'beauty',
-    'health',
-    'education',
-    'consulting'
+    'cars',
+    'motorcycles',
+    'trucks',
+    'vans',
+    'boats',
+    'heavy-machinery',
+    'parts-accessories'
   ]
 
   const locations = [
@@ -78,15 +75,16 @@ export default function ServicesPage() {
   ]
 
   useEffect(() => {
-    fetchServices()
+    fetchVehicles()
   }, [pagination.page, selectedCategory, selectedLocation, sortBy])
 
-  const fetchServices = async () => {
+  const fetchVehicles = async () => {
     setLoading(true)
     try {
       const params: any = {
+        page: pagination.page,
         limit: pagination.limit,
-        category: 'service',
+        listingType: 'vehicle',
         sortBy
       }
 
@@ -95,55 +93,55 @@ export default function ServicesPage() {
       }
 
       if (selectedCategory !== 'all') {
-        params.subcategory = selectedCategory
+        params.category = selectedCategory
       }
 
       if (searchQuery.trim()) {
         params.search = searchQuery.trim()
       }
 
-      const response = await categoriesApi.getServices(params)
+      const response = await listingsApi.getListings(params)
 
       if (response.success && response.data) {
-        const serviceListings = Array.isArray(response.data) ? response.data : [response.data]
+        const vehicleListings = Array.isArray(response.data) ? response.data : [response.data]
 
-        const formattedServices = serviceListings.map((service: any) => ({
-          id: service.id || service._id,
-          _id: service._id || service.id,
-          title: service.title,
-          description: service.description,
-          category: service.category,
-          subcategory: service.subcategory,
-          price: service.price,
-          currency: service.currency,
-          pricing_frequency: service.pricing_frequency,
-          location: service.location,
-          image_urls: service.image_urls || service.images,
-          images: service.images || service.image_urls,
-          featured: service.featured || false,
-          createdAt: service.createdAt || service.created_at,
-          created_at: service.created_at || service.createdAt,
-          owner: service.owner,
-          views: service.views
+        const formattedVehicles = vehicleListings.map((vehicle: any) => ({
+          id: vehicle.id || vehicle._id,
+          _id: vehicle._id || vehicle.id,
+          title: vehicle.title,
+          description: vehicle.description,
+          listingType: vehicle.listingType,
+          category: vehicle.category,
+          price: vehicle.price,
+          currency: vehicle.currency,
+          pricing_frequency: vehicle.pricing_frequency,
+          location: vehicle.location,
+          image_urls: vehicle.image_urls || vehicle.images,
+          images: vehicle.images || vehicle.image_urls,
+          featured: vehicle.featured || false,
+          createdAt: vehicle.createdAt || vehicle.created_at,
+          created_at: vehicle.created_at || vehicle.createdAt,
+          owner: vehicle.owner,
+          views: vehicle.views
         }))
 
-        setServices(formattedServices)
+        setVehicles(formattedVehicles)
         setPagination(prev => ({
           ...prev,
-          total: response.pagination?.totalItems || formattedServices.length,
-          pages: Math.ceil((response.pagination?.totalItems || formattedServices.length) / prev.limit)
+          total: (response as any)?.pagination?.totalItems || formattedVehicles.length,
+          pages: Math.ceil(((response as any)?.pagination?.totalItems || formattedVehicles.length) / prev.limit)
         }))
       } else {
-        setServices([])
+        setVehicles([])
       }
     } catch (error) {
-      console.error('Error fetching services:', error)
+      console.error('Error fetching vehicles:', error)
       toast({
         title: 'Error',
-        description: 'Failed to load services. Please try again.',
+        description: 'Failed to load vehicles. Please try again.',
         variant: 'error'
       })
-      setServices([])
+      setVehicles([])
     } finally {
       setLoading(false)
     }
@@ -151,7 +149,7 @@ export default function ServicesPage() {
 
   const handleSearch = () => {
     setPagination(prev => ({ ...prev, page: 1 }))
-    fetchServices()
+    fetchVehicles()
   }
 
   const formatPrice = (price?: number, currency = 'USD', frequency?: string) => {
@@ -180,14 +178,17 @@ export default function ServicesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/20 via-white to-purple-50/10">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/20 via-white to-green-50/10">
       {/* Header Section */}
-      <section className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 py-16">
+      <section className="bg-gradient-to-r from-blue-600 via-green-600 to-teal-600 py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center text-white">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Services & Businesses</h1>
+            <div className="flex items-center justify-center mb-4">
+              <Car className="h-12 w-12 mr-3" />
+              <h1 className="text-4xl md:text-5xl font-bold">DriveYourType</h1>
+            </div>
             <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-              Find professional services and trusted businesses in North Cyprus
+              Find your perfect vehicle in North Cyprus - cars, motorcycles, boats, and more
             </p>
           </div>
         </div>
@@ -201,7 +202,7 @@ export default function ServicesPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="relative">
                 <Input
-                  placeholder="Search services..."
+                  placeholder="Search vehicles..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -217,11 +218,11 @@ export default function ServicesPage() {
 
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Category" />
+                  <SelectValue placeholder="Vehicle Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {availableCategories.slice(1).map(category => (
+                  <SelectItem value="all">All Vehicle Types</SelectItem>
+                  {vehicleCategories.slice(1).map(category => (
                     <SelectItem key={category} value={category}>
                       {getCategoryDisplayName(category)}
                     </SelectItem>
@@ -280,27 +281,27 @@ export default function ServicesPage() {
           </div>
         )}
 
-        {/* Services Grid */}
-        {!loading && services.length > 0 && (
+        {/* Vehicles Grid */}
+        {!loading && vehicles.length > 0 && (
           <div className="bg-white/30 backdrop-blur-sm rounded-xl p-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {services.map((service) => (
-                <Card key={service.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <Link href={`/listings/${service._id}`}>
+              {vehicles.map((vehicle) => (
+                <Card key={vehicle.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <Link href={`/listings/${vehicle._id}`}>
                     <div className="relative">
-                      {service.images && service.images.length > 0 ? (
+                      {vehicle.images && vehicle.images.length > 0 ? (
                         <img
-                          src={service.images[0]}
-                          alt={service.title}
+                          src={vehicle.images[0]}
+                          alt={vehicle.title}
                           className="aspect-video w-full object-cover"
                         />
                       ) : (
-                        <div className="aspect-video w-full bg-muted flex items-center justify-center">
-                          <div className="text-muted-foreground">No Image</div>
+                        <div className="aspect-video w-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                          <Car className="h-12 w-12 text-gray-400" />
                         </div>
                       )}
 
-                      {service.featured && (
+                      {vehicle.featured && (
                         <div className="absolute left-2 top-2">
                           <Badge className="bg-amber-500 text-white hover:bg-amber-600">
                             <Star className="h-3 w-3 mr-1" />
@@ -309,31 +310,31 @@ export default function ServicesPage() {
                         </div>
                       )}
 
-                      {service.subcategory && (
+                      {vehicle.category && (
                         <div className="absolute right-2 top-2">
                           <Badge className="bg-primary/80 text-white">
-                            {getCategoryDisplayName(service.subcategory)}
+                            {getCategoryDisplayName(vehicle.category)}
                           </Badge>
                         </div>
                       )}
                     </div>
 
                     <CardHeader>
-                      <CardTitle className="line-clamp-1">{service.title}</CardTitle>
-                      {service.owner && (
+                      <CardTitle className="line-clamp-1">{vehicle.title}</CardTitle>
+                      {vehicle.owner && (
                         <div className="text-sm font-medium text-muted-foreground">
-                          {service.owner.firstName} {service.owner.lastName}
+                          {vehicle.owner.firstName} {vehicle.owner.lastName}
                         </div>
                       )}
-                      {service.location && (
+                      {vehicle.location && (
                         <div className="flex items-center text-sm text-muted-foreground">
                           <MapPin className="mr-1 h-4 w-4" />
-                          {service.location.city}
-                          {service.location.area && `, ${service.location.area}`}
+                          {vehicle.location.city}
+                          {vehicle.location.area && `, ${vehicle.location.area}`}
                         </div>
                       )}
                       <CardDescription className="line-clamp-2">
-                        {service.description}
+                        {vehicle.description}
                       </CardDescription>
                     </CardHeader>
 
@@ -341,19 +342,19 @@ export default function ServicesPage() {
                       <div className="flex justify-between items-center text-sm">
                         <div className="flex items-center text-muted-foreground">
                           <Calendar className="mr-1 h-3 w-3" />
-                          {formatDate(service.createdAt)}
+                          {formatDate(vehicle.createdAt)}
                         </div>
-                        {service.views && (
+                        {vehicle.views && (
                           <div className="flex items-center text-muted-foreground">
                             <Eye className="mr-1 h-3 w-3" />
-                            {service.views}
+                            {vehicle.views}
                           </div>
                         )}
                       </div>
 
                       <div className="mt-2 flex justify-between items-center">
                         <div className="font-medium text-lg">
-                          {formatPrice(service.price, service.currency, service.pricing_frequency)}
+                          {formatPrice(vehicle.price, vehicle.currency, vehicle.pricing_frequency)}
                         </div>
                       </div>
                     </CardContent>
@@ -369,26 +370,26 @@ export default function ServicesPage() {
         )}
 
         {/* No Results */}
-        {!loading && services.length === 0 && (
+        {!loading && vehicles.length === 0 && (
           <div className="bg-white/50 backdrop-blur-sm rounded-xl p-12 text-center">
-            <Search className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No Services Found</h3>
+            <Car className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">No Vehicles Found</h3>
             <p className="text-muted-foreground mb-6">
-              Try adjusting your search terms or filters to find services.
+              Try adjusting your search terms or filters to find vehicles.
             </p>
             <Button onClick={() => {
               setSearchQuery('')
               setSelectedCategory('all')
               setSelectedLocation('all')
               setSortBy('newest')
-            }} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+            }} className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
               Clear Filters
             </Button>
           </div>
         )}
 
         {/* Pagination */}
-        {!loading && services.length > 0 && pagination.pages > 1 && (
+        {!loading && vehicles.length > 0 && pagination.pages > 1 && (
           <div className="bg-white/50 backdrop-blur-sm rounded-xl p-6 mt-8">
             <div className="flex justify-center space-x-2">
               <Button

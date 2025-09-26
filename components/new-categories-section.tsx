@@ -185,6 +185,7 @@ export default function NewCategoriesSection() {
         limit: 6,
         sortBy: 'newest'
       })
+      console.log('Services API Response:', response)
       setServices(response.data || [])
     } catch (error) {
       console.error('Error fetching services:', error)
