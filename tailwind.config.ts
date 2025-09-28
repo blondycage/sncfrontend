@@ -37,6 +37,32 @@ const config: Config = {
   				DEFAULT: 'hsl(var(--secondary))',
   				foreground: 'hsl(var(--secondary-foreground))'
   			},
+  			blue: {
+  				DEFAULT: 'hsl(217 91% 60%)',
+  				50: 'hsl(217 91% 95%)',
+  				100: 'hsl(217 91% 90%)',
+  				200: 'hsl(217 91% 80%)',
+  				300: 'hsl(217 91% 70%)',
+  				400: 'hsl(217 91% 60%)',
+  				500: 'hsl(217 91% 50%)',
+  				600: 'hsl(217 91% 40%)',
+  				700: 'hsl(217 91% 30%)',
+  				800: 'hsl(217 91% 20%)',
+  				900: 'hsl(217 91% 10%)'
+  			},
+  			red: {
+  				DEFAULT: 'hsl(0 84% 60%)',
+  				50: 'hsl(0 84% 95%)',
+  				100: 'hsl(0 84% 90%)',
+  				200: 'hsl(0 84% 80%)',
+  				300: 'hsl(0 84% 70%)',
+  				400: 'hsl(0 84% 60%)',
+  				500: 'hsl(0 84% 50%)',
+  				600: 'hsl(0 84% 40%)',
+  				700: 'hsl(0 84% 30%)',
+  				800: 'hsl(0 84% 20%)',
+  				900: 'hsl(0 84% 10%)'
+  			},
   			muted: {
   				DEFAULT: 'hsl(var(--muted))',
   				foreground: 'hsl(var(--muted-foreground))'

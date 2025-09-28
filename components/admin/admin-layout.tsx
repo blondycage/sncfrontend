@@ -348,8 +348,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         {/* Page Content */}
         <main className="flex-1 min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-red-50/30 overflow-x-hidden">
           <div className="px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8 max-w-full">
-            <div className="max-w-7xl mx-auto">
-              {children}
+            <div className="max-w-7xl mx-auto overflow-x-hidden">
+              <div className="min-w-0">
+                {children}
+              </div>
             </div>
           </div>
         </main>

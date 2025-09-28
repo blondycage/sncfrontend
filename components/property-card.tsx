@@ -13,6 +13,7 @@ interface PropertyCardProps {
   location: string
   price: number
   pricingFrequency: string
+  currency?: string
   rating?: number
   reviewCount?: number
   imageUrl?: string
@@ -29,6 +30,7 @@ export function PropertyCard({
   location,
   price,
   pricingFrequency,
+  currency = 'USD',
   rating = 4.9,
   reviewCount = 0,
   imageUrl = "/placeholder.svg",
@@ -52,7 +54,7 @@ export function PropertyCard({
   const formatPrice = () => {
     const formattedPrice = new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: currency,
       minimumFractionDigits: 0
     }).format(price)
 
@@ -75,11 +77,11 @@ export function PropertyCard({
   return (
     <div className={`group relative cursor-pointer ${className}`}>
       <Link href={getDetailPageUrl()}>
-        <div className="relative overflow-hidden rounded-xl">
+        <div className="relative overflow-hidden rounded-xl border border-blue-200/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-primary/50">
           {/* Guest Favorite Badge */}
           {rating >= 4.8 && (
             <div className="absolute top-3 left-3 z-10">
-              <Badge className="bg-white text-gray-800 text-xs font-medium px-2 py-1 shadow-sm">
+              <Badge className="bg-primary text-white text-xs font-medium px-2 py-1 shadow-sm">
                 {guestFavoriteText}
               </Badge>
             </div>
@@ -123,7 +125,7 @@ export function PropertyCard({
           
           {/* Content for jobs and education without image */}
           {(category === 'jobs' || category === 'education') && (
-            <div className="p-6 bg-gray-50 rounded-xl min-h-[120px] flex flex-col justify-center">
+            <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl min-h-[120px] flex flex-col justify-center">
               <div className="text-center">
                 <div className="text-2xl mb-2">
                   {category === 'jobs' ? '💼' : '🎓'}

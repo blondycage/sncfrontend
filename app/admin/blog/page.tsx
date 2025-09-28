@@ -549,7 +549,7 @@ export default function AdminBlogPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="min-w-[250px]">Title</TableHead>
+                  <TableHead className="min-w-0">Title</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="hidden sm:table-cell">Author</TableHead>
                   <TableHead className="hidden md:table-cell">Stats</TableHead>

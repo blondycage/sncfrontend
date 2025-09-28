@@ -48,6 +48,7 @@ interface Listing {
   category: 'rental' | 'sale' | 'service';
   price: number;
   pricing_frequency: string;
+  currency?: string;
   image_urls: string[];
   video_url?: string;
   views: number;
@@ -396,10 +397,10 @@ export default function ListingDetailPage() {
     }
   };
 
-  const formatPrice = (price: number, frequency: string) => {
+  const formatPrice = (price: number, frequency: string, currency: string = 'USD') => {
     const formattedPrice = new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: currency,
       minimumFractionDigits: 0
     }).format(price);
 
@@ -443,7 +444,8 @@ export default function ListingDetailPage() {
       return;
     }
     
-    const message = `Hi! I am interested in "${listing.title}" from SNC.to`;
+    const listingUrl = `${window.location.origin}/listings/${listing._id}`;
+    const message = `Hi I am interested in ${listing.title} from searchnorthcyprus.org ${listingUrl}`;
     const whatsappUrl = `https://wa.me/${phone.replace(/[^\d]/g, '')}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -761,7 +763,7 @@ export default function ListingDetailPage() {
                   </div>
                   <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 leading-tight">{listing.title}</h1>
                   <div className="text-xl sm:text-2xl font-bold text-blue-600 mb-2">
-                    {formatPrice(listing.price, listing.pricing_frequency)}
+                    {formatPrice(listing.price, listing.pricing_frequency, listing.currency)}
                   </div>
                 </div>
                 
@@ -933,7 +935,7 @@ export default function ListingDetailPage() {
                             </p>
                             {listing?.price && (
                               <p className="text-sm text-muted-foreground">
-                                Listed Price: {formatPrice(listing.price, listing.pricing_frequency || 'one-time')}
+                                Listed Price: {formatPrice(listing.price, listing.pricing_frequency || 'one-time', listing.currency)}
                               </p>
                             )}
                           </div>
@@ -1019,7 +1021,7 @@ export default function ListingDetailPage() {
                     <div className="flex items-center gap-2">
                       <MessageSquare className="h-4 w-4 text-gray-500 flex-shrink-0" />
                       <a 
-                        href={`https://wa.me/${listing.contact.whatsapp.replace(/[^0-9]/g, '')}`}
+                        href={`https://wa.me/${listing.contact.whatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi I am interested in ${listing.title} from searchnorthcyprus.org ${window.location.href}`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-green-600 hover:underline text-sm sm:text-base break-all"

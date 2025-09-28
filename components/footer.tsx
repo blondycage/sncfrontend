@@ -25,7 +25,7 @@ export default function Footer() {
   ]
 
   return (
-    <footer className="border-t bg-gray-50 pt-12 pb-6">
+    <footer className="border-t bg-gradient-to-b from-gray-900 to-black pt-12 pb-6">
       <div className="container px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {/* Company Info */}
@@ -39,28 +39,28 @@ export default function Footer() {
                 className="h-8 w-auto"
               />
             </Link>
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <p className="text-sm text-gray-300 leading-relaxed">
               Your ultimate search platform for everything in North Cyprus. Find properties, jobs, services, and educational programs.
             </p>
             <div className="flex items-center space-x-4">
               <Link 
                 href="https://www.instagram.com/searchnorthcyprus?igsh=NXlkeXAwZDN4anF4" 
                 aria-label="Instagram"
-                className="text-gray-400 hover:text-blue-600 transition-colors"
+                className="text-gray-400 hover:text-primary transition-colors"
               >
                 <Instagram className="h-5 w-5" />
               </Link>
               <Link 
                 href="https://t.me/searchnorthcyprus" 
                 aria-label="Telegram"
-                className="text-gray-400 hover:text-blue-600 transition-colors"
+                className="text-gray-400 hover:text-primary transition-colors"
               >
                 <Send className="h-5 w-5" />
               </Link>
               <Link 
                 href="https://www.facebook.com/share/1a4bjuJ6iR/?mibextid=wwXIfr" 
                 aria-label="Facebook"
-                className="text-gray-400 hover:text-blue-600 transition-colors"
+                className="text-gray-400 hover:text-primary transition-colors"
               >
                 <Facebook className="h-5 w-5" />
               </Link>
@@ -69,14 +69,14 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Quick Links</h3>
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Quick Links</h3>
             <ul className="space-y-2">
               <li>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="flex items-center space-x-2 text-sm text-gray-600 hover:text-blue-600 transition-colors h-auto p-0 justify-start"
+                      className="flex items-center space-x-2 text-sm text-gray-300 hover:text-primary transition-colors h-auto p-0 justify-start"
                     >
                       <Search className="h-4 w-4" />
                       <span>Search North Cypruss</span>
@@ -143,7 +143,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/jobs"
-                  className="flex items-center space-x-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                  className="flex items-center space-x-2 text-sm text-gray-300 hover:text-primary transition-colors"
                 >
                   <Building className="h-4 w-4" />
                   <span>Jobs</span>
@@ -152,7 +152,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/dormitories"
-                  className="flex items-center space-x-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                  className="flex items-center space-x-2 text-sm text-gray-300 hover:text-primary transition-colors"
                 >
                   <Hotel className="h-4 w-4" />
                   <span>Dormitories</span>
@@ -161,7 +161,7 @@ export default function Footer() {
               <li>
                 <Link 
                   href="/blog" 
-                  className="flex items-center space-x-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                  className="flex items-center space-x-2 text-sm text-gray-300 hover:text-primary transition-colors"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                     <path d="M4 4h16v16H4z"/>
@@ -175,7 +175,7 @@ export default function Footer() {
               <li>
                 <Link 
                   href="/create-listing" 
-                  className="flex items-center space-x-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                  className="flex items-center space-x-2 text-sm text-gray-300 hover:text-primary transition-colors"
                 >
                   <PlusCircle className="h-4 w-4" />
                   <span>Create Listing</span>
@@ -184,7 +184,7 @@ export default function Footer() {
               <li>
                 <Link 
                   href="/jobs/create" 
-                  className="flex items-center space-x-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                  className="flex items-center space-x-2 text-sm text-gray-300 hover:text-primary transition-colors"
                 >
                   <PlusCircle className="h-4 w-4" />
                   <span>Post Job</span>
@@ -195,7 +195,7 @@ export default function Footer() {
 
           {/* Cities */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide flex items-center space-x-1">
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wide flex items-center space-x-1">
               <MapPin className="h-4 w-4" />
               <span>Cities</span>
             </h3>
@@ -204,7 +204,7 @@ export default function Footer() {
                 <li key={city.value}>
                   <Link 
                     href={`/locations/${city.slug}`}
-                    className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                    className="text-sm text-gray-300 hover:text-primary transition-colors"
                   >
                     {city.label}
                   </Link>
@@ -215,12 +215,12 @@ export default function Footer() {
 
           {/* Categories */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Categories</h3>
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Categories</h3>
             <ul className="space-y-2">
               <li>
                 <Link 
                   href="/categories/properties" 
-                  className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                  className="text-sm text-gray-300 hover:text-primary transition-colors"
                 >
                   Properties
                 </Link>
@@ -228,7 +228,7 @@ export default function Footer() {
               <li>
                 <Link 
                   href="/categories/jobs" 
-                  className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                  className="text-sm text-gray-300 hover:text-primary transition-colors"
                 >
                   Job Opportunities
                 </Link>
@@ -236,7 +236,7 @@ export default function Footer() {
               <li>
                 <Link 
                   href="/categories/education" 
-                  className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                  className="text-sm text-gray-300 hover:text-primary transition-colors"
                 >
                   Education
                 </Link>
@@ -244,7 +244,7 @@ export default function Footer() {
               <li>
                 <Link 
                   href="/categories/services" 
-                  className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                  className="text-sm text-gray-300 hover:text-primary transition-colors"
                 >
                   Services
                 </Link>
@@ -255,17 +255,17 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="border-t pt-6 flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
-          <div className="flex items-center space-x-4 text-sm text-gray-500">
+          <div className="flex items-center space-x-4 text-sm text-gray-400">
             <span>© {currentYear} Search North Cyprus. All rights reserved.</span>
           </div>
           <div className="flex items-center space-x-6 text-sm">
-            <Link href="/privacy" className="text-gray-500 hover:text-blue-600 transition-colors">
+            <Link href="/privacy" className="text-gray-400 hover:text-primary transition-colors">
               Privacy Policy
             </Link>
-            <Link href="/terms" className="text-gray-500 hover:text-blue-600 transition-colors">
+            <Link href="/terms" className="text-gray-400 hover:text-primary transition-colors">
               Terms of Service
             </Link>
-            <Link href="/contact" className="text-gray-500 hover:text-blue-600 transition-colors">
+            <Link href="/contact" className="text-gray-400 hover:text-primary transition-colors">
               Contact
             </Link>
           </div>

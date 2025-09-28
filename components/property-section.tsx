@@ -12,6 +12,7 @@ interface Property {
   description: string
   price: number
   pricing_frequency: string
+  currency?: string
   image_urls: string[]
   primaryImage?: string
   location: {
@@ -149,6 +150,7 @@ export function PropertySection({
                 location={property.location}
                 price={property.price}
                 pricingFrequency={property.pricing_frequency || 'per night'}
+                currency={property.currency || 'USD'}
                 rating={property.rating || (Math.random() * 0.5 + 4.5)} // Random rating between 4.5-5.0 if not available
                 imageUrl={property.primaryImage || property.image_urls?.[0] || '/placeholder.svg'}
                 category={property.category}

@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation"
 export default function HeroSection() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [slides, setSlides] = useState<Array<{ promotionId: string; src: string; alt: string; title: string; description?: string; listingId: string; price?: number; pricing_frequency?: string; category?: string }>>([])
+  const [slides, setSlides] = useState<Array<{ promotionId: string; src: string; alt: string; title: string; description?: string; listingId: string; price?: number; pricing_frequency?: string; currency?: string; category?: string }>>([])
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
@@ -31,6 +31,7 @@ export default function HeroSection() {
               listingId: p.listing._id,
               price: p.listing.price,
               pricing_frequency: p.listing.pricing_frequency,
+              currency: p.listing.currency,
               category: p.listing.category,
             }))
           if (isMounted) {
@@ -68,9 +69,9 @@ export default function HeroSection() {
     return () => clearInterval(slideInterval)
   }, [slides.length, isLoading])
 
-  const formatPrice = (price?: number, frequency?: string) => {
+  const formatPrice = (price?: number, frequency?: string, currency: string = 'USD') => {
     if (typeof price !== 'number') return ''
-    const formatted = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(price)
+    const formatted = new Intl.NumberFormat('en-US', { style: 'currency', currency: currency, minimumFractionDigits: 0 }).format(price)
     if (!frequency || frequency === 'fixed') return formatted
     return `${formatted}/${frequency}`
   }
@@ -110,11 +111,11 @@ export default function HeroSection() {
           
            
             <div className="relative mt-2 overflow-hidden rounded-lg border border-white/20 bg-white/10 p-3 sm:p-4 backdrop-blur-md">
-              <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-blue-500/30 blur-xl"></div>
-              <div className="absolute -bottom-6 -left-6 h-20 w-20 rounded-full bg-blue-600/20 blur-xl"></div>
+              <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-primary/30 blur-xl"></div>
+              <div className="absolute -bottom-6 -left-6 h-20 w-20 rounded-full bg-primary/20 blur-xl"></div>
 
               <div className="relative flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-blue-600 text-white flex-shrink-0">
+                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-primary text-white flex-shrink-0">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
@@ -139,7 +140,7 @@ export default function HeroSection() {
                   href="https://t.me/searchnorthcyprus"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-md bg-blue-600 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white transition-colors hover:bg-blue-700 flex-shrink-0"
+                  className="rounded-md bg-primary px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white transition-colors hover:bg-primary/90 flex-shrink-0"
                 >
                   Join Now
                 </a>
@@ -242,7 +243,7 @@ export default function HeroSection() {
                           <h4 className="text-white font-semibold text-lg md:text-xl line-clamp-2">{(image as any).title}</h4>
                           <div className="mt-1 flex items-center justify-between">
                             <p className="text-white/90 text-sm md:text-base font-medium">
-                              {formatPrice((image as any).price, (image as any).pricing_frequency) || (image as any).description}
+                              {formatPrice((image as any).price, (image as any).pricing_frequency, (image as any).currency) || (image as any).description}
                             </p>
                             {slides.length > 0 && (
                               <button

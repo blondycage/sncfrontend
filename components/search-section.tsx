@@ -67,13 +67,13 @@ export default function SearchSection() {
         <div className="mx-auto max-w-5xl">
           {/* Mobile/Tablet Layout (stacked) */}
           <div className="md:hidden">
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4 space-y-4">
+            <div className="bg-white rounded-2xl shadow-xl border border-blue-200/50 p-4 space-y-4">
               {/* What are you searching for - Mobile */}
               <div className="w-full">
                 <label className="block text-xs font-bold text-gray-900 mb-2">What are you searching for?</label>
                 <Input 
                   placeholder="Jobs, properties, services, education..."
-                  className="w-full text-sm placeholder:text-gray-500 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  className="w-full text-sm placeholder:text-gray-500 border-gray-300 focus:border-primary focus:ring-primary"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -84,7 +84,7 @@ export default function SearchSection() {
                 <div className="w-full">
                   <label className="block text-xs font-bold text-gray-900 mb-2">Category</label>
                   <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger className="w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                    <SelectTrigger className="w-full text-sm border-gray-300 focus:border-primary focus:ring-primary">
                       <SelectValue placeholder="All categories" />
                     </SelectTrigger>
                     <SelectContent>
@@ -99,7 +99,7 @@ export default function SearchSection() {
                 <div className="w-full">
                   <label className="block text-xs font-bold text-gray-900 mb-2">Location</label>
                   <Select value={location} onValueChange={setLocation}>
-                    <SelectTrigger className="w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                    <SelectTrigger className="w-full text-sm border-gray-300 focus:border-primary focus:ring-primary">
                       <SelectValue placeholder="All locations" />
                     </SelectTrigger>
                     <SelectContent>
@@ -131,7 +131,7 @@ export default function SearchSection() {
               {/* Search Button - Mobile */}
               <Button 
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 py-3 text-sm font-medium"
+                className="w-full bg-primary hover:bg-primary/90 py-3 text-sm font-medium"
               >
                 <Search className="h-4 w-4 mr-2" />
                 Search Now
@@ -141,9 +141,9 @@ export default function SearchSection() {
 
           {/* Desktop Layout (horizontal) */}
           <div className="hidden md:block">
-            <div className="flex items-center bg-white rounded-full shadow-xl border border-gray-200 p-2 lg:p-3">
+            <div className="flex items-center bg-white rounded-full shadow-xl border border-blue-200/50 p-2 lg:p-3">
               {/* What are you searching for - Desktop */}
-              <div className="flex-1 px-4 lg:px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 rounded-l-full">
+              <div className="flex-1 px-4 lg:px-6 py-3 border-r border-blue-200/70 cursor-pointer hover:bg-gray-50 rounded-l-full">
                 <label className="block text-xs font-bold text-gray-900 mb-1">What are you searching for?</label>
                 <Input 
                   placeholder="Jobs, properties, services, education..."
@@ -154,7 +154,7 @@ export default function SearchSection() {
               </div>
               
               {/* Category - Desktop */}
-              <div className="flex-1 px-4 lg:px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50">
+              <div className="flex-1 px-4 lg:px-6 py-3 border-r border-blue-200/70 cursor-pointer hover:bg-gray-50">
                 <label className="block text-xs font-bold text-gray-900 mb-1">Category</label>
                 <Select value={category} onValueChange={setCategory}>
                   <SelectTrigger className="border-0 p-0 h-auto text-sm shadow-none focus:ring-0">
@@ -206,7 +206,7 @@ export default function SearchSection() {
                 <Button 
                   type="submit"
                   size="lg"
-                  className="bg-blue-600 hover:bg-blue-700 rounded-full w-12 h-12 p-0"
+                  className="bg-primary hover:bg-primary/90 rounded-full w-12 h-12 p-0"
                 >
                   <Search className="h-4 w-4 text-white" />
                   <span className="sr-only">Search</span>

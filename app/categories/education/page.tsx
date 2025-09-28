@@ -639,8 +639,15 @@ export default function EducationPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
            
-            <Button size="lg" variant="outline" className="px-8 h-12">
-              Contact Admissions at <a href="mailto:admissions@searchnorthcyprus.org">admissions@searchnorthcyprus.org</a>
+            <Button size="lg" variant="outline" className="px-3 sm:px-6 md:px-8 h-auto min-h-[3rem] py-3 text-xs sm:text-sm md:text-base flex-wrap justify-center">
+              <span className="text-center leading-tight">
+                <span className="block sm:inline">Contact Admissions at</span>
+                <span className="block sm:inline sm:ml-1">
+                  <a href="mailto:admissions@searchnorthcyprus.org" className="break-all text-primary hover:underline font-medium">
+                    admissions@searchnorthcyprus.org
+                  </a>
+                </span>
+              </span>
             </Button>
           </div>
         </section>

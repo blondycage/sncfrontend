@@ -189,7 +189,8 @@ export default function JobDetailClient({ job }: JobDetailClientProps) {
       return
     }
     
-    const message = `Hi! I am interested in the "${job.title}" position from SNC.to`
+    const jobUrl = `${window.location.origin}/jobs/${job._id}`;
+    const message = `Hi I am interested in ${job.title} from searchnorthcyprus.org ${jobUrl}`;
     const whatsappUrl = `https://wa.me/${job.contactPhone.replace(/[^\d]/g, '')}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
   }

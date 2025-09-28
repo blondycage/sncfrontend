@@ -81,7 +81,7 @@ export default function NotificationSection({ source = 'homepage' }: Notificatio
   return (
     <div className="bg-gray-50 py-12">
       <div className="container px-4">
-        <div className="mx-auto max-w-3xl rounded-lg bg-white p-8 shadow-sm">
+        <div className="mx-auto max-w-3xl rounded-lg bg-white p-8 shadow-lg border border-blue-200/50 hover:shadow-xl transition-all duration-300">
           <h2 className="text-2xl font-bold">Sign up for our Newsletter</h2>
           <p className="mt-2 text-muted-foreground">
             Get notified on new updates and gain early access to all features.

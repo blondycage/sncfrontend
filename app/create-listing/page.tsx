@@ -36,6 +36,7 @@ interface ListingFormData {
   category: 'rental' | 'sale' | 'service' | '';
   tags: string[];
   price: string;
+  currency: string;
   pricing_frequency: string;
   image_urls: string[];
   video_url?: string;
@@ -61,6 +62,13 @@ const CATEGORIES = [
   { value: 'rental', label: 'Rental', icon: Home, description: 'Properties for rent' },
   { value: 'sale', label: 'Sale', icon: ShoppingCart, description: 'Items for sale' },
   { value: 'service', label: 'Service', icon: Briefcase, description: 'Services offered' }
+];
+
+const CURRENCIES = [
+  { value: 'USD', label: 'US Dollar', symbol: '$' },
+  { value: 'EUR', label: 'Euro', symbol: '€' },
+  { value: 'GBP', label: 'British Pound', symbol: '£' },
+  { value: 'TRY', label: 'Turkish Lira', symbol: '₺' }
 ];
 
 const PRICING_FREQUENCIES = {
@@ -124,6 +132,7 @@ export default function CreateListingPage() {
     category: '',
     tags: [],
     price: '',
+    currency: 'USD',
     pricing_frequency: '',
     image_urls: [],
     video_url: '',
@@ -325,6 +334,7 @@ export default function CreateListingPage() {
         category: formData.category as 'rental' | 'sale' | 'service',
         tags: formData.tags,
         price: parseFloat(formData.price),
+        currency: formData.currency,
         pricing_frequency: formData.pricing_frequency,
         image_urls: allImageUrls,
         contact: formData.contact,
@@ -672,21 +682,50 @@ if(user?.role === "admin"){
                   </Alert>
                 )}
 
-                {/* Price */}
-                <div className="space-y-2">
-                  <Label htmlFor="price">Price *</Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                    <Input
-                      id="price"
-                      type="number"
-                      value={formData.price}
-                      onChange={(e) => handleInputChange('price', e.target.value)}
-                      placeholder="0.00"
-                      min="0"
-                      step="0.01"
-                      className="pl-8"
-                    />
+                {/* Price and Currency */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Currency Selection */}
+                  <div className="space-y-2">
+                    <Label>Currency *</Label>
+                    <Select
+                      value={formData.currency}
+                      onValueChange={(value) => handleInputChange('currency', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select currency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CURRENCIES.map((currency) => (
+                          <SelectItem key={currency.value} value={currency.value}>
+                            <div className="flex items-center space-x-2">
+                              <span className="font-medium">{currency.symbol}</span>
+                              <span>{currency.label}</span>
+                              <span className="text-gray-500">({currency.value})</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Price */}
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="price">Price *</Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
+                        {CURRENCIES.find(c => c.value === formData.currency)?.symbol || '$'}
+                      </span>
+                      <Input
+                        id="price"
+                        type="number"
+                        value={formData.price}
+                        onChange={(e) => handleInputChange('price', e.target.value)}
+                        placeholder="0.00"
+                        min="0"
+                        step="0.01"
+                        className="pl-8"
+                      />
+                    </div>
                   </div>
                 </div>
 

@@ -43,6 +43,7 @@ interface Listing {
   category: 'rental' | 'sale' | 'service';
   price: number;
   pricing_frequency: string;
+  currency?: string;
   image_urls: string[];
   views: number;
   createdAt: string;
@@ -247,10 +248,10 @@ export default function AdminListingsPage() {
     }
   };
 
-  const formatPrice = (price: number, frequency: string) => {
+  const formatPrice = (price: number, frequency: string, currency: string = 'USD') => {
     const formattedPrice = new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: currency,
       minimumFractionDigits: 0
     }).format(price);
 
@@ -365,9 +366,9 @@ export default function AdminListingsPage() {
         {/* Filters */}
         <Card>
           <CardContent className="p-3 sm:p-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 auto-rows-fr">
               {/* Search */}
-              <div className="relative sm:col-span-2 md:col-span-1">
+              <div className="relative col-span-full sm:col-span-2 md:col-span-2 lg:col-span-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   placeholder="Search listings..."
@@ -495,10 +496,154 @@ export default function AdminListingsPage() {
                   const isActionLoading = actionLoading && actionLoading.includes(listing._id);
                   
                   return (
-                    <div key={listing._id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+                    <div key={listing._id} className="border rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors">
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-start">
+                        {/* Mobile Layout */}
+                        <div className="lg:hidden space-y-3">
+                          {/* Listing Info */}
+                          <div className="flex items-start space-x-3">
+                            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                              {listing.image_urls.length > 0 ? (
+                                <img
+                                  src={listing.image_urls[0]}
+                                  alt={listing.title}
+                                  className="w-full h-full object-cover rounded-lg"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                  }}
+                                />
+                              ) : (
+                                <CategoryIcon className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
+                              )}
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-medium text-gray-900 truncate text-sm sm:text-base">{listing.title}</h3>
+                              <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 mt-1">{listing.description}</p>
+                            </div>
+                          </div>
+
+                          {/* Mobile Details Grid */}
+                          <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                              <span className="text-xs font-medium text-gray-500 block">Owner</span>
+                              <div className="flex items-center space-x-1 mt-1">
+                                <User className="h-3 w-3 text-gray-400" />
+                                <span className="text-xs truncate">
+                                  {(() => {
+                                    if (listing.owner.firstName && listing.owner.lastName) {
+                                      return `${listing.owner.firstName} ${listing.owner.lastName}`;
+                                    }
+                                    return listing.owner.username || listing.owner.email;
+                                  })()}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div>
+                              <span className="text-xs font-medium text-gray-500 block">Category</span>
+                              <Badge variant="outline" className="capitalize text-xs mt-1">
+                                {listing.category}
+                              </Badge>
+                            </div>
+
+                            <div>
+                              <span className="text-xs font-medium text-gray-500 block">Price</span>
+                              <div className="flex items-center mt-1">
+                                <DollarSign className="h-3 w-3 text-gray-400 mr-1" />
+                                <span className="text-xs font-medium">
+                                  {formatPrice(listing.price, listing.pricing_frequency, listing.currency)}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div>
+                              <span className="text-xs font-medium text-gray-500 block">Status</span>
+                              <Badge className={`${getStatusColor(listing.status, listing.moderationStatus, listing.isReported)} text-xs mt-1`}>
+                                {getStatusText(listing.status, listing.moderationStatus, listing.isReported)}
+                              </Badge>
+                            </div>
+                          </div>
+
+                          {/* Mobile Meta Info */}
+                          <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t">
+                            <div className="flex items-center space-x-3">
+                              <span className="flex items-center">
+                                <Eye className="h-3 w-3 mr-1" />
+                                {listing.views} views
+                              </span>
+                              <span className="flex items-center">
+                                <Calendar className="h-3 w-3 mr-1" />
+                                {new Date(listing.createdAt).toLocaleDateString()}
+                              </span>
+                              {listing.location?.city && (
+                                <span className="flex items-center">
+                                  <MapPin className="h-3 w-3 mr-1" />
+                                  {listing.location.city}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Mobile Actions */}
+                          <div className="flex flex-wrap gap-1 pt-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => router.push(`/admin/listings/${listing._id}`)}
+                              className="text-xs h-7"
+                            >
+                              <Eye className="h-3 w-3 mr-1" />
+                              View
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => router.push(`/admin/listings/${listing._id}/edit`)}
+                              className="text-xs h-7"
+                            >
+                              <Edit className="h-3 w-3 mr-1" />
+                              Edit
+                            </Button>
+                            {(listing.moderationStatus === 'pending' || listing.moderationStatus === 'flagged') && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleModerationAction(listing._id, 'approve')}
+                                  disabled={isActionLoading}
+                                  className="text-xs h-7 bg-green-600 hover:bg-green-700"
+                                >
+                                  {isActionLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="h-3 w-3 mr-1" />}
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleModerationAction(listing._id, 'reject')}
+                                  disabled={isActionLoading}
+                                  className="text-xs h-7"
+                                >
+                                  {isActionLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3 mr-1" />}
+                                  Reject
+                                </Button>
+                              </>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleListingAction(listing._id, 'delete')}
+                              disabled={isActionLoading}
+                              className="text-xs h-7"
+                            >
+                              {isActionLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3 mr-1" />}
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Desktop Layout */}
                         {/* Listing Info */}
-                        <div className="lg:col-span-4">
+                        <div className="hidden lg:block lg:col-span-4">
                           <div className="flex items-start space-x-3">
                             <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
                               {listing.image_urls.length > 0 ? (
@@ -539,7 +684,7 @@ export default function AdminListingsPage() {
                         </div>
 
                         {/* Owner */}
-                        <div className="lg:col-span-2">
+                        <div className="hidden lg:block lg:col-span-2">
                           <div className="flex items-center space-x-2">
                             <User className="h-4 w-4 text-gray-400" />
                             <div>
@@ -560,24 +705,24 @@ export default function AdminListingsPage() {
                         </div>
 
                         {/* Category */}
-                        <div className="lg:col-span-1">
+                        <div className="hidden lg:block lg:col-span-1">
                           <Badge variant="outline" className="capitalize">
                             {listing.category}
                           </Badge>
                         </div>
 
                         {/* Price */}
-                        <div className="lg:col-span-1">
+                        <div className="hidden lg:block lg:col-span-1">
                           <div className="flex items-center">
                             <DollarSign className="h-4 w-4 text-gray-400 mr-1" />
                             <span className="text-sm font-medium">
-                              {formatPrice(listing.price, listing.pricing_frequency)}
+                              {formatPrice(listing.price, listing.pricing_frequency, listing.currency)}
                             </span>
                           </div>
                         </div>
 
                         {/* Status */}
-                        <div className="lg:col-span-2">
+                        <div className="hidden lg:block lg:col-span-2">
                           <div className="flex flex-col space-y-1">
                             <Badge className={getStatusColor(listing.status, listing.moderationStatus, listing.isReported)}>
                               {getStatusText(listing.status, listing.moderationStatus, listing.isReported)}
@@ -592,8 +737,8 @@ export default function AdminListingsPage() {
                         </div>
 
                         {/* Actions */}
-                        <div className="lg:col-span-2">
-                          <div className="flex flex-wrap gap-1">
+                        <div className="hidden lg:block lg:col-span-2">
+                          <div className="flex flex-wrap gap-1 sm:gap-2">
                             {/* View Details */}
                             <Button
                               variant="outline"

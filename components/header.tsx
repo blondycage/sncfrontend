@@ -75,7 +75,7 @@ export default function Header() {
   };
 
   return (
-    <header className="border-b bg-white shadow-sm">
+    <header className="border-b bg-gradient-to-r from-blue-50 to-blue-100 shadow-sm">
       <div className="container flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link href="/" className="flex items-center">
@@ -96,7 +96,7 @@ export default function Header() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors h-auto p-0"
+                className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-primary transition-colors h-auto p-0"
               >
                 <Search className="h-4 w-4" />
                 <span>Search North Cyprus</span>
@@ -162,7 +162,7 @@ export default function Header() {
 
           <Link 
             href="/blog" 
-            className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+            className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-primary transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
               <path d="M4 4h16v16H4z"/>
@@ -178,9 +178,9 @@ export default function Header() {
           {/* Cities Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors h-auto p-0"
+              <Button
+                variant="ghost"
+                className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-primary transition-colors h-auto p-0"
               >
                 <MapPin className="h-4 w-4" />
                 <span>Cities</span>
@@ -209,7 +209,7 @@ export default function Header() {
           
           <Link
             href="/jobs"
-            className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+            className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-primary transition-colors"
           >
             <Building className="h-4 w-4" />
             <span>Jobs</span>
@@ -217,7 +217,7 @@ export default function Header() {
 
           <Link
             href="/dormitories"
-            className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+            className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-primary transition-colors"
           >
             <Hotel className="h-4 w-4" />
             <span>Dormitories</span>
@@ -226,7 +226,7 @@ export default function Header() {
           {user && (
             <Link 
               href="/create-listing" 
-              className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+              className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-primary transition-colors"
             >
               <PlusCircle className="h-4 w-4" />
               <span>Create Listing</span>
@@ -236,7 +236,7 @@ export default function Header() {
           {user && (
             <Link 
               href="/jobs/create" 
-              className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+              className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-primary transition-colors"
             >
               <PlusCircle className="h-4 w-4" />
               <span>Post Job</span>
@@ -254,7 +254,7 @@ export default function Header() {
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user.photoUrl} alt={getDisplayName()} />
-                    <AvatarFallback className="bg-blue-100 text-blue-600">
+                    <AvatarFallback className="bg-primary/10 text-primary">
                       {getInitials(user.firstName, user.lastName, user.username)}
                     </AvatarFallback>
                   </Avatar>
@@ -285,7 +285,7 @@ export default function Header() {
             </DropdownMenu>
           ) : (
             <Link href="/auth/login">
-              <Button className="bg-[#0088cc] hover:bg-[#0077b5] text-white">
+              <Button className="bg-primary hover:bg-primary/90 text-white">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -322,7 +322,7 @@ export default function Header() {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t bg-white">
+        <div className="md:hidden border-t bg-gradient-to-r from-blue-50 to-blue-100">
           <div className="container px-4 py-4 space-y-4">
             {/* Browse Listings Section in Mobile */}
             <div className="space-y-2">
@@ -333,35 +333,35 @@ export default function Header() {
               <div className="pl-6 space-y-2">
                 <Link
                   href="/search"
-                  className="block text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                  className="block text-sm text-gray-600 hover:text-primary transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Search All
                 </Link>
                 <Link
                   href="/categories/vehicles"
-                  className="block text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                  className="block text-sm text-gray-600 hover:text-primary transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   DriveYourType
                 </Link>
                 <Link
                   href="/categories/properties"
-                  className="block text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                  className="block text-sm text-gray-600 hover:text-primary transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Real Estate
                 </Link>
                 <Link
                   href="/categories/services"
-                  className="block text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                  className="block text-sm text-gray-600 hover:text-primary transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Services
                 </Link>
                 <Link
                   href="/categories/education"
-                  className="block text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                  className="block text-sm text-gray-600 hover:text-primary transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   SNCStudy
@@ -371,7 +371,7 @@ export default function Header() {
 
             <Link 
               href="/blog" 
-              className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+              className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
@@ -385,7 +385,7 @@ export default function Header() {
 
             <Link 
               href="/promotions" 
-              className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+              className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               <span>Promote</span>
@@ -402,7 +402,7 @@ export default function Header() {
                   <Link 
                     key={city.value}
                     href={`/locations/${city.slug}`}
-                    className="block text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                    className="block text-sm text-gray-600 hover:text-primary transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className="flex justify-between items-center">
@@ -416,7 +416,7 @@ export default function Header() {
             
             <Link
               href="/jobs"
-              className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+              className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               <Building className="h-4 w-4" />
@@ -425,7 +425,7 @@ export default function Header() {
 
             <Link
               href="/dormitories"
-              className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+              className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               <Hotel className="h-4 w-4" />
@@ -435,7 +435,7 @@ export default function Header() {
             {user && (
               <Link 
                 href="/create-listing" 
-                className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <PlusCircle className="h-4 w-4" />
@@ -446,7 +446,7 @@ export default function Header() {
             {user && (
               <Link 
                 href="/jobs/create" 
-                className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <PlusCircle className="h-4 w-4" />
@@ -459,7 +459,7 @@ export default function Header() {
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user.photoUrl} alt={getDisplayName()} />
-                    <AvatarFallback className="bg-blue-100 text-blue-600">
+                    <AvatarFallback className="bg-primary/10 text-primary">
                       {getInitials(user.firstName, user.lastName, user.username)}
                     </AvatarFallback>
                   </Avatar>
@@ -475,7 +475,7 @@ export default function Header() {
                 <div className="space-y-2">
                   <Link 
                     href="/dashboard" 
-                    className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                    className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <Building className="h-4 w-4" />
@@ -487,7 +487,7 @@ export default function Header() {
                       handleLogout();
                       setMobileMenuOpen(false);
                     }}
-                    className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors w-full text-left"
+                    className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors w-full text-left"
                   >
                     <LogOut className="h-4 w-4" />
                     <span>Log out</span>
@@ -497,7 +497,7 @@ export default function Header() {
             ) : (
               <div className="pt-4 border-t">
                 <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
-                  <Button className="w-full bg-[#0088cc] hover:bg-[#0077b5] text-white">
+                  <Button className="w-full bg-primary hover:bg-primary/90 text-white">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"

@@ -413,7 +413,7 @@ export default function AdminJobsPage() {
               <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="min-w-[200px]">Job</TableHead>
+                  <TableHead className="min-w-0">Job</TableHead>
                   <TableHead className="hidden sm:table-cell">Company</TableHead>
                   <TableHead className="hidden md:table-cell">Location</TableHead>
                   <TableHead className="hidden lg:table-cell">Salary</TableHead>
