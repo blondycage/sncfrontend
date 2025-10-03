@@ -100,6 +100,9 @@ export default function SearchPage() {
     if (unsortedResults.length > 0) {
       const sortedResults = sortResults(unsortedResults, sortBy)
       setResults(sortedResults)
+    } else {
+      // Clear results when unsortedResults is empty
+      setResults([])
     }
   }, [unsortedResults, sortBy])
 
@@ -823,19 +826,25 @@ export default function SearchPage() {
 
         {/* No Results */}
         {!loading && results.length === 0 && (
-          <div className="bg-white/50 backdrop-blur-sm rounded-xl p-12 text-center">
-            <Search className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No Results Found</h3>
-            <p className="text-muted-foreground mb-6">
-              Try adjusting your search terms or filters to find what you're looking for.
+          <div className="bg-white/70 backdrop-blur-sm rounded-xl p-16 text-center shadow-lg border border-gray-200">
+            <Search className="h-20 w-20 text-gray-400 mx-auto mb-6" />
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
+              No Results Found
+            </h2>
+            <p className="text-lg text-gray-600 mb-8 max-w-md mx-auto">
+              Try another search with different keywords or filters
             </p>
-            <Button onClick={() => {
-              setSearchQuery('')
-              setCategory('all')
-              setLocation('all')
-              router.push('/search')
-            }} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-              Clear Search
+            <Button
+              onClick={() => {
+                setSearchQuery('')
+                setCategory('all')
+                setLocation('all')
+                router.push('/search')
+              }}
+              size="lg"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-3"
+            >
+              Try Another Search
             </Button>
           </div>
         )}

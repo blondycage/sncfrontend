@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { PropertySection } from "@/components/property-section"
-import { categoriesApi } from "@/lib/api"
+import { VehicleSection } from "@/components/vehicle-section"
+import { EducationSection } from "@/components/education-section"
+import { categoriesApi, listingsApi } from "@/lib/api"
 
 interface Property {
   _id: string
@@ -23,31 +25,23 @@ interface Property {
   views?: number
 }
 
-interface Job {
+interface Vehicle {
   _id?: string
   id?: string
   title: string
-  role: string
-  company: {
-    name: string
-    logo?: string
-  }
-  salary: {
-    min: number
-    max: number
-    currency: string
-    frequency: string
-  }
-  location: {
+  description: string
+  price: number
+  pricing_frequency: string
+  currency?: string
+  image_urls: string[]
+  primaryImage?: string
+  location?: {
     city: string
     region?: string
   }
-  jobType: string
-  workLocation: string
-  applicationDeadline: string
+  category: string
+  listingType?: string
   views?: number
-  applicationCount?: number
-  createdAt: string
 }
 
 interface EducationProgram {
@@ -88,19 +82,19 @@ export default function NewCategoriesSection() {
   
   // State for different categories
   const [properties, setProperties] = useState<Property[]>([])
-  const [jobs, setJobs] = useState<Job[]>([])
+  const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [educationPrograms, setEducationPrograms] = useState<EducationProgram[]>([])
   const [services, setServices] = useState<Property[]>([])
-  
+
   // Loading states
   const [propertiesLoading, setPropertiesLoading] = useState(true)
-  const [jobsLoading, setJobsLoading] = useState(true)
+  const [vehiclesLoading, setVehiclesLoading] = useState(true)
   const [educationLoading, setEducationLoading] = useState(true)
   const [servicesLoading, setServicesLoading] = useState(true)
 
   useEffect(() => {
     fetchProperties()
-    fetchJobs()
+    fetchVehicles()
     fetchEducationPrograms()
     fetchServices()
   }, [])
@@ -120,32 +114,18 @@ export default function NewCategoriesSection() {
     }
   }
 
-  const fetchJobs = async () => {
+  const fetchVehicles = async () => {
     try {
-      const response = await categoriesApi.getJobs({
+      const response = await listingsApi.getListings({
+        listingType: 'vehicle',
         limit: 6,
         sortBy: 'newest'
       })
-      // Transform jobs to match Property interface
-      const transformedJobs = response.data.map((job: Job) => ({
-        _id: job._id || job.id,
-        id: job._id || job.id,
-        title: job.title,
-        description: job.role,
-        price: job.salary?.min || 0,
-        pricing_frequency: `${job.salary?.frequency || 'monthly'} salary`,
-        image_urls: [job.company?.logo || '/placeholder.svg'],
-        primaryImage: job.company?.logo || '/placeholder.svg',
-        location: job.location,
-        category: 'jobs',
-        rating: Math.random() * 0.5 + 4.5, // Random rating for display
-        views: job.views
-      }))
-      setJobs(transformedJobs)
+      setVehicles(response.data || [])
     } catch (error) {
-      console.error('Error fetching jobs:', error)
+      console.error('Error fetching vehicles:', error)
     } finally {
-      setJobsLoading(false)
+      setVehiclesLoading(false)
     }
   }
 
@@ -155,22 +135,7 @@ export default function NewCategoriesSection() {
         limit: 6,
         sortBy: 'newest'
       })
-      // Transform education programs to match Property interface
-      const transformedPrograms = response.data.map((program: EducationProgram) => ({
-        _id: program._id || program.id,
-        id: program._id || program.id,
-        title: program.title,
-        description: program.institution?.name || '',
-        price: program.tuition?.amount || 0,
-        pricing_frequency: program.tuition?.period || 'per semester',
-        image_urls: program.images?.map(img => img.url) || ['/placeholder.svg'],
-        primaryImage: program.primaryImage || program.images?.find(img => img.isPrimary)?.url || '/placeholder.svg',
-        location: program.location,
-        category: 'education',
-        rating: Math.random() * 0.5 + 4.5,
-        reviews: program.applicationCount
-      }))
-      setEducationPrograms(transformedPrograms)
+      setEducationPrograms(response.data || [])
     } catch (error) {
       console.error('Error fetching education programs:', error)
     } finally {
@@ -199,8 +164,8 @@ export default function NewCategoriesSection() {
       case 'properties':
         router.push('/categories/properties')
         break
-      case 'jobs':
-        router.push('/categories/jobs')
+      case 'vehicles':
+        router.push('/categories/vehicles')
         break
       case 'education':
         router.push('/categories/education')
@@ -226,21 +191,19 @@ export default function NewCategoriesSection() {
           maxItems={6}
         />
 
-        {/* Jobs Section */}
-        <PropertySection
-          title="Popular job opportunities"
-          category="jobs"
-          properties={jobs}
-          loading={jobsLoading}
-          onSeeMore={() => handleSeeMore('jobs')}
+        {/* DriveYourType Section */}
+        <VehicleSection
+          title="DriveYourType - Find Your Perfect Vehicle"
+          vehicles={vehicles}
+          loading={vehiclesLoading}
+          onSeeMore={() => handleSeeMore('vehicles')}
           maxItems={6}
         />
 
         {/* Education Section */}
-        <PropertySection
+        <EducationSection
           title="Educational programs in TRNC"
-          category="education"
-          properties={educationPrograms}
+          programs={educationPrograms}
           loading={educationLoading}
           onSeeMore={() => handleSeeMore('education')}
           maxItems={6}
