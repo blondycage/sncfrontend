@@ -79,7 +79,7 @@ export default function Footer() {
                       className="flex items-center space-x-2 text-sm text-gray-300 hover:text-primary transition-colors h-auto p-0 justify-start"
                     >
                       <Search className="h-4 w-4" />
-                      <span>Search North Cypruss</span>
+                      <span>Search North Cyprus</span>
                       <ChevronDown className="h-3 w-3" />
                     </Button>
                   </DropdownMenuTrigger>
