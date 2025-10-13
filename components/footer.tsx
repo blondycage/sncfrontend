@@ -259,13 +259,10 @@ export default function Footer() {
             <span>© {currentYear} Search North Cyprus. All rights reserved.</span>
           </div>
           <div className="flex items-center space-x-6 text-sm">
-            <Link href="/advertise" className="text-gray-400 hover:text-primary transition-colors">
-              Advertise
-            </Link>
-            <Link href="/privacy" className="text-gray-400 hover:text-primary transition-colors">
+            <Link href="/privacy-policy" className="text-gray-400 hover:text-primary transition-colors">
               Privacy Policy
             </Link>
-            <Link href="/terms" className="text-gray-400 hover:text-primary transition-colors">
+            <Link href="/terms-of-service" className="text-gray-400 hover:text-primary transition-colors">
               Terms of Service
             </Link>
             <Link href="/contact" className="text-gray-400 hover:text-primary transition-colors">

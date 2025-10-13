@@ -25,7 +25,7 @@ interface EducationalProgram {
   description: string
   detailedDescription?: string
   level: 'undergraduate' | 'undergraduate_transfer' | 'postgraduate_masters' | 'postgraduate_phd' | 'certificate' | 'diploma' | 'language_course'
-  field: string
+  field?: string
   duration: {
     value: number
     unit: 'months' | 'years' | 'semesters'
@@ -42,7 +42,16 @@ interface EducationalProgram {
     campus?: string
     address?: string
   }
-  requirements: {
+  language?: {
+    instruction?: string
+  }
+  admissionRequirements?: {
+    academicRequirements?: string[]
+    languageRequirements?: string[]
+    documentsRequired?: string[]
+    additionalRequirements?: string[]
+  }
+  requirements?: {
     academic?: {
       undergraduate?: {
         waecNeco?: boolean
@@ -80,10 +89,10 @@ interface EducationalProgram {
   }>
   featured: boolean
   tags: string[]
-  viewCount: number
-  applicationCount: number
-  views: number
-  applications: number
+  viewCount?: number
+  applicationCount?: number
+  views?: number
+  applications?: number
   features?: string[]
   curriculum?: string[]
   metadata?: {
@@ -203,8 +212,9 @@ export default function ProgramDetailPage() {
     return `${duration.value} ${duration.unit}`
   }
 
-  const formatFieldOfStudy = (field: string) => {
-    return field.split('_').map(word => 
+  const formatFieldOfStudy = (field?: string) => {
+    if (!field) return 'Various Fields'
+    return field.split('_').map(word =>
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ')
   }
@@ -315,16 +325,16 @@ export default function ProgramDetailPage() {
                           </a>
                         </div>
                       )}
-                      {program.institution.accreditation && (
+                      {program.institution?.accreditation && (
                         <div>
                           <strong className="text-sm sm:text-base block mb-2 sm:mb-3">Accreditation:</strong>
                           <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                            {typeof program.institution.accreditation === 'string' 
-                              ? (program.institution.accreditation as string).split(',').map((acc: string, index: number) => (
+                            {typeof program.institution.accreditation === 'string'
+                              ? program.institution.accreditation.split(',').map((acc: string, index: number) => (
                                   <Badge key={index} variant="outline" className="px-2 sm:px-3 py-1 text-xs sm:text-sm">{acc.trim()}</Badge>
                                 ))
                               : Array.isArray(program.institution.accreditation)
-                              ? (program.institution.accreditation as string[]).map((acc: string, index: number) => (
+                              ? program.institution.accreditation.map((acc: string, index: number) => (
                                   <Badge key={index} variant="outline" className="px-2 sm:px-3 py-1 text-xs sm:text-sm">{acc}</Badge>
                                 ))
                               : null
@@ -376,20 +386,35 @@ export default function ProgramDetailPage() {
                   </CardHeader>
                   <CardContent className="pt-0 px-4 sm:px-6">
                     <div className="space-y-4 sm:space-y-6">
-                      {/* Academic Requirements */}
-                      {program.requirements.academic && (
+                      {/* Academic Requirements - New Format */}
+                      {program.admissionRequirements?.academicRequirements && program.admissionRequirements.academicRequirements.length > 0 && (
                         <div>
                           <h4 className="font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Academic Requirements</h4>
                           <ul className="space-y-2 sm:space-y-3">
-                            {program.level.includes('undergraduate') && program.requirements.academic.undergraduate && (
+                            {program.admissionRequirements.academicRequirements.map((req, index) => (
+                              <li key={index} className="flex items-start">
+                                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-3 sm:mr-4 mt-0.5 flex-shrink-0" />
+                                <span className="text-sm sm:text-base">{req}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Academic Requirements - Old Format */}
+                      {!program.admissionRequirements && program.requirements?.academic && (
+                        <div>
+                          <h4 className="font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Academic Requirements</h4>
+                          <ul className="space-y-2 sm:space-y-3">
+                            {program.level.includes('undergraduate') && program.requirements?.academic?.undergraduate && (
                               <>
-                                {program.requirements.academic.undergraduate.waecNeco && (
+                                {program.requirements.academic.undergraduate?.waecNeco && (
                                   <li className="flex items-start">
                                     <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-3 sm:mr-4 mt-0.5 flex-shrink-0" />
                                     <span className="text-sm sm:text-base">WAEC/NECO certificate required</span>
                                   </li>
                                 )}
-                                {program.requirements.academic.undergraduate.credits && (
+                                {program.requirements.academic.undergraduate?.credits && (
                                   <li className="flex items-start">
                                     <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-3 sm:mr-4 mt-0.5 flex-shrink-0" />
                                     <span className="text-sm sm:text-base">Minimum {program.requirements.academic.undergraduate.credits} credits required</span>
@@ -397,27 +422,27 @@ export default function ProgramDetailPage() {
                                 )}
                               </>
                             )}
-                            {program.level.includes('postgraduate') && program.requirements.academic.postgraduate && (
+                            {program.level.includes('postgraduate') && program.requirements?.academic?.postgraduate && (
                               <>
-                                {program.requirements.academic.postgraduate.bachelorDegree && (
+                                {program.requirements.academic.postgraduate?.bachelorDegree && (
                                   <li className="flex items-start">
                                     <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-3 sm:mr-4 mt-0.5 flex-shrink-0" />
                                     <span className="text-sm sm:text-base">Bachelor's degree required</span>
                                   </li>
                                 )}
-                                {program.requirements.academic.postgraduate.transcript && (
+                                {program.requirements.academic.postgraduate?.transcript && (
                                   <li className="flex items-start">
                                     <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-3 sm:mr-4 mt-0.5 flex-shrink-0" />
                                     <span className="text-sm sm:text-base">Official transcript required</span>
                                   </li>
                                 )}
-                                {program.requirements.academic.postgraduate.cv && (
+                                {program.requirements.academic.postgraduate?.cv && (
                                   <li className="flex items-start">
                                     <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-3 sm:mr-4 mt-0.5 flex-shrink-0" />
                                     <span className="text-sm sm:text-base">CV/Resume required</span>
                                   </li>
                                 )}
-                                {program.requirements.academic.postgraduate.researchProposal && (
+                                {program.requirements.academic.postgraduate?.researchProposal && (
                                   <li className="flex items-start">
                                     <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-3 sm:mr-4 mt-0.5 flex-shrink-0" />
                                     <span className="text-sm sm:text-base">Research proposal required</span>
@@ -429,36 +454,51 @@ export default function ProgramDetailPage() {
                         </div>
                       )}
 
-                      {/* Document Requirements */}
-                      {program.requirements.documents && (
+                      {/* Document Requirements - New Format */}
+                      {program.admissionRequirements?.documentsRequired && program.admissionRequirements.documentsRequired.length > 0 && (
                         <div>
                           <h4 className="font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Document Requirements</h4>
                           <ul className="space-y-2 sm:space-y-3">
-                            {program.requirements.documents.passportIdDatapage && (
+                            {program.admissionRequirements.documentsRequired.map((doc, index) => (
+                              <li key={index} className="flex items-start">
+                                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-3 sm:mr-4 mt-0.5 flex-shrink-0" />
+                                <span className="text-sm sm:text-base">{doc}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Document Requirements - Old Format */}
+                      {!program.admissionRequirements && program.requirements?.documents && (
+                        <div>
+                          <h4 className="font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Document Requirements</h4>
+                          <ul className="space-y-2 sm:space-y-3">
+                            {program.requirements.documents?.passportIdDatapage && (
                               <li className="flex items-start">
                                 <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-3 sm:mr-4 mt-0.5 flex-shrink-0" />
                                 <span className="text-sm sm:text-base">Passport/ID data page</span>
                               </li>
                             )}
-                            {program.requirements.documents.passportPhotograph && (
+                            {program.requirements.documents?.passportPhotograph && (
                               <li className="flex items-start">
                                 <CheckCircle className="h-5 w-5 text-green-600 mr-4 mt-0.5 flex-shrink-0" />
                                 <span className="text-base">Passport photograph</span>
                               </li>
                             )}
-                            {program.requirements.documents.fatherName && (
+                            {program.requirements.documents?.fatherName && (
                               <li className="flex items-start">
                                 <CheckCircle className="h-5 w-5 text-green-600 mr-4 mt-0.5 flex-shrink-0" />
                                 <span className="text-base">Father's name documentation</span>
                               </li>
                             )}
-                            {program.requirements.documents.motherName && (
+                            {program.requirements.documents?.motherName && (
                               <li className="flex items-start">
                                 <CheckCircle className="h-5 w-5 text-green-600 mr-4 mt-0.5 flex-shrink-0" />
                                 <span className="text-base">Mother's name documentation</span>
                               </li>
                             )}
-                            {program.requirements.documents.highSchoolName && (
+                            {program.requirements.documents?.highSchoolName && (
                               <li className="flex items-start">
                                 <CheckCircle className="h-5 w-5 text-green-600 mr-4 mt-0.5 flex-shrink-0" />
                                 <span className="text-base">High school name documentation</span>
@@ -468,18 +508,59 @@ export default function ProgramDetailPage() {
                         </div>
                       )}
 
-                      {/* Language Requirements */}
-                      {program.requirements.language && (
+                      {/* Language Requirements - New Format */}
+                      {program.admissionRequirements?.languageRequirements && program.admissionRequirements.languageRequirements.length > 0 && (
                         <div>
                           <h4 className="font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Language Requirements</h4>
                           <ul className="space-y-2 sm:space-y-3">
-                            {program.requirements.language.englishProficiency && (
+                            {program.admissionRequirements.languageRequirements.map((lang, index) => (
+                              <li key={index} className="flex items-start">
+                                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-3 sm:mr-4 mt-0.5 flex-shrink-0" />
+                                <span className="text-sm sm:text-base">{lang}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Language of Instruction */}
+                      {program.language?.instruction && (
+                        <div>
+                          <h4 className="font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Language of Instruction</h4>
+                          <div className="flex items-start">
+                            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-3 sm:mr-4 mt-0.5 flex-shrink-0" />
+                            <span className="text-sm sm:text-base">{program.language.instruction}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Additional Requirements */}
+                      {program.admissionRequirements?.additionalRequirements && program.admissionRequirements.additionalRequirements.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Additional Requirements</h4>
+                          <ul className="space-y-2 sm:space-y-3">
+                            {program.admissionRequirements.additionalRequirements.map((req, index) => (
+                              <li key={index} className="flex items-start">
+                                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-3 sm:mr-4 mt-0.5 flex-shrink-0" />
+                                <span className="text-sm sm:text-base">{req}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Language Requirements - Old Format */}
+                      {!program.admissionRequirements && program.requirements?.language && (
+                        <div>
+                          <h4 className="font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Language Requirements</h4>
+                          <ul className="space-y-2 sm:space-y-3">
+                            {program.requirements.language?.englishProficiency && (
                               <li className="flex items-start">
                                 <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-3 sm:mr-4 mt-0.5 flex-shrink-0" />
                                 <span className="text-sm sm:text-base">English Proficiency: {program.requirements.language.englishProficiency.toUpperCase()}</span>
                               </li>
                             )}
-                            {program.requirements.language.minimumScore && (
+                            {program.requirements.language?.minimumScore && (
                               <li className="flex items-start">
                                 <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-3 sm:mr-4 mt-0.5 flex-shrink-0" />
                                 <span className="text-sm sm:text-base">Minimum Score: {program.requirements.language.minimumScore}</span>
@@ -489,8 +570,16 @@ export default function ProgramDetailPage() {
                         </div>
                       )}
 
-                      {(!program.requirements.academic && !program.requirements.documents && !program.requirements.language) && (
-                        <p className="text-muted-foreground text-sm sm:text-base">No specific requirements listed for this program.</p>
+                      {/* No Requirements Message */}
+                      {!program.admissionRequirements?.academicRequirements?.length &&
+                       !program.admissionRequirements?.documentsRequired?.length &&
+                       !program.admissionRequirements?.languageRequirements?.length &&
+                       !program.admissionRequirements?.additionalRequirements?.length &&
+                       !program.requirements?.academic &&
+                       !program.requirements?.documents &&
+                       !program.requirements?.language &&
+                       !program.language?.instruction && (
+                        <p className="text-muted-foreground text-sm sm:text-base">No specific requirements listed for this program. Please contact admissions for detailed requirements.</p>
                       )}
                     </div>
                   </CardContent>
@@ -622,14 +711,14 @@ export default function ProgramDetailPage() {
                     <Eye className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 text-purple-600 flex-shrink-0" />
                     Views
                   </span>
-                  <span className="font-semibold text-sm sm:text-base text-right">{program.viewCount}</span>
+                  <span className="font-semibold text-sm sm:text-base text-right">{program.viewCount || program.views || 0}</span>
                 </div>
                 <div className="flex items-center justify-between py-2">
                   <span className="flex items-center text-sm sm:text-base">
                     <UserPlus className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 text-orange-600 flex-shrink-0" />
                     Applications
                   </span>
-                  <span className="font-semibold text-sm sm:text-base text-right">{program.applicationCount}</span>
+                  <span className="font-semibold text-sm sm:text-base text-right">{program.applicationCount || program.applications || 0}</span>
                 </div>
                 
                 {program.tuition.scholarshipAvailable && (
@@ -670,7 +759,7 @@ export default function ProgramDetailPage() {
                   <CardTitle className="text-lg sm:text-xl">Contact Admissions</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0 px-4 sm:px-6 space-y-3 sm:space-y-4">
-                  {program.contactInfo.email && (
+                  {program.contactInfo?.email && (
                     <div className="flex items-center">
                       <Mail className="h-4 w-4 sm:h-5 sm:w-5 mr-3 sm:mr-4 text-blue-600 flex-shrink-0" />
                       <a
@@ -681,7 +770,7 @@ export default function ProgramDetailPage() {
                       </a>
                     </div>
                   )}
-                  {program.contactInfo.phone && (
+                  {program.contactInfo?.phone && (
                     <div className="flex items-center">
                       <Phone className="h-4 w-4 sm:h-5 sm:w-5 mr-3 sm:mr-4 text-green-600 flex-shrink-0" />
                       <a
@@ -692,17 +781,17 @@ export default function ProgramDetailPage() {
                       </a>
                     </div>
                   )}
-                  {program.contactInfo.admissionsOfficer && (
+                  {program.contactInfo?.admissionsOfficer && (
                     <div>
                       <h4 className="font-semibold mb-3 text-base">Admissions Officer</h4>
                       <div className="space-y-3">
-                        {program.contactInfo.admissionsOfficer.name && (
+                        {program.contactInfo.admissionsOfficer?.name && (
                           <div className="flex items-center">
                             <User className="h-5 w-5 mr-4 text-purple-600" />
                             <span className="text-base">{program.contactInfo.admissionsOfficer.name}</span>
                           </div>
                         )}
-                        {program.contactInfo.admissionsOfficer.email && (
+                        {program.contactInfo.admissionsOfficer?.email && (
                           <div className="flex items-center">
                             <Mail className="h-5 w-5 mr-4 text-blue-600" />
                             <a
@@ -713,7 +802,7 @@ export default function ProgramDetailPage() {
                             </a>
                           </div>
                         )}
-                        {program.contactInfo.admissionsOfficer.phone && (
+                        {program.contactInfo.admissionsOfficer?.phone && (
                           <div className="flex items-center">
                             <Phone className="h-5 w-5 mr-4 text-green-600" />
                             <a

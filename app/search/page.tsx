@@ -81,9 +81,10 @@ export default function SearchPage() {
   
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '')
   const [category, setCategory] = useState(searchParams.get('category') || 'all')
+  const [listingType, setListingType] = useState(searchParams.get('listingType') || 'all')
   const [location, setLocation] = useState(searchParams.get('city') || searchParams.get('location') || 'all')
   const [sortBy, setSortBy] = useState('relevance')
-  
+
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -114,6 +115,7 @@ export default function SearchPage() {
         const params = new URLSearchParams()
         if (searchQuery.trim()) params.set('search', searchQuery.trim())
         if (category !== 'all') params.set('category', category)
+        if (listingType !== 'all') params.set('listingType', listingType)
         if (location !== 'all') params.set('city', location)
 
         const newUrl = `/search${params.toString() ? `?${params.toString()}` : ''}`
@@ -124,20 +126,21 @@ export default function SearchPage() {
     return () => clearTimeout(searchTimeout)
   }, [searchQuery])
 
-  // Real-time category and location changes
+  // Real-time category, listing type, and location changes
   useEffect(() => {
     const params = new URLSearchParams()
     if (searchQuery.trim()) params.set('search', searchQuery.trim())
     if (category !== 'all') params.set('category', category)
+    if (listingType !== 'all') params.set('listingType', listingType)
     if (location !== 'all') params.set('city', location)
 
     const newUrl = `/search${params.toString() ? `?${params.toString()}` : ''}`
     const currentUrl = `/search${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
-    
+
     if (newUrl !== currentUrl) {
       router.replace(newUrl)
     }
-  }, [category, location])
+  }, [category, listingType, location])
 
   const performSearch = async () => {
     setLoading(true)
@@ -157,7 +160,7 @@ export default function SearchPage() {
 
       // Build base parameters
       const baseParams = {
-        page: '1', // Always search from page 1 for unified results
+        page: pagination.page.toString(),
         ...(searchQuery && { search: searchQuery.trim() }),
         ...(location !== 'all' && { city: location }),
         sortBy: getSortByValue(sortBy)
@@ -167,12 +170,14 @@ export default function SearchPage() {
       let listingLimit = 0, jobLimit = 0, educationLimit = 0
       const totalLimit = pagination.limit
 
+      // Determine which endpoints to query based on category filter
       if (category === 'all') {
         // Distribute results evenly when showing all categories
         listingLimit = Math.ceil(totalLimit / 3)
         jobLimit = Math.ceil(totalLimit / 3)
         educationLimit = Math.ceil(totalLimit / 3)
-      } else if (category === 'listings') {
+      } else if (category === 'rental' || category === 'sale' || category === 'service') {
+        // These are listing categories
         listingLimit = totalLimit
       } else if (category === 'jobs') {
         jobLimit = totalLimit
@@ -180,10 +185,12 @@ export default function SearchPage() {
         educationLimit = totalLimit
       }
 
-      // Build endpoint-specific parameters
+      // Build endpoint-specific parameters for listings
       const listingParams = new URLSearchParams({
         ...baseParams,
-        limit: listingLimit.toString()
+        limit: listingLimit.toString(),
+        ...(category !== 'all' && (category === 'rental' || category === 'sale' || category === 'service') && { category }),
+        ...(listingType !== 'all' && { listingType })
       })
 
       const jobParams = new URLSearchParams({
@@ -236,6 +243,10 @@ export default function SearchPage() {
 
       const searchResults: SearchResult[] = []
 
+      // Track pagination info
+      let totalPages = 0
+      let totalCount = 0
+
       // Process listings results
       if (listingsRes.ok && 'json' in listingsRes) {
         const listingsData = await (listingsRes as Response).json()
@@ -258,6 +269,12 @@ export default function SearchPage() {
               views: listing.views
             })
           })
+
+          // Extract pagination info if available
+          if (listingsData.pagination) {
+            totalPages = Math.max(totalPages, listingsData.pagination.pages || 0)
+            totalCount += listingsData.pagination.total || 0
+          }
         }
       }
 
@@ -286,6 +303,12 @@ export default function SearchPage() {
               applicationDeadline: job.applicationDeadline
             })
           })
+
+          // Extract pagination info if available
+          if (jobsData.pagination) {
+            totalPages = Math.max(totalPages, jobsData.pagination.pages || 0)
+            totalCount += jobsData.pagination.total || 0
+          }
         }
       }
 
@@ -314,12 +337,25 @@ export default function SearchPage() {
               duration: program.duration
             })
           })
+
+          // Extract pagination info if available
+          if (educationData.pagination) {
+            totalPages = Math.max(totalPages, educationData.pagination.pages || 0)
+            totalCount += educationData.pagination.total || 0
+          }
         }
       }
 
       // Store unsorted results and let the useEffect handle sorting
       setUnsortedResults(searchResults)
       setTotalResults(searchResults.length)
+
+      // Update pagination state
+      setPagination(prev => ({
+        ...prev,
+        total: totalCount || searchResults.length,
+        pages: totalPages || Math.ceil((totalCount || searchResults.length) / prev.limit)
+      }))
       
       console.log('✅ Search completed:', {
         totalResults: searchResults.length,
@@ -452,14 +488,20 @@ export default function SearchPage() {
 
   const handleNewSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     const params = new URLSearchParams()
     if (searchQuery.trim()) params.set('search', searchQuery.trim())
     if (category !== 'all') params.set('category', category)
+    if (listingType !== 'all') params.set('listingType', listingType)
     if (location !== 'all') params.set('city', location)  // Use 'city' parameter
 
     const newUrl = `/search${params.toString() ? `?${params.toString()}` : ''}`
     router.push(newUrl)
+  }
+
+  const handlePageChange = (newPage: number) => {
+    setPagination(prev => ({ ...prev, page: newPage }))
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const getResultUrl = (result: SearchResult) => {
@@ -526,7 +568,7 @@ export default function SearchPage() {
       <section className="bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 shadow-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <form onSubmit={handleNewSearch}>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
               <div>
                 <label className="text-sm font-medium text-white mb-2 block">Search Query</label>
                 <Input
@@ -535,7 +577,7 @@ export default function SearchPage() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium text-white mb-2 block">Category</label>
                 <Select value={category} onValueChange={setCategory}>
@@ -544,13 +586,30 @@ export default function SearchPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
-                    <SelectItem value="listings">Listings</SelectItem>
+                    <SelectItem value="rental">Rentals</SelectItem>
+                    <SelectItem value="sale">For Sale</SelectItem>
+                    <SelectItem value="service">Services</SelectItem>
                     <SelectItem value="jobs">Jobs</SelectItem>
                     <SelectItem value="education">Education</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              
+
+              <div>
+                <label className="text-sm font-medium text-white mb-2 block">Listing Type</label>
+                <Select value={listingType} onValueChange={setListingType}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="real_estate">Real Estate</SelectItem>
+                    <SelectItem value="vehicle">Vehicles</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div>
                 <label className="text-sm font-medium text-white mb-2 block">Location</label>
                 <Select value={location} onValueChange={setLocation}>
@@ -581,7 +640,7 @@ export default function SearchPage() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
                 <Search className="h-4 w-4 mr-2" />
                 Search
@@ -656,7 +715,8 @@ export default function SearchPage() {
 
         {/* Results Grid */}
         {!loading && results.length > 0 && (
-          <div className="bg-white/30 backdrop-blur-sm rounded-xl p-6">
+          <>
+          <div className="bg-white/30 backdrop-blur-sm rounded-xl p-6 mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {results.map((result) => (
               <Card key={result._id} className="hover:shadow-lg transition-shadow overflow-hidden">
@@ -822,6 +882,54 @@ export default function SearchPage() {
             ))}
             </div>
           </div>
+
+          {/* Pagination Controls */}
+          {pagination.pages > 1 && (
+            <div className="flex justify-center items-center space-x-2 mt-8">
+              <Button
+                variant="outline"
+                onClick={() => handlePageChange(pagination.page - 1)}
+                disabled={pagination.page === 1}
+              >
+                Previous
+              </Button>
+
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: Math.min(pagination.pages, 7) }, (_, i) => {
+                  let pageNum
+                  if (pagination.pages <= 7) {
+                    pageNum = i + 1
+                  } else if (pagination.page <= 4) {
+                    pageNum = i + 1
+                  } else if (pagination.page >= pagination.pages - 3) {
+                    pageNum = pagination.pages - 6 + i
+                  } else {
+                    pageNum = pagination.page - 3 + i
+                  }
+
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={pagination.page === pageNum ? "default" : "outline"}
+                      onClick={() => handlePageChange(pageNum)}
+                      className="w-10"
+                    >
+                      {pageNum}
+                    </Button>
+                  )
+                })}
+              </div>
+
+              <Button
+                variant="outline"
+                onClick={() => handlePageChange(pagination.page + 1)}
+                disabled={pagination.page === pagination.pages}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+          </>
         )}
 
         {/* No Results */}
@@ -838,6 +946,7 @@ export default function SearchPage() {
               onClick={() => {
                 setSearchQuery('')
                 setCategory('all')
+                setListingType('all')
                 setLocation('all')
                 router.push('/search')
               }}
