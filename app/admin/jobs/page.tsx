@@ -279,7 +279,7 @@ export default function AdminJobsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-red-50/30 p-3 sm:p-4 lg:p-6">
+      <div className="min-h-screen bg-gradient-soft p-3 sm:p-4 lg:p-6">
         <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Job Management</h1>
@@ -291,7 +291,7 @@ export default function AdminJobsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-red-50/30 p-3 sm:p-4 lg:p-6">
+    <div className="min-h-screen bg-gradient-soft p-3 sm:p-4 lg:p-6">
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>

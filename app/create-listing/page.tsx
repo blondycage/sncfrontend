@@ -396,7 +396,7 @@ if(user?.role === "admin"){
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-blue">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6">
             <div className="text-center">
@@ -414,7 +414,7 @@ if(user?.role === "admin"){
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-blue py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -905,7 +905,7 @@ if(user?.role === "admin"){
                       <Label>Selected Files</Label>
                       <div className="space-y-2">
                         {selectedFiles.map((file, index) => (
-                          <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                          <div key={index} className="flex items-center justify-between p-2 bg-gradient-blue rounded">
                             <span className="text-sm">{file.name}</span>
                             <Button
                               type="button"
@@ -942,7 +942,7 @@ if(user?.role === "admin"){
                       <Label>Image URLs</Label>
                       <div className="space-y-2">
                         {formData.image_urls.map((url, index) => (
-                          <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                          <div key={index} className="flex items-center justify-between p-2 bg-gradient-blue rounded">
                             <span className="text-sm truncate">{url}</span>
                             <Button
                               type="button"

@@ -82,7 +82,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-purple-50/20">
+    <div className="min-h-screen bg-gradient-purple">
       {/* Header */}
       <section className="bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 text-white py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">

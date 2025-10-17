@@ -79,7 +79,7 @@ export default function HomeSponsoredSection() {
           <Link key={`${item.promotionId}-${item.id}`} href={`/listings/${item.id}`} onClick={async (e) => {
             try { await promotionsApi.trackClick(item.promotionId) } catch {}
           }}>
-            <div className="group cursor-pointer rounded-lg border border-blue-200/40 overflow-hidden bg-white hover:shadow-lg hover:border-primary/50 transition-all duration-300 h-full">
+            <div className="group cursor-pointer rounded-lg border border-blue-200/40 overflow-hidden bg-white/95 backdrop-blur-sm hover:shadow-lg hover:border-primary/50 transition-all duration-300 h-full">
               <div className="relative h-44 bg-gray-100">
                 {item.primaryImage ? (
                   <Image src={item.primaryImage} alt={item.title} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 33vw" />

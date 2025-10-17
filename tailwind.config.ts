@@ -63,6 +63,30 @@ const config: Config = {
   				800: 'hsl(0 84% 20%)',
   				900: 'hsl(0 84% 10%)'
   			},
+  			purple: {
+  				50: 'hsl(270 70% 97%)',
+  				100: 'hsl(270 60% 93%)',
+  				200: 'hsl(270 55% 86%)',
+  				300: 'hsl(270 50% 75%)',
+  				400: 'hsl(270 45% 65%)',
+  				500: 'hsl(270 50% 55%)',
+  				600: 'hsl(270 55% 45%)',
+  				700: 'hsl(270 60% 35%)',
+  				800: 'hsl(270 65% 25%)',
+  				900: 'hsl(270 70% 15%)'
+  			},
+  			teal: {
+  				50: 'hsl(180 60% 97%)',
+  				100: 'hsl(180 55% 93%)',
+  				200: 'hsl(180 50% 85%)',
+  				300: 'hsl(180 45% 75%)',
+  				400: 'hsl(180 40% 65%)',
+  				500: 'hsl(180 45% 50%)',
+  				600: 'hsl(180 50% 40%)',
+  				700: 'hsl(180 55% 30%)',
+  				800: 'hsl(180 60% 20%)',
+  				900: 'hsl(180 65% 10%)'
+  			},
   			muted: {
   				DEFAULT: 'hsl(var(--muted))',
   				foreground: 'hsl(var(--muted-foreground))'
@@ -95,6 +119,15 @@ const config: Config = {
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
   			}
+  		},
+  		backgroundImage: {
+  			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+  			'gradient-soft': 'linear-gradient(135deg, hsl(220 50% 95%) 0%, hsl(240 60% 92%) 50%, hsl(260 55% 90%) 100%)',
+  			'gradient-blue': 'linear-gradient(135deg, hsl(210 100% 92%) 0%, hsl(220 85% 88%) 100%)',
+  			'gradient-purple': 'linear-gradient(135deg, hsl(250 70% 92%) 0%, hsl(270 60% 88%) 100%)',
+  			'gradient-teal': 'linear-gradient(135deg, hsl(180 65% 92%) 0%, hsl(200 60% 88%) 100%)',
+  			'gradient-orange': 'linear-gradient(135deg, hsl(30 90% 92%) 0%, hsl(45 85% 88%) 100%)',
+  			'gradient-green': 'linear-gradient(135deg, hsl(140 60% 92%) 0%, hsl(160 55% 88%) 100%)',
   		},
   		borderRadius: {
   			lg: 'var(--radius)',

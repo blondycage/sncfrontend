@@ -518,7 +518,7 @@ export default function ListingDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-blue">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading listing...</p>
@@ -529,7 +529,7 @@ export default function ListingDetailPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-blue">
         <Card className="w-full max-w-md">
           <CardContent className="p-6 text-center">
             <div className="text-red-500 mb-4">
@@ -553,7 +553,7 @@ export default function ListingDetailPage() {
   const CategoryIcon = getCategoryIcon(listing.category);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-blue">
       <ImageModal />
       
       {/* Header */}
@@ -928,7 +928,7 @@ export default function ListingDetailPage() {
                         </DialogHeader>
                         
                         <div className="space-y-4">
-                          <div className="bg-gray-50 p-3 rounded-lg">
+                          <div className="bg-gradient-blue p-3 rounded-lg">
                             <h4 className="font-semibold text-sm">{listing?.title}</h4>
                             <p className="text-sm text-muted-foreground">
                               Owner: {listing?.owner?.firstName} {listing?.owner?.lastName}

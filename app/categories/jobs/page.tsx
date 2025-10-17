@@ -187,7 +187,7 @@ export default function JobsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/20 via-white to-green-50/10 py-8">
+    <div className="min-h-screen bg-gradient-teal py-8">
       {/* Header Section */}
       <section className="bg-gradient-to-r from-blue-600 via-green-600 to-teal-600 py-16 mb-12">
         <div className="container mx-auto px-6 sm:px-8 lg:px-12">

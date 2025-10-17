@@ -67,7 +67,7 @@ export default function SearchSection() {
         <div className="mx-auto max-w-5xl">
           {/* Mobile/Tablet Layout (stacked) */}
           <div className="md:hidden">
-            <div className="bg-white rounded-2xl shadow-xl border border-blue-200/50 p-4 space-y-4">
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-200/50 p-4 space-y-4">
               {/* What are you searching for - Mobile */}
               <div className="w-full">
                 <label className="block text-xs font-bold text-gray-900 mb-2">What are you searching for?</label>
@@ -141,7 +141,7 @@ export default function SearchSection() {
 
           {/* Desktop Layout (horizontal) */}
           <div className="hidden md:block">
-            <div className="flex items-center bg-white rounded-full shadow-xl border border-blue-200/50 p-2 lg:p-3">
+            <div className="flex items-center bg-white/95 backdrop-blur-sm rounded-full shadow-xl border border-blue-200/50 p-2 lg:p-3">
               {/* What are you searching for - Desktop */}
               <div className="flex-1 px-4 lg:px-6 py-3 border-r border-blue-200/70 cursor-pointer hover:bg-gray-50 rounded-l-full">
                 <label className="block text-xs font-bold text-gray-900 mb-1">What are you searching for?</label>

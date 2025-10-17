@@ -179,7 +179,7 @@ export default function NewCategoriesSection() {
   }
 
   return (
-    <div className="bg-white">
+    <div>
       <div className="container mx-auto py-8">
         {/* Properties Section */}
         <PropertySection

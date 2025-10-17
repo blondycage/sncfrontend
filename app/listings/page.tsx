@@ -232,7 +232,7 @@ export default function ListingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50">
+    <div className="min-h-screen bg-gradient-soft">
       <div className="container mx-auto px-4 py-8">
       {/* Sponsored listings */}
       {/* Sponsored listings removed from listings page as requested */}

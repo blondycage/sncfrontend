@@ -216,7 +216,7 @@ export default function DormitoryDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-blue flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
@@ -224,7 +224,7 @@ export default function DormitoryDetailPage() {
 
   if (error || !dormitory) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-blue flex items-center justify-center">
         <Card className="p-8 text-center max-w-md">
           <Hotel className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h1 className="text-xl font-semibold text-gray-900 mb-2">
@@ -243,7 +243,7 @@ export default function DormitoryDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-blue">
       <div className="container px-4 py-8">
         {/* Back Button */}
         <Button
@@ -358,7 +358,7 @@ export default function DormitoryDetailPage() {
                       className={`p-4 rounded-lg border-2 transition-colors ${
                         variant.available
                           ? 'border-green-200 bg-green-50'
-                          : 'border-gray-200 bg-gray-50'
+                          : 'border-gray-200 bg-gradient-blue'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">

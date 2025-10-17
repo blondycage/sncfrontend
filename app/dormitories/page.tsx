@@ -399,7 +399,7 @@ export default function DormitoriesPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50">
+    <div className="min-h-screen bg-gradient-soft">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 shadow-lg border-b">
         <div className="container px-4 py-8">

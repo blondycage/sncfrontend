@@ -180,7 +180,7 @@ export default function ServicesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/20 via-white to-purple-50/10">
+    <div className="min-h-screen bg-gradient-purple">
       {/* Header Section */}
       <section className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">

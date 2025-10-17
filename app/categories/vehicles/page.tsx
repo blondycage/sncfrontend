@@ -178,7 +178,7 @@ export default function VehiclesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/20 via-white to-green-50/10">
+    <div className="min-h-screen bg-gradient-teal">
       {/* Header Section */}
       <section className="bg-gradient-to-r from-blue-600 via-green-600 to-teal-600 py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">

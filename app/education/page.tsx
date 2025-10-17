@@ -198,7 +198,7 @@ export default function EducationPage() {
   const cityDisplayName = cityFromUrl || 'All Cities'
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50">
+    <div className="min-h-screen bg-gradient-teal">
       {/* Hero Section */}
       <section className="relative h-[40vh] overflow-hidden bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800">
         <div className="absolute inset-0 bg-black/40" />

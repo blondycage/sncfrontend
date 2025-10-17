@@ -75,7 +75,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-blue py-8">
       <div className="max-w-4xl mx-auto px-4">
         
         {/* Header */}
