@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/components/ui/use-toast';
+import { ShareDropdown } from '@/components/share-dropdown';
 import Image from 'next/image';
 
 interface RoomVariant {
@@ -531,10 +532,12 @@ export default function DormitoryDetailPage() {
             {/* Share */}
             <Card>
               <CardContent className="p-4">
-                <Button variant="outline" className="w-full">
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Share this dormitory
-                </Button>
+                <ShareDropdown
+                  title={dormitory?.name || 'Dormitory'}
+                  description={dormitory?.description || ''}
+                  variant="outline"
+                  className="w-full"
+                />
               </CardContent>
             </Card>
           </div>

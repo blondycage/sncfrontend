@@ -36,6 +36,7 @@ import { useToast } from "@/components/ui/toast";
 import PromoteModal from "@/components/promotions/PromoteModal";
 import { FavoriteButton } from "@/components/ui/favorite-button";
 import { ReportButton } from "@/components/ui/report-button";
+import { ShareDropdown } from "@/components/share-dropdown";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -223,23 +224,6 @@ export default function ListingDetailPage() {
       });
     } finally {
       setActionLoading(null);
-    }
-  };
-
-  const handleShare = async () => {
-    try {
-      await navigator.share({
-        title: listing?.title,
-        text: listing?.description,
-        url: window.location.href
-      });
-    } catch (error) {
-      // Fallback to copying URL
-      navigator.clipboard.writeText(window.location.href);
-      toast({
-        title: "Link Copied",
-        description: "Listing link copied to clipboard"
-      });
     }
   };
 
@@ -577,11 +561,13 @@ export default function ListingDetailPage() {
                 isFavorited={listing.isFavorited || false}
                 size="sm"
               />
-              
-              <Button variant="outline" size="sm" onClick={handleShare}>
-                <Share2 className="h-4 w-4 mr-1" />
-                Share
-              </Button>
+
+              <ShareDropdown
+                title={listing.title}
+                description={listing.description}
+                variant="outline"
+                size="sm"
+              />
 
               {!listing.isOwner && (
                 <ReportButton
@@ -630,9 +616,12 @@ export default function ListingDetailPage() {
                 isFavorited={listing.isFavorited || false}
                 size="sm"
               />
-              <Button variant="outline" size="sm" onClick={handleShare}>
-                <Share2 className="h-4 w-4" />
-              </Button>
+              <ShareDropdown
+                title={listing.title}
+                description={listing.description}
+                variant="outline"
+                size="sm"
+              />
               {listing.isOwner && (
                 <Button
                   variant="default"

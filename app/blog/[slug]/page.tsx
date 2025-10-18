@@ -23,6 +23,7 @@ import {
   Star
 } from 'lucide-react';
 import apiRequest from '@/lib/api';
+import { ShareDropdown } from '@/components/share-dropdown';
 
 interface BlogPost {
   _id: string;
@@ -185,30 +186,6 @@ export default function BlogPostPage() {
     }
   };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: blog?.title,
-          text: blog?.excerpt,
-          url: window.location.href
-        });
-      } catch (error) {
-        // Fallback to clipboard
-        copyToClipboard();
-      }
-    } else {
-      copyToClipboard();
-    }
-  };
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast({
-      title: 'Link Copied',
-      description: 'Blog post link copied to clipboard'
-    });
-  };
 
   // Comment submission removed - display only
 
@@ -372,10 +349,12 @@ export default function BlogPostPage() {
                   <Heart className={`h-4 w-4 ${liked ? 'fill-current' : ''}`} />
                   <span>{likeCount}</span>
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleShare}>
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share
-                </Button>
+                <ShareDropdown
+                  title={blog?.title || ''}
+                  description={blog?.excerpt || ''}
+                  variant="outline"
+                  size="sm"
+                />
               </div>
               <div className="flex items-center space-x-2 text-sm text-gray-600">
                 <MessageSquare className="h-4 w-4" />
