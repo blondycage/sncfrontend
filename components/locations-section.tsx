@@ -20,8 +20,8 @@ export default function LocationsSection() {
     },
     {
       name: "Iskele",
-      image: "/karpaz.jpeg",
-      href: "/locations/karpaz",
+      image: "https://cf.bstatic.com/xdata/images/hotel/max1024x768/477274246.jpg?k=0cc76ec030b913b8e81644134841dfe976a39584b5f049cbe046e61dcebbfe79&o=",
+      href: "/locations/iskele",
     },
   ]
 

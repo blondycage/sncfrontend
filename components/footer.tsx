@@ -27,15 +27,15 @@ export default function Footer() {
   return (
     <footer className="border-t bg-gradient-to-b from-gray-900 to-black pt-12 pb-6">
       <div className="container px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
           {/* Company Info */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center">
-              <Image 
-                src="/placeholder-logo.png" 
-                alt="SNC Logo" 
-                width={120} 
-                height={40}
+              <Image
+                src="/images/logo.jpeg"
+                alt="SNC Logo"
+                width={120}
+                height={60}
                 className="h-8 w-auto"
               />
             </Link>
@@ -43,22 +43,22 @@ export default function Footer() {
               Your ultimate search platform for everything in North Cyprus. Find properties, jobs, services, and educational programs.
             </p>
             <div className="flex items-center space-x-4">
-              <Link 
-                href="https://www.instagram.com/searchnorthcyprus?igsh=NXlkeXAwZDN4anF4" 
+              <Link
+                href="https://www.instagram.com/searchnorthcyprus?igsh=NXlkeXAwZDN4anF4"
                 aria-label="Instagram"
                 className="text-gray-400 hover:text-primary transition-colors"
               >
                 <Instagram className="h-5 w-5" />
               </Link>
-              <Link 
-                href="https://t.me/searchnorthcyprus" 
+              <Link
+                href="https://t.me/searchnorthcyprus"
                 aria-label="Telegram"
                 className="text-gray-400 hover:text-primary transition-colors"
               >
                 <Send className="h-5 w-5" />
               </Link>
-              <Link 
-                href="https://www.facebook.com/share/1a4bjuJ6iR/?mibextid=wwXIfr" 
+              <Link
+                href="https://www.facebook.com/share/1a4bjuJ6iR/?mibextid=wwXIfr"
                 aria-label="Facebook"
                 className="text-gray-400 hover:text-primary transition-colors"
               >
@@ -218,32 +218,32 @@ export default function Footer() {
             <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Categories</h3>
             <ul className="space-y-2">
               <li>
-                <Link 
-                  href="/categories/properties" 
+                <Link
+                  href="/categories/properties"
                   className="text-sm text-gray-300 hover:text-primary transition-colors"
                 >
                   Properties
                 </Link>
               </li>
               <li>
-                <Link 
-                  href="/categories/jobs" 
+                <Link
+                  href="/categories/jobs"
                   className="text-sm text-gray-300 hover:text-primary transition-colors"
                 >
                   Job Opportunities
                 </Link>
               </li>
               <li>
-                <Link 
-                  href="/categories/education" 
+                <Link
+                  href="/categories/education"
                   className="text-sm text-gray-300 hover:text-primary transition-colors"
                 >
                   Education
                 </Link>
               </li>
               <li>
-                <Link 
-                  href="/categories/services" 
+                <Link
+                  href="/categories/services"
                   className="text-sm text-gray-300 hover:text-primary transition-colors"
                 >
                   Services
@@ -251,23 +251,43 @@ export default function Footer() {
               </li>
             </ul>
           </div>
+
+          {/* Legal */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Legal</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/privacy-policy"
+                  className="text-sm text-gray-300 hover:text-primary transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/terms-of-service"
+                  className="text-sm text-gray-300 hover:text-primary transition-colors"
+                >
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/contact"
+                  className="text-sm text-gray-300 hover:text-primary transition-colors"
+                >
+                  Contact
+                </Link>
+              </li>
+            </ul>
+          </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t pt-6 flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
-          <div className="flex items-center space-x-4 text-sm text-gray-400">
+        <div className="border-t border-gray-800 mt-6 pt-6">
+          <div className="flex items-center justify-center text-sm text-gray-400">
             <span>© {currentYear} Search North Cyprus. All rights reserved.</span>
-          </div>
-          <div className="flex items-center space-x-6 text-sm">
-            <Link href="/privacy-policy" className="text-gray-400 hover:text-primary transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="/terms-of-service" className="text-gray-400 hover:text-primary transition-colors">
-              Terms of Service
-            </Link>
-            <Link href="/contact" className="text-gray-400 hover:text-primary transition-colors">
-              Contact
-            </Link>
           </div>
         </div>
       </div>

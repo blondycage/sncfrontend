@@ -76,10 +76,19 @@ export default function KarpazPage() {
   }, [])
 
   const formatPrice = (listing: Listing) => {
+    const currencySymbols: Record<string, string> = {
+      USD: '$',
+      EUR: '€',
+      GBP: '£',
+      TRY: '₺'
+    };
+    const symbol = currencySymbols[listing.currency || 'USD'] || '$';
+    const formattedPrice = Number(listing.price || 0).toLocaleString();
+
     if (listing.pricing_frequency && listing.pricing_frequency !== 'fixed') {
-      return `$${Number(listing.price || 0).toLocaleString()}/${listing.pricing_frequency}`
+      return `${symbol}${formattedPrice}/${listing.pricing_frequency}`;
     }
-    return `$${Number(listing.price || 0).toLocaleString()}`
+    return `${symbol}${formattedPrice}`;
   }
 
   const formatJobSalary = (job: Job) => {
@@ -95,7 +104,7 @@ export default function KarpazPage() {
   return (
     <div>
       <div className="relative h-[300px] w-full overflow-hidden">
-        <img src="/karpaz.jpeg" alt="Karpaz Peninsula" className="h-full w-full object-cover" />
+        <img src="https://cf.bstatic.com/xdata/images/hotel/max1024x768/477274246.jpg?k=0cc76ec030b913b8e81644134841dfe976a39584b5f049cbe046e61dcebbfe79&o=" alt="Karpaz Peninsula" className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-0 left-0 p-8">
           <h1 className="text-4xl font-bold text-white">Iskele</h1>

@@ -483,7 +483,13 @@ export default function AdminListingDetailPage() {
                     <div className="flex items-center gap-2">
                       <DollarSign className="h-4 w-4 text-gray-500" />
                       <span className="text-sm text-gray-500">Price:</span>
-                      <span className="font-medium">${listing.price} / {listing.pricing_frequency}</span>
+                      <span className="font-medium">
+                        {(() => {
+                          const currencySymbols: Record<string, string> = { USD: '$', EUR: '€', GBP: '£', TRY: '₺' };
+                          const symbol = currencySymbols[listing.currency || 'USD'] || '$';
+                          return `${symbol}${listing.price} / ${listing.pricing_frequency}`;
+                        })()}
+                      </span>
                     </div>
                   </div>
                 </>

@@ -135,10 +135,19 @@ export default function DormitoriesPage() {
       setLoading(true);
       const queryParams = new URLSearchParams({
         page: page.toString(),
-        limit: "12",
-        ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v && v !== 'all'))
+        limit: "12"
       });
 
+      // Add filters, excluding 'all' values and empty strings
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value && value !== 'all' && value !== '') {
+          queryParams.append(key, value);
+        }
+      });
+
+      console.log('🔍 Fetching dormitories with filters:', filters);
+      console.log('🔍 Query params:', queryParams.toString());
+      console.log('🔍 University filter value:', filters.university);
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/dormitories?${queryParams}`);
 
       if (!response.ok) {
@@ -153,7 +162,7 @@ export default function DormitoriesPage() {
       toast({
         title: "Error",
         description: "Failed to fetch dormitories. Please try again.",
-        variant: "destructive",
+        variant: "error",
       });
     } finally {
       setLoading(false);

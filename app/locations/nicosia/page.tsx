@@ -74,10 +74,19 @@ export default function NicosiaPage() {
   }, [])
 
   const formatPrice = (listing: Listing) => {
+    const currencySymbols: Record<string, string> = {
+      USD: '$',
+      EUR: '€',
+      GBP: '£',
+      TRY: '₺'
+    };
+    const symbol = currencySymbols[listing.currency || 'USD'] || '$';
+    const formattedPrice = Number(listing.price || 0).toLocaleString();
+
     if (listing.pricing_frequency && listing.pricing_frequency !== 'fixed') {
-      return `$${Number(listing.price || 0).toLocaleString()}/${listing.pricing_frequency}`
+      return `${symbol}${formattedPrice}/${listing.pricing_frequency}`;
     }
-    return `$${Number(listing.price || 0).toLocaleString()}`
+    return `${symbol}${formattedPrice}`;
   }
 
   const formatJobSalary = (job: Job) => {

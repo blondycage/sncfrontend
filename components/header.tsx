@@ -80,10 +80,10 @@ export default function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <Image 
-            src="/placeholder-logo.png" 
+            src="/images/logo.jpeg" 
             alt="SNC Logo" 
             width={120} 
-            height={40}
+            height={60}
             className="h-8 w-auto"
             priority
           />
