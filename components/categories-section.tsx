@@ -9,6 +9,11 @@ export default function CategoriesSection() {
       href: "/categories/properties",
     },
     {
+      title: "Home Appliances",
+      image: "/images/home-appliances-category.jpg",
+      href: "/categories/home-appliances",
+    },
+    {
       title: "Education & Scholarships",
       image: "/images/education-category.jpg",
       href: "/categories/education",

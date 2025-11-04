@@ -38,6 +38,7 @@ interface ListingFormData {
   price: string;
   currency: string;
   pricing_frequency: string;
+  status?: string;
   image_urls: string[];
   video_url?: string;
   contact: {
@@ -94,6 +95,15 @@ const PRICING_FREQUENCIES = {
   ]
 };
 
+const LISTING_STATUSES = [
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' },
+  { value: 'sold', label: 'Sold' },
+  { value: 'rented', label: 'Rented' },
+  { value: 'unavailable', label: 'Unavailable' },
+  { value: 'available_soon', label: 'Available Soon' }
+];
+
 // Suggested tags for each listing type
 const SUGGESTED_TAGS = {
   real_estate: ['apartment', 'house', 'studio', 'furnished', 'unfurnished', 'balcony', 'parking', 'central', 'beachfront', 'mountain view'],
@@ -134,6 +144,7 @@ export default function CreateListingPage() {
     price: '',
     currency: 'USD',
     pricing_frequency: '',
+    status: 'active',
     image_urls: [],
     video_url: '',
     contact: {
@@ -336,6 +347,7 @@ export default function CreateListingPage() {
         price: parseFloat(formData.price),
         currency: formData.currency,
         pricing_frequency: formData.pricing_frequency,
+        status: formData.status || 'active',
         image_urls: allImageUrls,
         contact: formData.contact,
         location: formData.location
@@ -744,6 +756,28 @@ if(user?.role === "admin"){
                         {PRICING_FREQUENCIES[formData.category as keyof typeof PRICING_FREQUENCIES]?.map((freq) => (
                           <SelectItem key={freq.value} value={freq.value}>
                             {freq.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {/* Listing Status (Admin Only) */}
+                {user?.role === 'admin' && (
+                  <div className="space-y-2">
+                    <Label>Listing Status</Label>
+                    <Select
+                      value={formData.status || 'active'}
+                      onValueChange={(value) => handleInputChange('status', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LISTING_STATUSES.map((status) => (
+                          <SelectItem key={status.value} value={status.value}>
+                            {status.label}
                           </SelectItem>
                         ))}
                       </SelectContent>

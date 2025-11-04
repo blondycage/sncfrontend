@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 interface ListingFormData {
   title: string;
   description: string;
-  listingType: 'real_estate' | 'vehicle' | 'other';
+  listingType: 'real_estate' | 'vehicle' | 'other' | 'home_appliances';
   category: 'rental' | 'sale' | 'service';
   tags: string[];
   price: number;
@@ -38,6 +38,7 @@ interface ListingFormData {
 const LISTING_TYPES = [
   { value: 'real_estate', label: 'Real Estate' },
   { value: 'vehicle', label: 'Vehicle' },
+  { value: 'home_appliances', label: 'Home Appliances' },
   { value: 'other', label: 'Other' }
 ];
 
@@ -74,6 +75,7 @@ const PRICING_FREQUENCIES = {
 const SUGGESTED_TAGS = {
   real_estate: ['apartment', 'house', 'studio', 'furnished', 'unfurnished', 'balcony', 'parking', 'central', 'beachfront', 'mountain view'],
   vehicle: ['automatic', 'manual', 'petrol', 'diesel', 'electric', 'suv', 'sedan', 'hatchback', 'motorcycle', 'bicycle'],
+  home_appliances: ['refrigerator', 'washing machine', 'dishwasher', 'microwave', 'oven', 'stove', 'air conditioner', 'television', 'sound system', 'kitchen'],
   other: ['electronics', 'furniture', 'clothing', 'books', 'sports', 'tools', 'kitchen', 'garden', 'antique', 'handmade']
 };
 
@@ -104,7 +106,7 @@ export function CreateListingForm() {
   const [formData, setFormData] = useState<ListingFormData>({
     title: '',
     description: '',
-    listingType: 'other',
+    listingType: 'home_appliances',
     category: 'sale',
     tags: [],
     price: 0,
@@ -360,7 +362,7 @@ export function CreateListingForm() {
               <Label htmlFor="listingType">Listing Type *</Label>
               <Select 
                 value={formData.listingType} 
-                onValueChange={(value) => handleChange('listingType', value as 'real_estate' | 'vehicle' | 'other')}
+                onValueChange={(value) => handleChange('listingType', value as 'real_estate' | 'vehicle' | 'other' | 'home_appliances')}
               >
                 <SelectTrigger className={errors.listingType ? 'border-red-500' : ''}>
                   <SelectValue placeholder="Select listing type" />

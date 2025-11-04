@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { PropertySection } from "@/components/property-section"
 import { VehicleSection } from "@/components/vehicle-section"
 import { EducationSection } from "@/components/education-section"
+import { HomeAppliancesSection } from "@/components/home-appliances-section"
 import { categoriesApi, listingsApi } from "@/lib/api"
 
 interface Property {
@@ -77,6 +78,26 @@ interface EducationProgram {
   applicationCount?: number
 }
 
+interface HomeAppliance {
+  _id: string
+  title: string
+  description: string
+  price: number
+  currency: string
+  pricing_frequency: string
+  image_urls: string[]
+  primaryImage?: string
+  location?: {
+    city: string
+    region?: string
+  }
+  category: string
+  listingType: string
+  views?: number
+  tags?: string[]
+  createdAt: string
+}
+
 export default function NewCategoriesSection() {
   const router = useRouter()
   
@@ -85,18 +106,21 @@ export default function NewCategoriesSection() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [educationPrograms, setEducationPrograms] = useState<EducationProgram[]>([])
   const [services, setServices] = useState<Property[]>([])
+  const [homeAppliances, setHomeAppliances] = useState<HomeAppliance[]>([])
 
   // Loading states
   const [propertiesLoading, setPropertiesLoading] = useState(true)
   const [vehiclesLoading, setVehiclesLoading] = useState(true)
   const [educationLoading, setEducationLoading] = useState(true)
   const [servicesLoading, setServicesLoading] = useState(true)
+  const [homeAppliancesLoading, setHomeAppliancesLoading] = useState(true)
 
   useEffect(() => {
     fetchProperties()
     fetchVehicles()
     fetchEducationPrograms()
     fetchServices()
+    fetchHomeAppliances()
   }, [])
 
   const fetchProperties = async () => {
@@ -159,6 +183,21 @@ export default function NewCategoriesSection() {
     }
   }
 
+  const fetchHomeAppliances = async () => {
+    try {
+      const response = await listingsApi.getListings({
+        listingType: 'home_appliances',
+        limit: 6,
+        sortBy: 'newest'
+      })
+      setHomeAppliances(response.data || [])
+    } catch (error) {
+      console.error('Error fetching home appliances:', error)
+    } finally {
+      setHomeAppliancesLoading(false)
+    }
+  }
+
   const handleSeeMore = (category: string) => {
     switch (category) {
       case 'properties':
@@ -172,6 +211,9 @@ export default function NewCategoriesSection() {
         break
       case 'services':
         router.push('/categories/services')
+        break
+      case 'home-appliances':
+        router.push('/categories/home-appliances')
         break
       default:
         router.push('/categories')
@@ -216,6 +258,15 @@ export default function NewCategoriesSection() {
           properties={services}
           loading={servicesLoading}
           onSeeMore={() => handleSeeMore('services')}
+          maxItems={6}
+        />
+
+        {/* Home Appliances Section */}
+        <HomeAppliancesSection
+          title="Home Appliances"
+          appliances={homeAppliances}
+          loading={homeAppliancesLoading}
+          onSeeMore={() => handleSeeMore('home-appliances')}
           maxItems={6}
         />
       </div>

@@ -13,6 +13,8 @@ type Listing = {
   title: string
   price: number
   pricing_frequency: string
+  currency?: string
+  status?: string
   image_urls?: string[]
   primaryImage?: string | null
   location?: { city?: string; region?: string }
@@ -149,8 +151,13 @@ export default function KarpazPage() {
                   <Card key={listing.id} className="overflow-hidden">
                     <div className="relative">
                       <img src={img} alt={listing.title} className="aspect-video w-full object-cover" />
-                      <div className="absolute right-2 top-2">
+                      <div className="absolute right-2 top-2 flex flex-col gap-2">
                         <Badge className="bg-primary">{formatPrice(listing)}</Badge>
+                        {listing.status && listing.status !== 'active' && (
+                          <Badge variant={listing.status === 'sold' || listing.status === 'rented' ? 'destructive' : 'secondary'}>
+                            {listing.status.replace('_', ' ').toUpperCase()}
+                          </Badge>
+                        )}
                       </div>
                     </div>
                     <CardHeader>
@@ -246,8 +253,13 @@ export default function KarpazPage() {
                   <Card key={listing.id} className="overflow-hidden">
                     <div className="relative">
                       <img src={img} alt={listing.title} className="aspect-video w-full object-cover" />
-                      <div className="absolute right-2 top-2">
+                      <div className="absolute right-2 top-2 flex flex-col gap-2">
                         <Badge className="bg-primary">{formatPrice(listing)}</Badge>
+                        {listing.status && listing.status !== 'active' && (
+                          <Badge variant={listing.status === 'sold' || listing.status === 'rented' ? 'destructive' : 'secondary'}>
+                            {listing.status.replace('_', ' ').toUpperCase()}
+                          </Badge>
+                        )}
                       </div>
                     </div>
                     <CardHeader>

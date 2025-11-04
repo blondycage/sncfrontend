@@ -605,6 +605,7 @@ export default function SearchPage() {
                     <SelectItem value="all">All Types</SelectItem>
                     <SelectItem value="real_estate">Real Estate</SelectItem>
                     <SelectItem value="vehicle">Vehicles</SelectItem>
+                    <SelectItem value="home_appliances">Home Appliances</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>

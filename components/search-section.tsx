@@ -12,7 +12,6 @@ export default function SearchSection() {
   const [category, setCategory] = useState("all")
   const [location, setLocation] = useState("all")
   const [listingType, setListingType] = useState("all")
-  const [priceRange, setPriceRange] = useState({ min: "", max: "" })
   const router = useRouter()
 
   const handleSearch = (e: React.FormEvent) => {
@@ -59,14 +58,6 @@ export default function SearchSection() {
 
     if (listingType && listingType !== 'all') {
       params.set('listingType', listingType)
-    }
-
-    if (priceRange.min && !isNaN(Number(priceRange.min))) {
-      params.set('minPrice', priceRange.min)
-    }
-
-    if (priceRange.max && !isNaN(Number(priceRange.max))) {
-      params.set('maxPrice', priceRange.max)
     }
 
     // Navigate to search results page
@@ -157,27 +148,6 @@ export default function SearchSection() {
                   </SelectContent>
                 </Select>
               </div>
-
-              {/* Price Range - Mobile */}
-              <div className="w-full">
-                <label className="block text-xs font-bold text-gray-900 mb-2">Price Range</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    type="number"
-                    placeholder="Min price"
-                    value={priceRange.min}
-                    onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value })}
-                    className="text-sm border-gray-300 focus:border-primary focus:ring-primary"
-                  />
-                  <Input
-                    type="number"
-                    placeholder="Max price"
-                    value={priceRange.max}
-                    onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })}
-                    className="text-sm border-gray-300 focus:border-primary focus:ring-primary"
-                  />
-                </div>
-              </div>
               
               {/* Search Button - Mobile */}
               <Button 
@@ -190,9 +160,8 @@ export default function SearchSection() {
             </div>
           </div>
 
-          {/* Desktop Layout (2 rows) */}
-          <div className="hidden md:block space-y-4">
-            {/* Row 1: Main search fields */}
+          {/* Desktop Layout (single row) */}
+          <div className="hidden md:block">
             <div className="flex items-center bg-white/95 backdrop-blur-sm rounded-full shadow-xl border border-blue-200/50 p-2 lg:p-3">
               {/* What are you searching for - Desktop */}
               <div className="flex-1 px-4 lg:px-6 py-3 border-r border-blue-200/70 cursor-pointer hover:bg-gray-50 rounded-l-full">
@@ -238,7 +207,7 @@ export default function SearchSection() {
               </div>
 
               {/* Location - Desktop */}
-              <div className="flex-1 px-4 lg:px-6 py-3 cursor-pointer hover:bg-gray-50 rounded-r-full">
+              <div className="flex-1 px-4 lg:px-6 py-3 border-r border-blue-200/70 cursor-pointer hover:bg-gray-50">
                 <label className="block text-xs font-bold text-gray-900 mb-1">Location</label>
                 <Select value={location} onValueChange={setLocation}>
                   <SelectTrigger className="border-0 p-0 h-auto text-sm shadow-none focus:ring-0">
@@ -268,42 +237,18 @@ export default function SearchSection() {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            {/* Row 2: Price range and search button */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center bg-white/95 backdrop-blur-sm rounded-full shadow-xl border border-blue-200/50 p-2 lg:p-3 flex-1">
-                <div className="flex-1 px-4 lg:px-6 py-3">
-                  <label className="block text-xs font-bold text-gray-900 mb-1">Price Range</label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={priceRange.min}
-                      onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value })}
-                      className="border-0 p-0 text-sm placeholder:text-gray-500 focus:ring-0 shadow-none w-24"
-                    />
-                    <span className="text-gray-400">-</span>
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={priceRange.max}
-                      onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })}
-                      className="border-0 p-0 text-sm placeholder:text-gray-500 focus:ring-0 shadow-none w-24"
-                    />
-                  </div>
-                </div>
-              </div>
 
               {/* Search Button - Desktop */}
-              <Button
-                type="submit"
-                size="lg"
-                className="bg-primary hover:bg-primary/90 rounded-full px-8 h-[60px]"
-              >
-                <Search className="h-4 w-4 mr-2" />
-                Search Now
-              </Button>
+              <div className="pl-2 pr-1">
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="bg-primary hover:bg-primary/90 rounded-full px-8 h-[52px]"
+                >
+                  <Search className="h-4 w-4 mr-2" />
+                  Search
+                </Button>
+              </div>
             </div>
           </div>
         </div>

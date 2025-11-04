@@ -122,12 +122,12 @@ const config: Config = {
   		},
   		backgroundImage: {
   			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-  			'gradient-soft': 'linear-gradient(135deg, hsl(220 50% 95%) 0%, hsl(240 60% 92%) 50%, hsl(260 55% 90%) 100%)',
-  			'gradient-blue': 'linear-gradient(135deg, hsl(210 100% 92%) 0%, hsl(220 85% 88%) 100%)',
-  			'gradient-purple': 'linear-gradient(135deg, hsl(250 70% 92%) 0%, hsl(270 60% 88%) 100%)',
-  			'gradient-teal': 'linear-gradient(135deg, hsl(180 65% 92%) 0%, hsl(200 60% 88%) 100%)',
-  			'gradient-orange': 'linear-gradient(135deg, hsl(30 90% 92%) 0%, hsl(45 85% 88%) 100%)',
-  			'gradient-green': 'linear-gradient(135deg, hsl(140 60% 92%) 0%, hsl(160 55% 88%) 100%)',
+  			'gradient-soft': 'linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(0 0% 98%) 100%)',
+  			'gradient-blue': 'linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(0 0% 98%) 100%)',
+  			'gradient-purple': 'linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(0 0% 98%) 100%)',
+  			'gradient-teal': 'linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(0 0% 98%) 100%)',
+  			'gradient-orange': 'linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(0 0% 98%) 100%)',
+  			'gradient-green': 'linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(0 0% 98%) 100%)',
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
